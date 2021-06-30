@@ -6,12 +6,12 @@ import type { Article } from './Article';
 import { token as siteToken } from './Site';
 
 export interface Field {
-  name: string;
-  label?: string;
-  tip?: string;
-  defaultValue?: unknown;
-  required?: boolean;
-  inputType?:
+  readonly name: string;
+  readonly label?: string;
+  readonly tip?: string;
+  readonly defaultValue?: unknown;
+  readonly required?: boolean;
+  readonly inputType?:
     | 'input'
     | 'select'
     | 'multiple-select'
@@ -20,7 +20,7 @@ export interface Field {
     | 'switch'
     | 'image-picker'
     | 'number';
-  options?: Array<{ label: string; value: string; tip?: string }>;
+  readonly options?: Array<Readonly<{ label: string; value: string; tip?: string }>>;
 }
 
 const INDEX_PAGE_NAME = 'index';
@@ -35,18 +35,20 @@ export abstract class Page {
   readonly site = container.resolve(siteToken);
   abstract readonly pageId: string;
   abstract readonly route: Ref<string>; // url of this page
-  abstract readonly defaultVars: Env; // vars provide by this plugin
-  abstract readonly defaultFields: Field[]; // fields defined by this plugin
+  protected abstract readonly defaultVars: Readonly<Env>; // vars provide by this plugin
+  protected abstract readonly defaultFields: Readonly<Field[]>; // fields defined by this plugin
   constructor(
-    private readonly themeFields: Field[], // fields defined by theme
-    readonly fieldsVars: Env, // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
-  ) {}
+    private readonly themeFields: Readonly<Field[]>, // fields defined by theme
+    protected readonly fieldVars: Env, // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
+  ) {
+    this.fieldVars = reactive(fieldVars); // fieldVars is reactive because it will be displayed in UI
+  }
 
   get fields() {
     return [...this.defaultFields, ...this.themeFields];
   }
   get vars(): Env {
-    return { ...this.defaultVars, ...this.fieldsVars };
+    return { ...this.defaultVars, ...this.fieldVars };
   }
 }
 
@@ -54,7 +56,8 @@ export class HomePage extends Page {
   static readonly templateName = INDEX_PAGE_NAME;
   readonly pageId = HomePage.templateName;
   readonly route = ref('/');
-  readonly defaultVars: Env = shallowReactive({
+  protected readonly defaultFields = [] as const;
+  protected readonly defaultVars: Env = shallowReactive({
     site: this.site,
   });
 }
@@ -62,11 +65,8 @@ export class HomePage extends Page {
 export class ArticlePage extends Page {
   static readonly templateName = ARTICLE_PAGE_NAME;
   readonly pageId = `${ArticlePage.templateName}_${this.article.noteId.slice(0, 5)}`;
-  private get url() {
-    return slugify(this.article.title);
-  }
-  readonly defaultFields: Field[] = [
-    { name: 'url', required: true, defaultValue: this.url },
+  readonly defaultFields = [
+    { name: 'url', required: true, defaultValue: slugify(this.article.title) },
     { name: 'createdAt', required: true, defaultValue: this.article.createdAt },
     { name: 'updatedAt', required: true, defaultValue: this.article.updatedAt },
     {
@@ -74,7 +74,7 @@ export class ArticlePage extends Page {
       defaultValue: this.article.tags,
       inputType: 'multiple-select',
     },
-  ];
+  ] as const;
   readonly defaultVars: Env = {
     site: this.site,
     article: this.article,
@@ -82,14 +82,14 @@ export class ArticlePage extends Page {
   readonly route = computed(() => {
     const path = [
       encodeURIComponent(this.site.articlePagePrefix.value),
-      encodeURIComponent(this.customVars.url),
+      encodeURIComponent(this.fieldVars.url),
     ].join('/');
 
     return `/${path}`;
   });
 
-  constructor(readonly article: Article, customFields: Field[], fieldValues: Env) {
-    super(customFields, fieldValues);
+  constructor(readonly article: Article, themeFields: Field[], fieldVars: Env) {
+    super(themeFields, fieldVars);
   }
 }
 
@@ -104,18 +104,14 @@ export class ArchivesPage extends Page {
 
     return `/${path}`;
   });
-  readonly fields: Field[] = [
+  protected readonly defaultFields = [
     { name: 'articlesCount', label: 'Articles Per Page', defaultValue: 10, inputType: 'number' },
-  ];
+  ] as const;
 
-  readonly defaultVars: Env;
+  protected get defaultVars() {
+    const articlesChunks = chunk(this.site.articles, this.fieldVars.articleCount);
 
-  constructor(readonly pageNum: number, customFields: Field[], fieldValues: Env) {
-    super(customFields, fieldValues);
-
-    const articlesChunks = chunk(this.site.articles, this.customVars.articleCount);
-
-    this.defaultVars = {
+    return {
       site: this.site,
       articles: articlesChunks[this.pageNum],
       pagination: {
@@ -123,7 +119,11 @@ export class ArchivesPage extends Page {
         next: articlesChunks[this.pageNum + 1] ? this.pageNum + 1 : null,
         prev: this.pageNum === 1 ? null : this.pageNum - 1,
       },
-    };
+    } as const;
+  }
+
+  constructor(readonly pageNum: number, themeFields: Field[], fieldVars: Env) {
+    super(themeFields, fieldVars);
   }
 }
 
@@ -139,15 +139,23 @@ export class TagPage extends Page {
     return `/${path}`;
   });
 
-  constructor(private readonly tag: string, customFields: Field[], fieldValues: Env) {
-    super(customFields, fieldValues);
+  protected readonly defaultVars = {
+    site: this.site,
+    tag: this.tag,
+  } as const;
+
+  protected readonly defaultFields = [] as const;
+  constructor(private readonly tag: string, themeFields: Field[], fieldVars: Env) {
+    super(themeFields, fieldVars);
   }
 }
 
 export class CustomPage extends Page {
+  protected readonly defaultFields = [] as const;
+  protected readonly defaultVars = {} as const;
   readonly pageId = this.templateName;
   readonly route = ref(`/${encodeURIComponent(this.templateName)}`);
-  constructor(readonly templateName: string, customFields: Field[], fieldValues: Env) {
-    super(customFields, fieldValues);
+  constructor(readonly templateName: string, themeFields: Field[], fieldVars: Env) {
+    super(themeFields, fieldVars);
   }
 }
