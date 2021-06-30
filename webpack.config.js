@@ -5,6 +5,7 @@
 // JS file and requiring it here to minimize the changes. That way when you
 // update, you can easily restore the functionality you've added.
 // -----------------------------------------------------------------------------
+/* eslint-env node */
 
 const path = require('path');
 const crypto = require('crypto');
@@ -32,6 +33,8 @@ const packageJsonPath = `${rootDir}/package.json`;
 const manifest = readManifest(manifestPath);
 const pluginArchiveFilePath = path.resolve(publishDir, `${manifest.id}.jpl`);
 const pluginInfoFilePath = path.resolve(publishDir, `${manifest.id}.json`);
+
+const webviewConfig = require('./webpack.webview.config');
 
 function validatePackageJson() {
 	const content = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
@@ -156,6 +159,7 @@ const pluginConfig = Object.assign({}, baseConfig, {
 							// already copied into /dist so we don't copy them.
 							'**/*.ts',
 							'**/*.tsx',
+							'**/*.vue'
 						],
 					},
 				},
@@ -164,7 +168,7 @@ const pluginConfig = Object.assign({}, baseConfig, {
 	],
 });
 
-const extraScriptConfig = Object.assign({}, baseConfig, {
+const extraScriptConfig = Object.assign({}, baseConfig, webviewConfig, {
 	resolve: {
 		alias: {
 			api: path.resolve(__dirname, 'api'),
@@ -176,6 +180,9 @@ const extraScriptConfig = Object.assign({}, baseConfig, {
 const createArchiveConfig = {
 	stats: 'errors-only',
 	entry: './dist/index.js',
+	externals: {
+    fs: 'fs'
+  },
 	output: {
 		filename: 'index.js',
 		path: publishDir,
