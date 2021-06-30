@@ -2,9 +2,13 @@ import type { Field } from './Page';
 
 type PageName = string;
 
-export interface Theme {
-  name: string;
-  author: string;
-  homepage: string;
-  pages: Record<PageName, Field[]>;
+export class Theme {
+  readonly name: string = '';
+  readonly author: string = '';
+  readonly document: string = '';
+  readonly pages: Readonly<Record<PageName, Field[]>> = {};
+  isValid() {
+    if (this.pages) {
+    }
+  }
 }
