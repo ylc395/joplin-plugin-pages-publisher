@@ -1,14 +1,10 @@
+import { container, InjectionToken } from 'tsyringe';
 import type { Field } from './Page';
 
-type PageName = string;
-
-export class Theme {
-  readonly name: string = '';
-  readonly author: string = '';
-  readonly document: string = '';
-  readonly pages: Readonly<Record<PageName, Field[]>> = {};
-  isValid() {
-    if (this.pages) {
-    }
-  }
+export interface Theme {
+  readonly name: string;
+  readonly author: string;
+  readonly pages: Readonly<Record<string, Field[]>>;
 }
+export const token: InjectionToken<Theme> = Symbol();
+export default container.resolve(token);

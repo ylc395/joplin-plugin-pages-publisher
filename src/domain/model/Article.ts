@@ -4,8 +4,8 @@ export interface Article {
   readonly noteId: string;
   title: string;
   publishedAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: number;
+  updatedAt: number;
   tags: Tag[];
   images: File[];
   attachments: File[];
