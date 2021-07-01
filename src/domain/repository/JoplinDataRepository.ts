@@ -1,6 +1,6 @@
 import { container, InjectionToken } from 'tsyringe';
 import type joplin from 'api';
-import type { Note, Tag, Resource } from '../model/JoplinData';
+import type { Note, Tag, Resource, File } from '../model/JoplinData';
 
 export interface JoplinFetcher {
   fetchData: <T>(...args: Parameters<typeof joplin['data']['get']>) => Promise<T>;

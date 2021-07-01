@@ -6,7 +6,7 @@ export interface Article {
   publishedAt?: Date;
   createdAt: number;
   updatedAt: number;
-  tags: Tag[];
+  tags: Tag['title'][];
   images: File[];
   attachments: File[];
   published: boolean;

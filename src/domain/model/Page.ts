@@ -1,9 +1,8 @@
 import { chunk } from 'lodash';
 import slugify from 'slugify';
-import { container } from 'tsyringe';
-import { computed, reactive, Ref, ref, shallowReactive } from 'vue';
+import { computed, reactive, readonly, Ref, ref } from 'vue';
 import type { Article } from './Article';
-import { token as siteToken } from './Site';
+import type { Site } from './Site';
 
 export interface Field {
   readonly name: string;
@@ -29,42 +28,61 @@ const ARCHIVES_PAGE_NAME = 'archives';
 const TAG_PAGE_NAME = 'tag';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Env = Record<string, any>;
+export type Vars = Record<string, any>;
 
 export abstract class Page {
-  readonly site = container.resolve(siteToken);
   abstract readonly pageId: string;
   abstract readonly route: Ref<string>; // url of this page
-  protected abstract readonly defaultVars: Readonly<Env>; // vars provide by this plugin
+  protected abstract readonly defaultVars: Readonly<Vars>; // vars provide by this plugin
+  readonly fieldVars: Vars; // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
   protected abstract readonly defaultFields: Readonly<Field[]>; // fields defined by this plugin
   constructor(
-    private readonly themeFields: Readonly<Field[]>, // fields defined by theme
-    protected readonly fieldVars: Env, // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
+    protected readonly site: Required<Site>,
+    private readonly themeFields?: Readonly<Field[]>, // fields defined by theme
   ) {
-    this.fieldVars = reactive(fieldVars); // fieldVars is reactive because it will be displayed in UI
+    this.site = reactive(site);
+
+    const vars: Vars = {};
+
+    if (themeFields) {
+      for (const { name, defaultValue } of this.fields) {
+        vars[name] = defaultValue;
+      }
+    }
+
+    this.fieldVars = reactive(vars);
   }
 
   get fields() {
+    if (!this.themeFields) {
+      throw new Error('can not get fields, because themeFields is not provided');
+    }
+
     return [...this.defaultFields, ...this.themeFields];
   }
-  get vars(): Env {
+
+  get vars(): Vars {
     return { ...this.defaultVars, ...this.fieldVars };
+  }
+
+  setFieldVars(vars: Vars) {
+    Object.assign(this.fieldVars, vars);
   }
 }
 
 export class HomePage extends Page {
-  static readonly templateName = INDEX_PAGE_NAME;
-  readonly pageId = HomePage.templateName;
-  readonly route = ref('/');
+  static readonly pageName = INDEX_PAGE_NAME;
+  readonly pageId = HomePage.pageName;
+  readonly route = readonly(ref('/'));
   protected readonly defaultFields = [] as const;
-  protected readonly defaultVars: Env = shallowReactive({
+  protected readonly defaultVars: Vars = {
     site: this.site,
-  });
+  };
 }
 
 export class ArticlePage extends Page {
-  static readonly templateName = ARTICLE_PAGE_NAME;
-  readonly pageId = `${ArticlePage.templateName}_${this.article.noteId.slice(0, 5)}`;
+  static readonly pageName = ARTICLE_PAGE_NAME;
+  readonly pageId = `${ArticlePage.pageName}_${this.article.noteId.slice(0, 5)}`;
   readonly defaultFields = [
     { name: 'url', required: true, defaultValue: slugify(this.article.title) },
     { name: 'createdAt', required: true, defaultValue: this.article.createdAt },
@@ -75,30 +93,30 @@ export class ArticlePage extends Page {
       inputType: 'multiple-select',
     },
   ] as const;
-  readonly defaultVars: Env = {
+  readonly defaultVars: Vars = {
     site: this.site,
     article: this.article,
   };
   readonly route = computed(() => {
     const path = [
-      encodeURIComponent(this.site.articlePagePrefix.value),
+      encodeURIComponent(this.site.articlePagePrefix),
       encodeURIComponent(this.fieldVars.url),
     ].join('/');
 
     return `/${path}`;
   });
 
-  constructor(readonly article: Article, themeFields: Field[], fieldVars: Env) {
-    super(themeFields, fieldVars);
+  constructor(readonly article: Article, site: Required<Site>, themeFields?: Field[]) {
+    super(site, themeFields);
   }
 }
 
 export class ArchivesPage extends Page {
-  static readonly templateName = ARCHIVES_PAGE_NAME;
-  readonly pageId = `${ArchivesPage.templateName}_${this.pageNum}`;
+  static readonly pageName = ARCHIVES_PAGE_NAME;
+  readonly pageId = `${ArchivesPage.pageName}_${this.pageNum}`;
   readonly route = computed(() => {
     const path = [
-      encodeURIComponent(this.site.archivesPagePrefix.value),
+      encodeURIComponent(this.site.archivesPagePrefix),
       encodeURIComponent(this.pageNum),
     ].join('/');
 
@@ -122,17 +140,17 @@ export class ArchivesPage extends Page {
     } as const;
   }
 
-  constructor(readonly pageNum: number, themeFields: Field[], fieldVars: Env) {
-    super(themeFields, fieldVars);
+  constructor(readonly pageNum: number, site: Required<Site>, themeFields?: Field[]) {
+    super(site, themeFields);
   }
 }
 
 export class TagPage extends Page {
-  readonly templateName = TAG_PAGE_NAME;
-  readonly pageId = `${this.templateName}_${this.tag}`;
+  static readonly pageName = TAG_PAGE_NAME;
+  readonly pageId = `${TagPage.pageName}_${this.tag}`;
   readonly route = computed(() => {
     const path = [
-      encodeURIComponent(this.site.tagPagePrefix.value),
+      encodeURIComponent(this.site.tagPagePrefix),
       encodeURIComponent(slugify(this.tag)),
     ].join('/');
 
@@ -145,17 +163,17 @@ export class TagPage extends Page {
   } as const;
 
   protected readonly defaultFields = [] as const;
-  constructor(private readonly tag: string, themeFields: Field[], fieldVars: Env) {
-    super(themeFields, fieldVars);
+  constructor(private readonly tag: string, site: Required<Site>, themeFields?: Field[]) {
+    super(site, themeFields);
   }
 }
 
 export class CustomPage extends Page {
   protected readonly defaultFields = [] as const;
   protected readonly defaultVars = {} as const;
-  readonly pageId = this.templateName;
-  readonly route = ref(`/${encodeURIComponent(this.templateName)}`);
-  constructor(readonly templateName: string, themeFields: Field[], fieldVars: Env) {
-    super(themeFields, fieldVars);
+  readonly pageId = this.pageName;
+  readonly route = readonly(ref(`/${encodeURIComponent(this.pageName)}`));
+  constructor(readonly pageName: string, site: Required<Site>, themeFields?: Field[]) {
+    super(site, themeFields);
   }
 }

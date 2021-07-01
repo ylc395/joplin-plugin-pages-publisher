@@ -9,6 +9,7 @@
     "lib": ["DOM"],
     "strict": true,
     "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "esModuleInterop": true
   }
 }

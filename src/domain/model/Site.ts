@@ -1,5 +1,3 @@
-import { Ref } from 'vue';
-import type { InjectionToken } from 'tsyringe';
 import { Article } from './Article';
 import { Tag } from './JoplinData';
 
@@ -15,25 +13,20 @@ interface MenuItemGroup {
 
 type Menu = Array<MenuItem | MenuItemGroup>;
 
-export const token: InjectionToken<Site> = Symbol();
-
 export interface Site {
-  theme: {
-    name: string;
-    version: string;
-  };
+  theme: string;
   name: string;
   description: string;
   language: string;
-  icon: ArrayBuffer;
+  icon: ArrayBuffer | null;
   RSSMode: 'full' | 'abstract';
   RSSLength: number;
   menu: Menu;
-  tags: Tag[];
-  articles: Article[];
-  articlePagePrefix: Ref<string>;
-  archivesPagePrefix: Ref<string>;
-  tagPagePrefix: Ref<string>;
+  articlePagePrefix: string;
+  archivesPagePrefix: string;
+  tagPagePrefix: string;
   footer: string;
-  generatedAt: Date;
+  generatedAt: number | null;
+  tags?: Array<Tag['title']>;
+  articles?: Article[];
 }

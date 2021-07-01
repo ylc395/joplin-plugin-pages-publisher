@@ -1,23 +1,58 @@
 import { container, InjectionToken } from 'tsyringe';
-import { Article } from '../model/Article';
+import type { Article } from '../model/Article';
+import type { Vars } from '../model/Page';
+import type { Site } from '../model/Site';
+import type { Theme } from '../model/Theme';
 
 export interface PluginDataDb {
-  fetch: <T>(path: string[]) => Promise<T>;
+  fetch: <T>(path: string[]) => Promise<T | null>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  save: (path: string[], value: any) => Promise<void>;
 }
 
-export const token: InjectionToken<PluginDataDb> = Symbol();
-export class PluginDataRepository {
-  private static pluginDataFetcher = container.resolve(token);
+export interface ThemeFetcher {
+  fetch: (themeName: string) => Promise<Theme | null>;
+}
 
-  static getCurrentTheme() {
-    return this.pluginDataFetcher.fetch<string>(['theme']);
-  }
+export const pluginDataDbToken: InjectionToken<PluginDataDb> = Symbol();
+export const themeFetcherToken: InjectionToken<ThemeFetcher> = Symbol();
+export class PluginDataRepository {
+  private static pluginDataFetcher = container.resolve(pluginDataDbToken);
+  private static themeFetcher = container.resolve(themeFetcherToken);
+
   static getFieldVarsOfTheme(theme: string) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return this.pluginDataFetcher.fetch<Record<string, any>>(['fieldVars', theme]);
+    type PageId = string;
+
+    return this.pluginDataFetcher.fetch<Record<PageId, Vars | undefined>>(['fieldVars', theme]);
+  }
+
+  static saveFieldVars(theme: string, pageId: string, vars: Vars) {
+    return this.pluginDataFetcher.save(['fieldVars', theme, pageId], vars);
   }
 
   static getArticles() {
     return this.pluginDataFetcher.fetch<Article[]>(['articles']);
+  }
+
+  static saveArticles(articles: Article[]) {
+    return this.pluginDataFetcher.save(['articles'], articles);
+  }
+
+  static getSite() {
+    return this.pluginDataFetcher.fetch<Site>(['site']);
+  }
+
+  static saveSite(site: Site) {
+    return this.pluginDataFetcher.save(['site'], site);
+  }
+
+  static async getTheme(themeName: string) {
+    const theme = await this.themeFetcher.fetch(themeName);
+
+    if (!theme) {
+      throw new Error(`fail to load theme: ${themeName}`);
+    }
+
+    return theme;
   }
 }
