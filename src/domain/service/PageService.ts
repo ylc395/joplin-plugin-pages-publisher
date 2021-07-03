@@ -1,82 +1,90 @@
-import { container } from 'tsyringe';
-import { Ref, shallowRef, watchEffect } from 'vue';
-import { Page, HomePage, CustomPage, ArticlePage } from '../model/Page';
-import { ArticleService } from './ArticleService';
+import { container, singleton } from 'tsyringe';
+import { ref, Ref, shallowRef, watchEffect } from 'vue';
+import {
+  Page,
+  HomePage,
+  CustomPage,
+  ArticlePage,
+  Vars,
+  ArchivesPage,
+  TagPage,
+} from '../model/Page';
 import { SiteService } from './SiteService';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { Article } from '../model/Article';
 
+export type PagesFieldVars = Record<string, Vars | undefined>;
+@singleton()
 export class PageService {
-  private readonly articleService = container.resolve(ArticleService);
   private readonly siteService = container.resolve(SiteService);
-  readonly displayedPages: Ref<Page[]> = shallowRef([]);
+  private readonly pagesFieldVars: Ref<null | PagesFieldVars> = ref(null);
+  readonly pageSingletons: Ref<Page[]> = shallowRef([]);
   constructor() {
-    watchEffect(this.initDisplayedPages.bind(this));
+    watchEffect(this.initPageSingletons.bind(this));
+    watchEffect(this.loadPagesFieldVars.bind(this));
   }
 
-  get site() {
+  private async loadPagesFieldVars() {
     const { site } = this.siteService;
 
-    if (!site.value) {
-      throw new Error('site is not initialized yet');
-    }
-
-    const { allTags, publishedArticles } = this.articleService;
-    return { ...site.value, tags: allTags, articles: publishedArticles.value };
-  }
-
-  async getAllPages() {
-    const { theme, site } = this.siteService;
-    const { allTags, publishedArticles } = this.articleService;
-
-    if (!theme.value || !site.value) {
+    if (!site.value?.themeName) {
       return;
     }
 
-    const articlePageCreator = this.createArticlePage.bind(this);
-    return [...this.displayedPages.value, ...publishedArticles.value.map(articlePageCreator)];
+    this.pagesFieldVars.value =
+      (await PluginDataRepository.getFieldVarsOfTheme(site.value.themeName)) || {};
   }
+  private async initPageSingletons() {
+    const { site } = this.siteService;
 
-  private async initDisplayedPages() {
-    const { theme, site } = this.siteService;
-    const { allTags, publishedArticles } = this.articleService;
-
-    if (!theme.value || !site.value) {
+    if (!this.pagesFieldVars.value || !site.value?.themeConfig) {
       return;
     }
 
-    const pagesFields = (await PluginDataRepository.getFieldVarsOfTheme(theme.value.name)) || {};
+    const { themeConfig } = site.value;
     const pages = [];
-    const _site = { ...site.value, tags: allTags, articles: publishedArticles.value };
 
-    for (const pageName of Object.keys(theme.value.pages)) {
-      const themeFields = theme.value.pages[pageName] || [];
-      const page =
-        pageName === HomePage.pageName
-          ? new HomePage(_site, themeFields)
-          : new CustomPage(pageName, _site, themeFields);
+    for (const pageName of Object.keys(themeConfig.pages)) {
+      const filedVars = this.pagesFieldVars.value[pageName] || {};
+      let page: Page;
 
-      page.setFieldVars(pagesFields[page.pageId] || {});
+      switch (pageName) {
+        case HomePage.pageName:
+          page = new HomePage(site.value, filedVars);
+          break;
+        case ArticlePage.pageName:
+          page = new ArticlePage(site.value, filedVars);
+          break;
+        case ArchivesPage.pageName:
+          page = new ArchivesPage(site.value, filedVars);
+          break;
+        case TagPage.pageName:
+          page = new TagPage(site.value, filedVars);
+          break;
+        default:
+          page = new CustomPage(pageName, site.value, filedVars);
+          break;
+      }
+
       pages.push(page);
     }
 
-    this.displayedPages.value = pages;
+    this.pageSingletons.value = pages;
   }
 
   async createArticlePage(article: Article) {
-    const { theme } = this.siteService;
+    const { site } = this.siteService;
 
-    if (!theme.value) {
+    if (!site.value) {
       throw new Error('theme is not loaded yet');
     }
 
-    const fields = theme.value.pages[ArticlePage.pageName] || [];
-    const articlePage = new ArticlePage(article, this.site, fields);
-    const pageId = articlePage.pageId;
-    const pages = await PluginDataRepository.getFieldVarsOfTheme(theme.value.name);
-    const fieldVars = pages?.[pageId] ?? {};
+    if (!this.pagesFieldVars.value) {
+      throw new Error('pages field vars is not loaded yet');
+    }
 
-    articlePage.setFieldVars(fieldVars);
+    const fields = this.pagesFieldVars.value[ArticlePage.getPageId(article)] || [];
+    const articlePage = new ArticlePage(site.value, fields, article);
 
     return articlePage;
   }

@@ -1,5 +1,5 @@
 import { ref, Ref, computed, InjectionKey, shallowReactive } from 'vue';
-import { find, filter, pull, negate, map, flatten, uniq } from 'lodash';
+import { find, filter, pull, negate, map, uniq } from 'lodash';
 import { singleton } from 'tsyringe';
 import type { Note, File } from '../model/JoplinData';
 import type { Article } from '../model/Article';
@@ -46,10 +46,9 @@ export class ArticleService {
   }
 
   get allTags() {
-    const tags = flatten(map(this.articles, 'tags'));
-
-    return uniq(tags);
+    return uniq(map(this.publishedArticles.value, 'tags').flat());
   }
+
   private async init() {
     const articles = await PluginDataRepository.getArticles();
     this.articles.push(...(articles ?? []));

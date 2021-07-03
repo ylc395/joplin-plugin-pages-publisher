@@ -1,5 +1,6 @@
-import { Article } from './Article';
-import { Tag } from './JoplinData';
+import type { Article } from './Article';
+import type { Tag } from './JoplinData';
+import type { Field } from './Page';
 
 interface MenuItem {
   label: string;
@@ -11,11 +12,20 @@ interface MenuItemGroup {
   items: MenuItem;
 }
 
+type PageName = string;
+export interface Theme {
+  readonly name: string;
+  readonly author: string;
+  readonly version: string;
+  readonly pages: Readonly<Record<PageName, Field[] | undefined>>;
+}
+
 type Menu = Array<MenuItem | MenuItemGroup>;
 
 export interface Site {
-  theme: string;
   name: string;
+  themeName: string;
+  themeConfig?: Theme | null;
   description: string;
   language: string;
   icon: ArrayBuffer | null;
@@ -27,6 +37,6 @@ export interface Site {
   tagPagePrefix: string;
   footer: string;
   generatedAt: number | null;
-  tags?: Array<Tag['title']>;
-  articles?: Article[];
+  tags: Array<Tag['title']>;
+  articles: Article[];
 }

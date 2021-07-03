@@ -1,8 +1,9 @@
+import { omit } from 'lodash';
 import { container, InjectionToken } from 'tsyringe';
 import type { Article } from '../model/Article';
 import type { Vars } from '../model/Page';
-import type { Site } from '../model/Site';
-import type { Theme } from '../model/Theme';
+import type { Site, Theme } from '../model/Site';
+import type { PagesFieldVars } from '../service/PageService';
 
 export interface PluginDataDb {
   fetch: <T>(path: string[]) => Promise<T | null>;
@@ -21,13 +22,11 @@ export class PluginDataRepository {
   private static themeFetcher = container.resolve(themeFetcherToken);
 
   static getFieldVarsOfTheme(theme: string) {
-    type PageId = string;
-
-    return this.pluginDataFetcher.fetch<Record<PageId, Vars | undefined>>(['fieldVars', theme]);
+    return this.pluginDataFetcher.fetch<PagesFieldVars>(['pagesFieldVars', theme]);
   }
 
   static saveFieldVars(theme: string, pageId: string, vars: Vars) {
-    return this.pluginDataFetcher.save(['fieldVars', theme, pageId], vars);
+    return this.pluginDataFetcher.save(['pagesFieldVars', theme, pageId], vars);
   }
 
   static getArticles() {
@@ -43,7 +42,7 @@ export class PluginDataRepository {
   }
 
   static saveSite(site: Site) {
-    return this.pluginDataFetcher.save(['site'], site);
+    return this.pluginDataFetcher.save(['site'], omit(site, ['themeConfig', 'articles', 'tags']));
   }
 
   static async getTheme(themeName: string) {
