@@ -60,9 +60,7 @@ export class HomePage extends Page {
   readonly pageId = HomePage.pageName;
   readonly route = readonly(ref('/'));
   protected readonly defaultFields = [] as const;
-  protected readonly defaultVars: Vars = {
-    site: this.site,
-  };
+  protected readonly defaultVars: Vars = {};
 }
 
 export class ArticlePage extends Page {
@@ -81,7 +79,6 @@ export class ArticlePage extends Page {
       ] as const)
     : [];
   readonly defaultVars: Vars = {
-    site: this.site,
     article: this.article,
   };
   readonly route = computed(() => {
@@ -104,6 +101,7 @@ export class ArticlePage extends Page {
 
 export class ArchivesPage extends Page {
   static readonly pageName = ARCHIVES_PAGE_NAME;
+  static readonly defaultArticlesCount = 10;
   readonly pageId = this.pageNum
     ? `${ArchivesPage.pageName}_${this.pageNum}`
     : ArchivesPage.pageName;
@@ -116,7 +114,12 @@ export class ArchivesPage extends Page {
     return `/${path}`;
   });
   protected readonly defaultFields = [
-    { name: 'articlesCount', label: 'Articles Per Page', defaultValue: 10, inputType: 'number' },
+    {
+      name: 'articlesCount',
+      label: 'Articles Per Page',
+      defaultValue: ArchivesPage.defaultArticlesCount,
+      inputType: 'number',
+    },
   ] as const;
 
   protected get defaultVars() {
@@ -127,12 +130,9 @@ export class ArchivesPage extends Page {
     const articlesChunks = chunk(this.site.articles, this.fieldVars.value.articleCount);
 
     return {
-      site: this.site,
-      pagination: {
-        current: this.pageNum,
-        next: articlesChunks[this.pageNum + 1] ? this.pageNum + 1 : null,
-        prev: this.pageNum === 1 ? null : this.pageNum - 1,
-      },
+      current: this.pageNum,
+      next: articlesChunks[this.pageNum + 1] ? this.pageNum + 1 : null,
+      prev: this.pageNum === 1 ? null : this.pageNum - 1,
     } as const;
   }
 
@@ -143,7 +143,7 @@ export class ArchivesPage extends Page {
 
 export class TagPage extends Page {
   static readonly pageName = TAG_PAGE_NAME;
-  readonly pageId = `${TagPage.pageName}_${this.tag}`;
+  readonly pageId = this.tag ? `${TagPage.pageName}_${this.tag}` : TagPage.pageName;
   readonly route = computed(() => {
     const path = [
       encodeURIComponent(this.site.tagPagePrefix),
@@ -154,7 +154,6 @@ export class TagPage extends Page {
   });
 
   protected readonly defaultVars = {
-    site: this.site,
     tag: this.tag,
   } as const;
 

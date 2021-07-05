@@ -37,6 +37,6 @@ export interface Site {
   tagPagePrefix: string;
   footer: string;
   generatedAt: number | null;
-  tags: Array<Tag['title']>;
-  articles: Article[];
+  tags?: Array<Tag['title']>;
+  articles?: Article[];
 }
