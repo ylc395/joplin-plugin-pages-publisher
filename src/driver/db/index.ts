@@ -40,6 +40,8 @@ export class Db {
     return this.ready.then(() => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       set(this.db!.data!, path, data);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return this.db!.write();
     });
   }
 }
