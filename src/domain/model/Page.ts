@@ -22,6 +22,29 @@ export interface Field {
   readonly options?: Array<Readonly<{ label: string; value: string; tip?: string }>>;
 }
 
+export const FIELD_SCHEMA = {
+  type: 'object',
+  properties: {
+    name: { type: 'string' },
+    label: { type: 'string' },
+    tip: { type: 'string' },
+    required: { type: 'boolean' },
+    inputType: {
+      enum: [
+        'input',
+        'select',
+        'multiple-select',
+        'textarea',
+        'radio',
+        'switch',
+        'image-picker',
+        'number',
+      ],
+    },
+  },
+  required: ['name'],
+} as const;
+
 const INDEX_PAGE_NAME = 'index';
 const ARTICLE_PAGE_NAME = 'article';
 const ARCHIVES_PAGE_NAME = 'archives';

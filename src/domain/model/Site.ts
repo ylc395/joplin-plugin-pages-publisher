@@ -1,6 +1,6 @@
 import type { Article } from './Article';
 import type { Tag } from './JoplinData';
-import { Field, HomePage } from './Page';
+import { Field, FIELD_SCHEMA, HomePage } from './Page';
 
 interface MenuItem {
   label: string;
@@ -70,3 +70,13 @@ export const defaultSite: Site = {
   articles: [],
   tags: [],
 };
+
+export const THEME_SCHEMA = {
+  type: 'object',
+  properties: {
+    name: { type: 'string' },
+    version: { type: 'string' },
+    pages: { type: 'array', items: FIELD_SCHEMA },
+  },
+  required: ['name', 'version', 'pages'],
+} as const;

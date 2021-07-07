@@ -1,10 +1,14 @@
+import Ajv from 'ajv';
 import { omit } from 'lodash';
 import { container, InjectionToken } from 'tsyringe';
 import { toRaw } from 'vue';
 import type { Article } from '../model/Article';
 import type { Vars } from '../model/Page';
-import { defaultTheme, Site, Theme } from '../model/Site';
+import { defaultTheme, Site, Theme, THEME_SCHEMA } from '../model/Site';
 import type { PagesFieldVars } from '../service/PageService';
+
+const validator = new Ajv();
+const themeValidate = validator.compile(THEME_SCHEMA);
 
 export interface PluginDataDb {
   fetch: <T>(path: string[]) => Promise<T | null>;
@@ -21,8 +25,8 @@ export const pluginDataDbToken: InjectionToken<PluginDataDb> = Symbol('pluginDat
 export const themeFetcherToken: InjectionToken<ThemeFetcher> = Symbol('themeFetcher');
 
 export class PluginDataRepository {
-  private pluginDataFetcher = container.resolve(pluginDataDbToken);
-  private themeFetcher = container.resolve(themeFetcherToken);
+  private readonly pluginDataFetcher = container.resolve(pluginDataDbToken);
+  private readonly themeFetcher = container.resolve(themeFetcherToken);
 
   getFieldVarsOfTheme(theme: string) {
     return this.pluginDataFetcher.fetch<PagesFieldVars>(['pagesFieldVars', theme]);
@@ -33,7 +37,6 @@ export class PluginDataRepository {
   }
 
   getArticles() {
-    // todo: add schema check
     return this.pluginDataFetcher.fetch<Article[]>(['articles']);
   }
 
@@ -59,9 +62,11 @@ export class PluginDataRepository {
 
     const theme = await this.themeFetcher.fetch(themeName);
 
-    // todo: add schema check
-    if (!theme) {
-      console.warn(`fail to load theme: ${themeName}.`);
+    if (!theme || !themeValidate(theme)) {
+      const msg = themeValidate.errors
+        ? themeValidate.errors.map(({ message }) => message).join('\n')
+        : '';
+      console.warn(`fail to load theme: ${themeName}. ${msg}`);
       return null;
     }
 
@@ -70,7 +75,6 @@ export class PluginDataRepository {
   async getThemes() {
     const themes = await this.themeFetcher.fetchAll();
 
-    // todo: add schema check
-    return [defaultTheme, ...themes];
+    return [defaultTheme, ...themes.filter((theme) => themeValidate(theme))];
   }
 }
