@@ -54,13 +54,13 @@ export default defineComponent({
       <FormItem label="Site Description">
         <Input v-model:value="modelRef.description" />
       </FormItem>
+      <FormItem label="Site Language">
+        <Input v-model:value="modelRef.language" />
+      </FormItem>
       <FormItem label="Theme" v-bind="validateInfos.themeName">
         <Select v-model:value="modelRef.themeName">
           <SelectOption v-for="{ name } of themes" :key="name">{{ name }}</SelectOption>
         </Select>
-      </FormItem>
-      <FormItem label="Site Language">
-        <Input v-model:value="modelRef.language" />
       </FormItem>
       <FormItem label="Article Pages Path" v-bind="validateInfos.articlePagePrefix">
         <Input v-model:value="modelRef.articlePagePrefix" />
