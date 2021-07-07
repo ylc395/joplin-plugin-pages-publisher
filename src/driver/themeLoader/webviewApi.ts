@@ -7,12 +7,19 @@ export interface ThemeConfigLoadRequest {
   themeName: string;
 }
 
+export interface ThemeConfigsLoadRequest {
+  event: 'loadThemeConfigs';
+}
+
 declare const webviewApi: {
-  postMessage: <T>(payload: ThemeConfigLoadRequest) => Promise<T>;
+  postMessage: <T>(payload: ThemeConfigLoadRequest | ThemeConfigsLoadRequest) => Promise<T>;
 };
 
 container.registerInstance(themeFetcherToken, {
   fetch(themeName: string) {
-    webviewApi.postMessage<Theme>({ event: 'loadThemeConfig', themeName });
+    return webviewApi.postMessage<Theme | null>({ event: 'loadThemeConfig', themeName });
+  },
+  fetchAll() {
+    return webviewApi.postMessage<Theme[]>({ event: 'loadThemeConfigs' });
   },
 });

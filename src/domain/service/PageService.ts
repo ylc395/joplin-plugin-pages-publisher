@@ -1,5 +1,5 @@
 import { container, singleton } from 'tsyringe';
-import { ref, Ref, shallowRef, watchEffect } from 'vue';
+import { ref, Ref, shallowRef, watchEffect, InjectionKey } from 'vue';
 import {
   Page,
   HomePage,
@@ -14,39 +14,33 @@ import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { Article } from '../model/Article';
 import { filter, range } from 'lodash';
 
+export const token: InjectionKey<PageService> = Symbol('pageService');
 export type PagesFieldVars = Record<string, Vars | undefined>;
 @singleton()
 export class PageService {
   private readonly siteService = container.resolve(SiteService);
-  private readonly pagesFieldVars: Ref<null | PagesFieldVars> = ref(null);
+  private readonly pluginDataRepository = new PluginDataRepository();
+  private readonly pagesFieldVars: Ref<PagesFieldVars> = ref({});
   readonly pageSingletons: Ref<Page[]> = shallowRef([]);
   constructor() {
     watchEffect(this.initPageSingletons.bind(this));
-    watchEffect(this.loadPagesFieldVars.bind(this));
   }
 
-  private async loadPagesFieldVars() {
-    const { site } = this.siteService;
-
-    if (!site.value?.themeName) {
-      return;
-    }
-
-    this.pagesFieldVars.value =
-      (await PluginDataRepository.getFieldVarsOfTheme(site.value.themeName)) || {};
-  }
   private async initPageSingletons() {
     const { site } = this.siteService;
 
-    if (!this.pagesFieldVars.value || !site.value?.themeConfig) {
+    if (!site.value?.themeConfig) {
       return;
     }
 
-    const { themeConfig } = site.value;
+    const pagesFieldVars =
+      (await this.pluginDataRepository.getFieldVarsOfTheme(site.value.themeName)) || {};
+    this.pagesFieldVars.value = pagesFieldVars;
+
     const pages = [];
 
-    for (const pageName of Object.keys(themeConfig.pages)) {
-      const filedVars = this.pagesFieldVars.value[pageName] || {};
+    for (const pageName of Object.keys(site.value.themeConfig.pages)) {
+      const filedVars = pagesFieldVars[pageName] || {};
       let page: Page;
 
       switch (pageName) {

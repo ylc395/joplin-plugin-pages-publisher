@@ -2,11 +2,21 @@ import joplin from 'api';
 import type { Db } from './driver/db';
 import type { DbReadRequest, DbWriteRequest } from './driver/db/webviewApi';
 import type { JoplinDataRequest } from './driver/joplinApi';
-import type { ThemeConfigLoadRequest } from './driver/themeLoader/webviewApi';
-import loadTheme from './driver/themeLoader';
+import type {
+  ThemeConfigLoadRequest,
+  ThemeConfigsLoadRequest,
+} from './driver/themeLoader/webviewApi';
+import { loadTheme, loadThemes } from './driver/themeLoader';
 
 export default (db: Db) =>
-  (request: DbReadRequest | DbWriteRequest | JoplinDataRequest | ThemeConfigLoadRequest) => {
+  (
+    request:
+      | DbReadRequest
+      | DbWriteRequest
+      | JoplinDataRequest
+      | ThemeConfigLoadRequest
+      | ThemeConfigsLoadRequest,
+  ) => {
     switch (request.event) {
       case 'dbFetch':
         return db.fetch(...request.args);
@@ -16,6 +26,8 @@ export default (db: Db) =>
         return joplin.data.get(...request.args);
       case 'loadThemeConfig':
         return loadTheme(request.themeName);
+      case 'loadThemeConfigs':
+        return loadThemes();
       default:
         break;
     }

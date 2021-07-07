@@ -1,7 +1,11 @@
 import joplin from 'api';
 import type { Adapter } from 'lowdb';
+import type { readFile as IReadFile, writeFile as IWriteFile } from 'fs-extra';
 
-const fs = joplin.require('fs-extra');
+const { readFile, writeFile } = joplin.require('fs-extra') as {
+  readFile: typeof IReadFile;
+  writeFile: typeof IWriteFile;
+};
 
 export class JSONFile<T> implements Adapter<T> {
   constructor(private readonly filename: string) {}
@@ -9,7 +13,7 @@ export class JSONFile<T> implements Adapter<T> {
     let data;
 
     try {
-      data = await fs.readFile(this.filename, 'utf-8');
+      data = await readFile(this.filename, 'utf-8');
     } catch (e) {
       if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
         return null;
@@ -21,6 +25,6 @@ export class JSONFile<T> implements Adapter<T> {
   }
 
   write(data: T): Promise<void> {
-    return fs.writeFile(this.filename, JSON.stringify(data, null, 2));
+    return writeFile(this.filename, JSON.stringify(data, null, 2));
   }
 }

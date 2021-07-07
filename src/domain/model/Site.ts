@@ -1,6 +1,6 @@
 import type { Article } from './Article';
 import type { Tag } from './JoplinData';
-import type { Field } from './Page';
+import { Field, HomePage } from './Page';
 
 interface MenuItem {
   label: string;
@@ -14,11 +14,22 @@ interface MenuItemGroup {
 
 type PageName = string;
 export interface Theme {
-  readonly name: string;
-  readonly author: string;
+  readonly name: string; // no need in config.js
+  readonly author?: string;
   readonly version: string;
   readonly pages: Readonly<Record<PageName, Field[] | undefined>>;
 }
+
+const DEFAULT_THEME = 'default';
+
+export const defaultTheme: Theme = {
+  name: DEFAULT_THEME,
+  author: 'ylc395',
+  version: '0.0.1',
+  pages: {
+    [HomePage.pageName]: [{ name: 'slogan' }],
+  },
+};
 
 type Menu = Array<MenuItem | MenuItemGroup>;
 
@@ -40,3 +51,22 @@ export interface Site {
   tags?: Array<Tag['title']>;
   articles?: Article[];
 }
+
+export const defaultSite: Site = {
+  name: '',
+  description: '',
+  themeName: DEFAULT_THEME,
+  themeConfig: null,
+  language: '',
+  icon: null,
+  RSSMode: 'full',
+  RSSLength: 10,
+  menu: [],
+  articlePagePrefix: 'article',
+  archivesPagePrefix: 'archives',
+  tagPagePrefix: 'tag',
+  footer: '',
+  generatedAt: null,
+  articles: [],
+  tags: [],
+};

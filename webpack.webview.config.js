@@ -30,7 +30,12 @@ module.exports = {
                 style: 'css',
               },
             ],
+            'babel-plugin-transform-typescript-metadata',
+            ['@babel/plugin-proposal-decorators', { legacy: true }],
+
+            /* following plugins are for webpack 4 js parser */
             '@babel/plugin-proposal-class-properties',
+            '@babel/plugin-proposal-nullish-coalescing-operator',
           ],
           presets: [
             ['@babel/preset-typescript', { allExtensions: true }],

@@ -9,19 +9,19 @@ interface JoplinFetcher {
   fetchAllData: <T>(...args: JoplinGetParams) => Promise<T[]>;
 }
 
-export const token: InjectionToken<JoplinFetcher> = Symbol();
+export const token: InjectionToken<JoplinFetcher> = Symbol('joplinData');
 export class JoplinDataRepository {
-  private static joplinFetcher = container.resolve(token);
-  static searchNotes(query: string) {
+  private joplinFetcher = container.resolve(token);
+  searchNotes(query: string) {
     const fields = 'id,title,user_created_time,user_updated_time';
     return this.joplinFetcher.fetchAllData<Note>(['search'], { query, fields });
   }
 
-  static getTagsOf(noteId: string) {
+  getTagsOf(noteId: string) {
     return this.joplinFetcher.fetchAllData<Tag>(['notes', noteId, 'tags']);
   }
 
-  static async getFilesOf(noteId: string) {
+  async getFilesOf(noteId: string) {
     const resources = await this.joplinFetcher.fetchAllData<Resource>(
       ['notes', noteId, 'resources'],
       { fields: 'id,mime' },

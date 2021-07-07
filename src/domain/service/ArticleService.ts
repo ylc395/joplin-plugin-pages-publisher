@@ -5,15 +5,18 @@ import type { Note, File } from '../model/JoplinData';
 import type { Article } from '../model/Article';
 import { JoplinDataRepository } from '../repository/JoplinDataRepository';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
-interface SearchedNote extends Note {
+
+export interface SearchedNote extends Note {
   status: 'none' | 'published' | 'unpublished';
 }
 
-export const token: InjectionKey<ArticleService> = Symbol();
+export const token: InjectionKey<ArticleService> = Symbol('articleService');
 
 @singleton()
 export class ArticleService {
   private readonly articles: Article[] = shallowReactive([]);
+  private readonly joplinDataRepository = new JoplinDataRepository();
+  private readonly pluginDataRepository = new PluginDataRepository();
 
   readonly unpublishedArticles = computed(() => {
     return filter(this.articles, { published: false });
@@ -50,12 +53,12 @@ export class ArticleService {
   }
 
   private async init() {
-    const articles = await PluginDataRepository.getArticles();
+    const articles = await this.pluginDataRepository.getArticles();
     this.articles.push(...(articles ?? []));
   }
 
   private saveArticles() {
-    PluginDataRepository.saveArticles(this.articles);
+    this.pluginDataRepository.saveArticles(this.articles);
   }
 
   async searchNotes(keyword: string) {
@@ -64,14 +67,14 @@ export class ArticleService {
       return;
     }
 
-    const notes = await JoplinDataRepository.searchNotes(keyword);
+    const notes = await this.joplinDataRepository.searchNotes(keyword);
     this._searchedNotes.value = notes;
   }
 
-  private static async noteToArticle(note: Note): Promise<Article> {
+  private async noteToArticle(note: Note): Promise<Article> {
     const [tags, files] = await Promise.all([
-      JoplinDataRepository.getTagsOf(note.id),
-      JoplinDataRepository.getFilesOf(note.id),
+      this.joplinDataRepository.getTagsOf(note.id),
+      this.joplinDataRepository.getFilesOf(note.id),
     ]);
 
     const isImage = ({ contentType }: File) => {
@@ -92,7 +95,7 @@ export class ArticleService {
   }
 
   async addAsArticles(...notes: Note[]) {
-    const articles = await Promise.all(notes.map(ArticleService.noteToArticle));
+    const articles = await Promise.all(notes.map(this.noteToArticle.bind(this)));
     this.articles.push(...articles);
     await this.saveArticles();
   }

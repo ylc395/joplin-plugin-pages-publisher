@@ -3,7 +3,7 @@ import { defineComponent, inject, ref } from 'vue';
 import { debounce } from 'lodash';
 import { Select, Button, Collapse } from 'ant-design-vue';
 import Card from './Card.vue';
-import { token, SearchedNote } from '../../../../domain/ArticleService';
+import { token, SearchedNote } from '../../../domain/service/ArticleService';
 
 export default defineComponent({
   components: {
@@ -64,24 +64,14 @@ export default defineComponent({
         {{ note.title }}
       </SelectOption>
     </Select>
-    <Button type="primary" class="button" size="large" @click="add">
-      Add
-    </Button>
+    <Button type="primary" class="button" size="large" @click="add"> Add </Button>
   </div>
   <Collapse>
     <CollapsePanel>
-      <Card
-        v-for="article of unpublishedArticles"
-        :key="article.noteId"
-        :article="article"
-      />
+      <Card v-for="article of unpublishedArticles" :key="article.noteId" :article="article" />
     </CollapsePanel>
     <CollapsePanel>
-      <Card
-        v-for="article of publishedArticles"
-        :key="article.noteId"
-        :article="article"
-      />
+      <Card v-for="article of publishedArticles" :key="article.noteId" :article="article" />
     </CollapsePanel>
   </Collapse>
 </template>

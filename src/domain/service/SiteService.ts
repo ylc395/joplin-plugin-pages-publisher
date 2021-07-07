@@ -1,39 +1,24 @@
 import { container, singleton } from 'tsyringe';
-import { Ref, ref, watchEffect } from 'vue';
-import type { Site } from '../model/Site';
+import { Ref, ref, watchEffect, InjectionKey } from 'vue';
+import { Site, Theme, defaultSite } from '../model/Site';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { ArticleService } from './ArticleService';
 
-const defaultSite: Site = {
-  name: '',
-  description: '',
-  themeName: 'default',
-  themeConfig: null,
-  language: '',
-  icon: null,
-  RSSMode: 'full',
-  RSSLength: 10,
-  menu: [],
-  articlePagePrefix: 'article',
-  archivesPagePrefix: 'archives',
-  tagPagePrefix: 'tag',
-  footer: '',
-  generatedAt: null,
-  articles: [],
-  tags: [],
-};
-
+export const token: InjectionKey<SiteService> = Symbol('siteService');
 @singleton()
 export class SiteService {
-  readonly site: Ref<null | Site> = ref(null);
+  private readonly pluginDataRepository = new PluginDataRepository();
+  readonly site: Ref<Site | null> = ref(null);
+  readonly themes: Ref<Theme[]> = ref([]);
   private readonly articleService = container.resolve(ArticleService);
   constructor() {
     this.init();
   }
   private async init() {
-    this.site.value = { ...defaultSite, ...(await PluginDataRepository.getSite()) };
+    this.site.value = { ...defaultSite, ...(await this.pluginDataRepository.getSite()) };
     watchEffect(this.loadTheme.bind(this));
     watchEffect(this.loadArticles.bind(this));
+    this.themes.value = await this.pluginDataRepository.getThemes();
   }
 
   private loadArticles() {
@@ -46,25 +31,20 @@ export class SiteService {
   }
 
   private async loadTheme() {
-    if (!this.site.value) {
+    const site = this.site.value;
+
+    if (!site) {
       throw new Error('site is not initialized');
     }
 
-    const site = this.site.value;
-
     if (site.themeName === site.themeConfig?.name) {
-      throw new Error('do not load the same theme');
+      return;
     }
 
-    const theme = await PluginDataRepository.getTheme(site.themeName);
-    this.site.value.themeConfig = theme;
+    site.themeConfig = await this.pluginDataRepository.getTheme(site.themeName);
   }
 
   async saveSite(site: Partial<Site>) {
-    if (!this.site.value) {
-      throw new Error('site is not initialized');
-    }
-
-    await PluginDataRepository.saveSite(Object.assign(this.site.value, site));
+    await this.pluginDataRepository.saveSite(Object.assign(this.site.value, site));
   }
 }

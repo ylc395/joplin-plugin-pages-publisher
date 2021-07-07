@@ -1,8 +1,9 @@
 import { omit } from 'lodash';
 import { container, InjectionToken } from 'tsyringe';
+import { toRaw } from 'vue';
 import type { Article } from '../model/Article';
 import type { Vars } from '../model/Page';
-import type { Site, Theme } from '../model/Site';
+import { defaultTheme, Site, Theme } from '../model/Site';
 import type { PagesFieldVars } from '../service/PageService';
 
 export interface PluginDataDb {
@@ -13,45 +14,60 @@ export interface PluginDataDb {
 
 export interface ThemeFetcher {
   fetch: (themeName: string) => Promise<Theme | null>;
+  fetchAll: () => Promise<Theme[]>;
 }
 
-export const pluginDataDbToken: InjectionToken<PluginDataDb> = Symbol();
-export const themeFetcherToken: InjectionToken<ThemeFetcher> = Symbol();
-export class PluginDataRepository {
-  private static pluginDataFetcher = container.resolve(pluginDataDbToken);
-  private static themeFetcher = container.resolve(themeFetcherToken);
+export const pluginDataDbToken: InjectionToken<PluginDataDb> = Symbol('pluginDataDb');
+export const themeFetcherToken: InjectionToken<ThemeFetcher> = Symbol('themeFetcher');
 
-  static getFieldVarsOfTheme(theme: string) {
+export class PluginDataRepository {
+  private pluginDataFetcher = container.resolve(pluginDataDbToken);
+  private themeFetcher = container.resolve(themeFetcherToken);
+
+  getFieldVarsOfTheme(theme: string) {
     return this.pluginDataFetcher.fetch<PagesFieldVars>(['pagesFieldVars', theme]);
   }
 
-  static saveFieldVars(theme: string, pageId: string, vars: Vars) {
-    return this.pluginDataFetcher.save(['pagesFieldVars', theme, pageId], vars);
+  saveFieldVars(theme: string, pageId: string, vars: Vars) {
+    return this.pluginDataFetcher.save(['pagesFieldVars', theme, pageId], toRaw(vars));
   }
 
-  static getArticles() {
+  getArticles() {
     return this.pluginDataFetcher.fetch<Article[]>(['articles']);
   }
 
-  static saveArticles(articles: Article[]) {
-    return this.pluginDataFetcher.save(['articles'], articles);
+  saveArticles(articles: Article[]) {
+    return this.pluginDataFetcher.save(['articles'], toRaw(articles));
   }
 
-  static getSite() {
+  getSite() {
     return this.pluginDataFetcher.fetch<Site>(['site']);
   }
 
-  static saveSite(site: Site) {
-    return this.pluginDataFetcher.save(['site'], omit(site, ['themeConfig', 'articles', 'tags']));
+  saveSite(site: Site) {
+    return this.pluginDataFetcher.save(
+      ['site'],
+      omit(toRaw(site), ['themeConfig', 'articles', 'tags']),
+    );
   }
 
-  static async getTheme(themeName: string) {
+  async getTheme(themeName: string) {
+    if (themeName === defaultTheme.name) {
+      return defaultTheme;
+    }
+
     const theme = await this.themeFetcher.fetch(themeName);
 
     if (!theme) {
-      throw new Error(`fail to load theme: ${themeName}`);
+      console.warn(`fail to load theme: ${themeName}. Use default theme`);
+      return defaultTheme;
     }
 
     return theme;
+  }
+  async getThemes() {
+    const themes = await this.themeFetcher.fetchAll();
+
+    return [defaultTheme, ...themes];
   }
 }

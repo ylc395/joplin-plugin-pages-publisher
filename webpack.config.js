@@ -118,7 +118,7 @@ function onBuildCompleted() {
 }
 
 const baseConfig = {
-	mode: 'production',
+	mode: process.env.NODE_ENV || 'production',
 	target: 'node',
 	stats: 'errors-only',
 	module: {
