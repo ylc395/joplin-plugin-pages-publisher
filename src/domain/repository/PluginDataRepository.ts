@@ -33,6 +33,7 @@ export class PluginDataRepository {
   }
 
   getArticles() {
+    // todo: add schema check
     return this.pluginDataFetcher.fetch<Article[]>(['articles']);
   }
 
@@ -58,9 +59,10 @@ export class PluginDataRepository {
 
     const theme = await this.themeFetcher.fetch(themeName);
 
+    // todo: add schema check
     if (!theme) {
-      console.warn(`fail to load theme: ${themeName}. Use default theme`);
-      return defaultTheme;
+      console.warn(`fail to load theme: ${themeName}.`);
+      return null;
     }
 
     return theme;
@@ -68,6 +70,7 @@ export class PluginDataRepository {
   async getThemes() {
     const themes = await this.themeFetcher.fetchAll();
 
+    // todo: add schema check
     return [defaultTheme, ...themes];
   }
 }

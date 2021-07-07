@@ -10,7 +10,6 @@ export async function loadTheme(themeName: string) {
   const pluginDir = await joplin.plugins.dataDir();
   try {
     const res = await readJson(`${pluginDir}/themes/${themeName}/config.json`);
-    res.name = themeName;
     return res;
   } catch (err) {
     console.warn(err);
@@ -28,9 +27,8 @@ export async function loadThemes() {
     );
 
     const themes = [];
-    for (const [index, result] of results.entries()) {
+    for (const result of results) {
       if (result.status === 'fulfilled') {
-        result.value.name = subDirectories[index];
         themes.push(result.value);
       } else {
         console.warn(result.reason);

@@ -20,7 +20,7 @@ export interface Theme {
   readonly pages: Readonly<Record<PageName, Field[] | undefined>>;
 }
 
-const DEFAULT_THEME = 'default';
+export const DEFAULT_THEME = 'default';
 
 export const defaultTheme: Theme = {
   name: DEFAULT_THEME,
