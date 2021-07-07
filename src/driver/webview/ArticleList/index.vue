@@ -57,7 +57,6 @@ export default defineComponent({
       <SelectOption
         v-for="note of searchedNotes"
         :key="note.id"
-        :value="note"
         :disabled="note.status !== 'none'"
         :title="note.title"
       >

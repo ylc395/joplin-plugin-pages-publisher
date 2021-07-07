@@ -104,4 +104,11 @@ export class ArticleService {
     pull(this.articles, ...articles);
     await this.saveArticles();
   }
+
+  async unpublish(...articles: Article[]) {
+    for (const article of articles) {
+      article.published = false;
+    }
+    await this.saveArticles();
+  }
 }
