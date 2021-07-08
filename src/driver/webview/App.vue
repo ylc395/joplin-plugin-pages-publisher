@@ -41,6 +41,10 @@ export default defineComponent({
   </Tabs>
 </template>
 <style scoped>
+:global(:root) {
+  overflow: auto;
+}
+
 .panel {
   padding: 10px;
 }

@@ -10,5 +10,5 @@ export interface Article {
   images: File[];
   attachments: File[];
   published: boolean;
-  sourceStatus: 'normal' | 'updated' | 'deleted';
+  sourceStatus: 'normal' | 'updated' | 'deleted' | null;
 }

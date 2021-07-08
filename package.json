@@ -47,6 +47,7 @@
     "yargs": "^16.2.0"
   },
   "dependencies": {
+    "@ant-design/icons-vue": "^6.0.1",
     "@types/fs-extra": "^9.0.11",
     "ajv": "^8.6.1",
     "ant-design-vue": "^2.2.1",

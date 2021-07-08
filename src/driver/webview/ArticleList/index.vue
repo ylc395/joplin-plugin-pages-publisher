@@ -1,44 +1,66 @@
 <script lang="ts">
-import { defineComponent, inject, ref } from 'vue';
-import { debounce } from 'lodash';
-import { Select, Button, Collapse } from 'ant-design-vue';
-import Card from './Card.vue';
-import { token, SearchedNote } from '../../../domain/service/ArticleService';
+import { computed, defineComponent, inject, ref } from 'vue';
+import { debounce, filter } from 'lodash';
+import { Select, Button, Collapse, Tag } from 'ant-design-vue';
+import CardList from './CardList.vue';
+import { token } from '../../../domain/service/ArticleService';
 
 export default defineComponent({
   components: {
     Select,
     SelectOption: Select.Option,
     Button,
-    Card,
+    CardList,
     Collapse,
     CollapsePanel: Collapse.Panel,
+    Tag,
   },
   setup() {
     const {
       searchedNotes,
       searchNotes,
-      addAsArticles,
+      addNote,
+      removeNote,
+      removeArticles,
+      submitAsArticles,
       unpublishedArticles,
       publishedArticles,
+      togglePublished,
+      selectAll,
+      selectedArticles,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(token)!;
-    const selectedItems = ref<SearchedNote[]>([]);
-    const addButtonLoading = ref(false);
-    const add = async () => {
-      addButtonLoading.value = true;
-      await addAsArticles(...selectedItems.value);
-      addButtonLoading.value = false;
-      selectedItems.value = [];
+    const selectedNoteIds = ref<string[]>([]);
+    const activePanels = ref(['published', 'unpublished']);
+    const submit = async () => {
+      await submitAsArticles();
+      selectedNoteIds.value = [];
+
+      if (!activePanels.value.includes('unpublished')) {
+        activePanels.value = [...activePanels.value, 'unpublished'];
+      }
     };
 
     return {
-      selectedItems,
+      selectedNoteIds,
       searchNotes: debounce(searchNotes, 500),
       searchedNotes,
       unpublishedArticles,
       publishedArticles,
-      add,
+      submit,
+      activePanels,
+      addNote,
+      removeNote,
+      removeArticles,
+      togglePublished,
+      selectAll,
+      selectedArticles,
+      selectedPublishedLength: computed(
+        () => filter(selectedArticles.value, { published: true }).length,
+      ),
+      selectedUnpublishedLength: computed(
+        () => filter(selectedArticles.value, { published: false }).length,
+      ),
     };
   },
 });
@@ -46,13 +68,15 @@ export default defineComponent({
 <template>
   <div class="search-area">
     <Select
-      v-model:value="selectedItems"
+      v-model:value="selectedNoteIds"
       class="select"
       size="large"
       placeholder="Search notes to add"
       mode="multiple"
       :filterOption="false"
       @search="searchNotes"
+      @select="addNote"
+      @deselect="removeNote"
     >
       <SelectOption
         v-for="note of searchedNotes"
@@ -61,16 +85,56 @@ export default defineComponent({
         :title="note.title"
       >
         {{ note.title }}
+        <Tag
+          v-if="note.status !== 'none'"
+          :color="note.status === 'unpublished' ? 'processing' : 'success'"
+          >{{ note.status }}</Tag
+        >
       </SelectOption>
     </Select>
-    <Button type="primary" class="button" size="large" @click="add"> Add </Button>
+    <Button type="primary" class="button" size="large" @click="submit"> Add </Button>
   </div>
-  <Collapse>
-    <CollapsePanel>
-      <Card v-for="article of unpublishedArticles" :key="article.noteId" :article="article" />
+  <div>
+    <Button danger :disabled="selectedArticles.length === 0" @click="removeArticles">
+      Remove{{ selectedArticles.length > 0 ? `(${selectedArticles.length})` : '' }}</Button
+    >
+  </div>
+  <Collapse v-model:activeKey="activePanels">
+    <CollapsePanel
+      key="published"
+      :header="`Published${publishedArticles.length > 0 ? `(${publishedArticles.length})` : ''}`"
+    >
+      <template #extra>
+        <Button size="small" type="primary" @click.stop="selectAll('published')">Select All</Button>
+        <Button
+          size="small"
+          type="primary"
+          :disabled="selectedPublishedLength === 0"
+          @click.stop="togglePublished('unpublished')"
+          >Unpublish{{ selectedPublishedLength > 0 ? `(${selectedPublishedLength})` : '' }}</Button
+        >
+      </template>
+      <CardList type="published" />
     </CollapsePanel>
-    <CollapsePanel>
-      <Card v-for="article of publishedArticles" :key="article.noteId" :article="article" />
+    <CollapsePanel
+      key="unpublished"
+      :header="`Unpublished${publishedArticles.length > 0 ? `(${publishedArticles.length})` : ''}`"
+    >
+      <template #extra>
+        <Button size="small" type="primary" @click.stop="selectAll('unpublished')"
+          >Select All</Button
+        >
+        <Button
+          type="primary"
+          size="small"
+          :disabled="selectedUnpublishedLength === 0"
+          @click.stop="togglePublished('published')"
+          >Publish{{
+            selectedUnpublishedLength > 0 ? `(${selectedUnpublishedLength})` : ''
+          }}</Button
+        >
+      </template>
+      <CardList type="unpublished" />
     </CollapsePanel>
   </Collapse>
 </template>
@@ -86,5 +150,9 @@ export default defineComponent({
 
 .button {
   width: fit-content;
+}
+
+:deep(.ant-collapse-content > .ant-collapse-content-box) {
+  padding: 0;
 }
 </style>
