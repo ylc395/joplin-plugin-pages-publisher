@@ -1,12 +1,13 @@
 <script lang="ts">
-import { token } from '../../../domain/service/ArticleService';
+import { Checkbox, Tag } from 'ant-design-vue';
 import { computed, defineComponent, inject, PropType } from 'vue';
+import dayjs from 'dayjs';
 import { CalendarOutlined, TagOutlined } from '@ant-design/icons-vue';
-import { Checkbox } from 'ant-design-vue';
-import { Article } from 'src/domain/model/Article';
+import { token } from '../../../domain/service/ArticleService';
+import { Article } from '../../../domain/model/Article';
 
 export default defineComponent({
-  components: { CalendarOutlined, TagOutlined, Checkbox },
+  components: { CalendarOutlined, TagOutlined, Checkbox, Tag },
   props: { type: { required: true, type: String as PropType<'published' | 'unpublished'> } },
   setup(props) {
     const { publishedArticles, unpublishedArticles, toggleArticleSelected, selectedArticles } =
@@ -20,44 +21,47 @@ export default defineComponent({
       isChecked(article: Article) {
         return computed(() => selectedArticles.value.includes(article));
       },
+      dayjs,
     };
   },
 });
 </script>
 <template>
-  <div v-for="article of articles" :key="article.noteId" class="card">
-    <div class="checkbox">
-      <Checkbox :checked="isChecked(article)" @change="toggleArticleSelected(article)" />
+  <div
+    v-for="article of articles"
+    :key="article.noteId"
+    class="flex border-b border-solid border-gray-200 last:border-b-0"
+  >
+    <div class="flex w-14 justify-center items-center flex-shrink-0">
+      <Checkbox :checked="isChecked(article).value" @change="toggleArticleSelected(article)" />
     </div>
-    <div>
-      <h2 class="card-title">{{ article.title }}</h2>
-      <div class="card-info">
-        <div><CalendarOutlined />{{ article.createdAt }} | {{ article.updatedAt }}</div>
-        <div>
-          <TagOutlined /><span v-for="tag of article.tags" :key="tag">{{ tag }}</span>
+    <div class="py-4">
+      <h2 class="font-normal text-base">{{ article.title }}</h2>
+      <div class="flex flex-col flex-wrap">
+        <div class="info">
+          <CalendarOutlined class="mr-2" />{{ dayjs(article.createdAt).format('YYYY-MM-DD HH:mm') }}
+          |
+          {{ dayjs(article.updatedAt).format('YYYY-MM-DD HH:mm') }}
+        </div>
+        <div v-if="article.tags.length > 0" class="info">
+          <TagOutlined class="mr-2" />
+          <div class="">
+            <Tag v-for="tag of article.tags" :key="tag">{{ tag }}</Tag>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
 <style scoped>
-.card {
+.info {
   display: flex;
-}
-
-.checkbox {
-  display: flex;
-  width: 60px;
-  justify-content: center;
+  margin-bottom: 4px;
   align-items: center;
+  color: rgb(153, 153, 153);
 }
 
-.card-title {
-  font-size: 16px;
-  font-weight: normal;
-}
-
-.card-info {
-  display: flex;
+.info:last-child {
+  margin-bottom: 0;
 }
 </style>

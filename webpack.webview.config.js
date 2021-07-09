@@ -1,4 +1,5 @@
 /* eslint-env node */
+const path = require('path');
 const { VueLoaderPlugin } = require('vue-loader');
 
 module.exports = {
@@ -7,7 +8,14 @@ module.exports = {
     rules: [
       {
         test: /\.css$/,
-        loader: ['style-loader', 'css-loader'],
+        loader: [
+          'style-loader',
+          'css-loader',
+          {
+            loader: 'postcss-loader',
+            options: { postcssOptions: { config: './src/driver/webview/postcss.config.js' } },
+          },
+        ],
       },
       {
         test: /\.vue$/,

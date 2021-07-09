@@ -66,10 +66,10 @@ export default defineComponent({
 });
 </script>
 <template>
-  <div class="search-area">
+  <div class="flex mb-2">
     <Select
       v-model:value="selectedNoteIds"
-      class="select"
+      class="flex-grow mr-3"
       size="large"
       placeholder="Search notes to add"
       mode="multiple"
@@ -92,10 +92,16 @@ export default defineComponent({
         >
       </SelectOption>
     </Select>
-    <Button type="primary" class="button" size="large" @click="submit"> Add </Button>
-  </div>
-  <div>
-    <Button danger :disabled="selectedArticles.length === 0" @click="removeArticles">
+    <Button
+      :disabled="selectedNoteIds.length === 0"
+      type="primary"
+      size="large"
+      class="mr-2"
+      @click="submit"
+    >
+      Add
+    </Button>
+    <Button size="large" danger :disabled="selectedArticles.length === 0" @click="removeArticles">
       Remove{{ selectedArticles.length > 0 ? `(${selectedArticles.length})` : '' }}</Button
     >
   </div>
@@ -105,7 +111,10 @@ export default defineComponent({
       :header="`Published${publishedArticles.length > 0 ? `(${publishedArticles.length})` : ''}`"
     >
       <template #extra>
-        <Button size="small" type="primary" @click.stop="selectAll('published')">Select All</Button>
+        <Button class="mr-1" size="small" type="primary" @click.stop="selectAll('published')"
+          >Select All</Button
+        >
+
         <Button
           size="small"
           type="primary"
@@ -118,10 +127,12 @@ export default defineComponent({
     </CollapsePanel>
     <CollapsePanel
       key="unpublished"
-      :header="`Unpublished${publishedArticles.length > 0 ? `(${publishedArticles.length})` : ''}`"
+      :header="`Unpublished${
+        unpublishedArticles.length > 0 ? `(${publishedArticles.length})` : ''
+      }`"
     >
       <template #extra>
-        <Button size="small" type="primary" @click.stop="selectAll('unpublished')"
+        <Button class="mr-1" size="small" type="primary" @click.stop="selectAll('unpublished')"
           >Select All</Button
         >
         <Button
@@ -139,19 +150,6 @@ export default defineComponent({
   </Collapse>
 </template>
 <style scoped>
-.search-area {
-  display: flex;
-}
-
-.select {
-  flex-grow: 1;
-  margin-right: 10px;
-}
-
-.button {
-  width: fit-content;
-}
-
 :deep(.ant-collapse-content > .ant-collapse-content-box) {
   padding: 0;
 }
