@@ -22,12 +22,8 @@ export default defineComponent({
       }),
     );
     const save = async () => {
-      try {
-        await validate();
-        saveSite(modelRef.value);
-      } catch {
-        return;
-      }
+      await validate();
+      saveSite(modelRef.value);
     };
     const canSave = computed(() => {
       return (
@@ -38,7 +34,7 @@ export default defineComponent({
     return {
       themes,
       validateInfos,
-      modelRef: computed(() => modelRef.value || {}),
+      modelRef,
       save,
       canSave,
     };
@@ -47,7 +43,7 @@ export default defineComponent({
 </script>
 <template>
   <div>
-    <Form>
+    <Form :labelCol="{ span: 6 }">
       <FormItem label="Site Name" v-bind="validateInfos.name">
         <Input v-model:value="modelRef.name" />
       </FormItem>

@@ -1,6 +1,6 @@
 import { chunk } from 'lodash';
 import slugify from 'slugify';
-import { computed, reactive, readonly, Ref, ref } from 'vue';
+import { computed, readonly, Ref, ref } from 'vue';
 import type { Article } from './Article';
 import type { Site } from './Site';
 
@@ -16,6 +16,8 @@ export interface Field {
     | 'multiple-select'
     | 'textarea'
     | 'radio'
+    | 'checkbox'
+    | 'date'
     | 'switch'
     | 'image-picker'
     | 'number';
@@ -39,6 +41,8 @@ export const FIELD_SCHEMA = {
         'switch',
         'image-picker',
         'number',
+        'checkbox',
+        'date',
       ],
     },
   },
@@ -58,10 +62,10 @@ export abstract class Page {
   abstract readonly route: Ref<string>; // url of this page
   protected abstract readonly defaultFields: Readonly<Field[]>;
   protected abstract readonly defaultVars: Readonly<Vars>; // vars provide by this plugin. can not be updated by user
-  protected readonly fieldVars: Vars; // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
-  constructor(protected readonly site: Site, fieldVars: Vars) {
-    this.fieldVars = reactive(fieldVars);
-  }
+  constructor(
+    protected readonly site: Site,
+    readonly fieldVars: Vars, // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
+  ) {}
 
   get fields() {
     const { themeConfig } = this.site;
@@ -89,26 +93,12 @@ export class HomePage extends Page {
 export class ArticlePage extends Page {
   static readonly pageName = ARTICLE_PAGE_NAME;
   readonly pageId = this.article ? ArticlePage.getPageId(this.article) : ArticlePage.pageName;
-  readonly defaultFields = this.article
-    ? ([
-        { name: 'url', required: true, defaultValue: slugify(this.article.title) },
-        { name: 'createdAt', required: true, defaultValue: this.article.createdAt },
-        { name: 'updatedAt', required: true, defaultValue: this.article.updatedAt },
-        {
-          name: 'tags',
-          defaultValue: this.article.tags,
-          inputType: 'multiple-select',
-        },
-      ] as const)
-    : [];
+  protected readonly defaultFields = [] as const;
   readonly defaultVars: Vars = {
     article: this.article,
   };
   readonly route = computed(() => {
-    const path = [
-      encodeURIComponent(this.site.articlePagePrefix),
-      encodeURIComponent(this.fieldVars.value.url),
-    ].join('/');
+    const path = [encodeURIComponent(this.site.articlePagePrefix), ':article-url'].join('/');
 
     return `/${path}`;
   });

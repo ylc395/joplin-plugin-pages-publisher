@@ -1,9 +1,11 @@
 <script lang="ts">
 import { computed, defineComponent, inject, ref } from 'vue';
 import { debounce, filter } from 'lodash';
-import { Select, Button, Collapse, Tag } from 'ant-design-vue';
+import { Select, Button, Collapse, Tag, Modal } from 'ant-design-vue';
 import CardList from './CardList.vue';
+import Edit from './Edit.vue';
 import { token } from '../../../domain/service/ArticleService';
+import { useEdit } from './useEdit';
 
 export default defineComponent({
   components: {
@@ -14,6 +16,8 @@ export default defineComponent({
     Collapse,
     CollapsePanel: Collapse.Panel,
     Tag,
+    Modal,
+    Edit,
   },
   setup() {
     const {
@@ -30,6 +34,7 @@ export default defineComponent({
       selectedArticles,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(token)!;
+    const { isEditing } = useEdit();
     const selectedNoteIds = ref<string[]>([]);
     const activePanels = ref(['published', 'unpublished']);
     const submit = async () => {
@@ -43,6 +48,7 @@ export default defineComponent({
 
     return {
       selectedNoteIds,
+      isEditing,
       searchNotes: debounce(searchNotes, 500),
       searchedNotes,
       unpublishedArticles,
@@ -55,6 +61,7 @@ export default defineComponent({
       togglePublished,
       selectAll,
       selectedArticles,
+      getModalContainer: () => document.querySelector('#joplin-plugin-content'),
       selectedPublishedLength: computed(
         () => filter(selectedArticles.value, { published: true }).length,
       ),
@@ -78,12 +85,7 @@ export default defineComponent({
       @select="addNote"
       @deselect="removeNote"
     >
-      <SelectOption
-        v-for="note of searchedNotes"
-        :key="note.id"
-        :disabled="note.status !== 'none'"
-        :title="note.title"
-      >
+      <SelectOption v-for="note of searchedNotes" :key="note.id" :disabled="note.status !== 'none'">
         {{ note.title }}
         <Tag
           v-if="note.status !== 'none'"
@@ -148,6 +150,15 @@ export default defineComponent({
       <CardList type="unpublished" />
     </CollapsePanel>
   </Collapse>
+  <Modal
+    v-model:visible="isEditing"
+    :getContainer="getModalContainer"
+    :closable="false"
+    :maskClosable="false"
+    :footer="null"
+  >
+    <Edit />
+  </Modal>
 </template>
 <style scoped>
 :deep(.ant-collapse-content > .ant-collapse-content-box) {

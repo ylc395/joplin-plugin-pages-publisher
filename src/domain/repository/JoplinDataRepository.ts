@@ -37,4 +37,12 @@ export class JoplinDataRepository {
 
     return files;
   }
+
+  async getNoteContentOf(noteId: string) {
+    const { body } = await this.joplinFetcher.fetchData<{ body: string }>(['notes', noteId], {
+      fields: 'body',
+    });
+
+    return body;
+  }
 }

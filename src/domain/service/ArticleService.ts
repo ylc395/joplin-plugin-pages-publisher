@@ -1,10 +1,11 @@
 import { ref, Ref, computed, InjectionKey, reactive } from 'vue';
-import { find, filter, pull, negate, map, uniq, remove } from 'lodash';
+import { find, filter, pull, negate, map, uniq, remove, findIndex } from 'lodash';
 import { singleton } from 'tsyringe';
 import type { Note, File } from '../model/JoplinData';
 import type { Article } from '../model/Article';
 import { JoplinDataRepository } from '../repository/JoplinDataRepository';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
+import slugify from 'slugify';
 
 interface SearchedNote extends Note {
   status: 'none' | 'published' | 'unpublished';
@@ -60,7 +61,7 @@ export class ArticleService {
   }
 
   private saveArticles() {
-    this.pluginDataRepository.saveArticles(this.articles);
+    return this.pluginDataRepository.saveArticles(this.articles);
   }
 
   async searchNotes(keyword: string) {
@@ -78,7 +79,6 @@ export class ArticleService {
 
     return {
       published: false,
-      sourceStatus: null,
       noteId: note.id,
       title: note.title,
       createdAt: note.user_created_time,
@@ -86,11 +86,15 @@ export class ArticleService {
       tags: map(tags, 'title'),
       attachments: [],
       images: [],
+      url: slugify(note.title),
     };
   }
 
-  private async loadResourceOf(article: Article) {
-    const files = await this.joplinDataRepository.getFilesOf(article.noteId);
+  async loadArticle(article: Article) {
+    const [files, noteContent] = await Promise.all([
+      this.joplinDataRepository.getFilesOf(article.noteId),
+      this.joplinDataRepository.getNoteContentOf(article.noteId),
+    ]);
 
     const isImage = ({ contentType }: File) => {
       return contentType.startsWith('image');
@@ -98,6 +102,8 @@ export class ArticleService {
 
     article.images = files.filter(isImage);
     article.attachments = files.filter(negate(isImage));
+    article.noteContent = noteContent;
+    article.content = article.content ?? noteContent;
   }
 
   addNote(noteId: string) {
@@ -154,6 +160,22 @@ export class ArticleService {
   selectAll(status: 'published' | 'unpublished') {
     const articles =
       status === 'published' ? this.publishedArticles.value : this.unpublishedArticles.value;
+
     this.selectedArticles.value = uniq(this.selectedArticles.value.concat(articles));
+  }
+
+  saveArticle(article: Partial<Article>) {
+    if (!article.noteId) {
+      throw new Error('no article noteId when saving');
+    }
+
+    const index = findIndex(this.articles, { noteId: article.noteId });
+
+    if (!this.articles[index]) {
+      throw new Error('no article when saving');
+    }
+
+    Object.assign(this.articles[index], article);
+    return this.saveArticles();
   }
 }

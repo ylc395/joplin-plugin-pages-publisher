@@ -1,10 +1,11 @@
 <script lang="ts">
 import { Checkbox, Tag } from 'ant-design-vue';
 import { computed, defineComponent, inject, PropType } from 'vue';
-import dayjs from 'dayjs';
+import moment from 'moment';
 import { CalendarOutlined, TagOutlined } from '@ant-design/icons-vue';
 import { token } from '../../../domain/service/ArticleService';
 import { Article } from '../../../domain/model/Article';
+import { token as editToken } from './useEdit';
 
 export default defineComponent({
   components: { CalendarOutlined, TagOutlined, Checkbox, Tag },
@@ -13,6 +14,8 @@ export default defineComponent({
     const { publishedArticles, unpublishedArticles, toggleArticleSelected, selectedArticles } =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(token)!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const { edit } = inject(editToken)!;
     const articles = props.type === 'published' ? publishedArticles : unpublishedArticles;
 
     return {
@@ -21,7 +24,8 @@ export default defineComponent({
       isChecked(article: Article) {
         return computed(() => selectedArticles.value.includes(article));
       },
-      dayjs,
+      moment,
+      edit,
     };
   },
 });
@@ -35,13 +39,15 @@ export default defineComponent({
     <div class="flex w-14 justify-center items-center flex-shrink-0">
       <Checkbox :checked="isChecked(article).value" @change="toggleArticleSelected(article)" />
     </div>
-    <div class="py-4">
+    <div class="py-4 cursor-pointer flex-shrink" @click="edit(article)">
       <h2 class="font-normal text-base">{{ article.title }}</h2>
       <div class="flex flex-col flex-wrap">
         <div class="info">
-          <CalendarOutlined class="mr-2" />{{ dayjs(article.createdAt).format('YYYY-MM-DD HH:mm') }}
+          <CalendarOutlined class="mr-2" />{{
+            moment(article.createdAt).format('YYYY-MM-DD HH:mm')
+          }}
           |
-          {{ dayjs(article.updatedAt).format('YYYY-MM-DD HH:mm') }}
+          {{ moment(article.updatedAt).format('YYYY-MM-DD HH:mm') }}
         </div>
         <div v-if="article.tags.length > 0" class="info">
           <TagOutlined class="mr-2" />

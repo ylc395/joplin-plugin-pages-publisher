@@ -67,7 +67,7 @@ export class PageService {
     this.pageSingletons.value = pages;
   }
 
-  createArticlePage(article: Article) {
+  private createArticlePage(article: Article) {
     const { site } = this.siteService;
 
     if (!site.value) {
