@@ -1,5 +1,5 @@
 <script lang="ts">
-import { computed, defineComponent, inject, reactive } from 'vue';
+import { computed, defineComponent, inject, reactive, Ref } from 'vue';
 import { Form, Select, Input, DatePicker, Button, Alert } from 'ant-design-vue';
 import { token as editToken } from './useEdit';
 import { cloneDeep, mapValues } from 'lodash';
@@ -20,25 +20,35 @@ export default defineComponent({
   },
   setup() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const { article, stopEditing, saveArticle } = inject(editToken)!;
-    const { validateInfos, modelRef, validate } = Form.useForm(
-      computed(() => {
-        if (!article.value) {
-          return {};
-        }
+    const { article, stopEditing, saveArticle, isValidUrl } = inject(editToken)!;
+    const modelRef = computed(() => {
+      if (!article.value) {
+        return {} as Record<string, any>;
+      }
 
-        return reactive(
-          mapValues(cloneDeep(article.value), (value, key) => {
-            if (['createdAt', 'updatedAt'].includes(key)) {
-              return moment(value as number);
-            }
+      return reactive(
+        mapValues(cloneDeep(article.value), (value, key) => {
+          if (['createdAt', 'updatedAt'].includes(key)) {
+            return moment(value as number);
+          }
 
-            return value;
-          }),
-        );
-      }),
+          return value;
+        }),
+      );
+    });
+
+    const { validateInfos, validate } = Form.useForm(
+      modelRef,
       reactive({
-        url: [{ required: true }],
+        url: [
+          { required: true },
+          {
+            validator: (rule: unknown, value: string) =>
+              isValidUrl(value, modelRef.value.noteId)
+                ? Promise.resolve()
+                : Promise.reject('duplicated url'),
+          },
+        ],
         title: [{ required: true }],
         content: [{ required: true }],
         createdAt: [{ required: true }],
@@ -72,7 +82,7 @@ export default defineComponent({
       message="Any modification here won't affect origin note."
       class="mb-4"
     />
-    <Form :labelCol="{ span: 6 }">
+    <Form v-if="modelRef" :labelCol="{ span: 6 }">
       <FormItem label="Url" v-bind="validateInfos.url">
         <Input v-model:value="modelRef.url" />
       </FormItem>

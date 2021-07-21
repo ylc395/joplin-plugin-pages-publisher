@@ -86,7 +86,7 @@ export class ArticleService {
       tags: map(tags, 'title'),
       attachments: [],
       images: [],
-      url: slugify(note.title),
+      url: slugify(note.title, { lower: true }) || 'untitled',
     };
   }
 
@@ -124,7 +124,15 @@ export class ArticleService {
     const articles = await Promise.all(
       this.notesToBeAdded.value.map(this.noteToArticle.bind(this)),
     );
-    this.articles.push(...articles);
+
+    for (const article of articles) {
+      if (!this.isValidUrl(article.url)) {
+        article.url = this.getValidUrl(article.url);
+      }
+
+      this.articles.push(article);
+    }
+
     this.notesToBeAdded.value = [];
     await this.saveArticles();
   }
@@ -177,5 +185,27 @@ export class ArticleService {
 
     Object.assign(this.articles[index], article);
     return this.saveArticles();
+  }
+
+  isValidUrl(newUrl: string, noteId?: string) {
+    for (const article of this.articles) {
+      if (article.noteId !== noteId && article.url === newUrl) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private getValidUrl(baseUrl: string) {
+    let url = baseUrl;
+    let index = 1;
+
+    while (!this.isValidUrl(url)) {
+      url = `${baseUrl}-${index}`;
+      index++;
+    }
+
+    return url;
   }
 }

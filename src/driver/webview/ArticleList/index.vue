@@ -130,7 +130,7 @@ export default defineComponent({
     <CollapsePanel
       key="unpublished"
       :header="`Unpublished${
-        unpublishedArticles.length > 0 ? `(${publishedArticles.length})` : ''
+        unpublishedArticles.length > 0 ? `(${unpublishedArticles.length})` : ''
       }`"
     >
       <template #extra>

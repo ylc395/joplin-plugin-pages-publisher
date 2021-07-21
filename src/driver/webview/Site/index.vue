@@ -9,10 +9,12 @@ export default defineComponent({
   setup() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { site, themes, saveSite } = inject(token)!;
-    const { validateInfos, modelRef, validate } = Form.useForm(
-      computed(() => {
-        return site.value ? reactive(cloneDeep(site.value)) : {};
-      }),
+    const modelRef = computed(() => {
+      return (site.value ? reactive(cloneDeep(site.value)) : {}) as Record<string, any>;
+    });
+
+    const { validateInfos, validate } = Form.useForm(
+      modelRef,
       reactive({
         name: [{ required: true }],
         themeName: [{ required: true }],
