@@ -1,9 +1,9 @@
 <script lang="ts">
-import { computed, defineComponent, inject, reactive, Ref } from 'vue';
+import { computed, defineComponent, inject, reactive } from 'vue';
 import { Form, Select, Input, DatePicker, Button, Alert } from 'ant-design-vue';
-import { token as editToken } from './useEdit';
-import { cloneDeep, mapValues } from 'lodash';
 import moment from 'moment';
+import { cloneDeep, mapValues } from 'lodash';
+import { token as editToken } from './useEdit';
 import type { Article } from '../../../domain/model/Article';
 
 export default defineComponent({
@@ -23,6 +23,7 @@ export default defineComponent({
     const { article, stopEditing, saveArticle, isValidUrl } = inject(editToken)!;
     const modelRef = computed(() => {
       if (!article.value) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return {} as Record<string, any>;
       }
 

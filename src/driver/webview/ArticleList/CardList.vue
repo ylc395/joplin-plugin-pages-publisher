@@ -7,10 +7,12 @@ import {
   TagOutlined,
   EditOutlined,
   FileSyncOutlined,
+  DiffOutlined,
 } from '@ant-design/icons-vue';
 import { token } from '../../../domain/service/ArticleService';
 import { Article } from '../../../domain/model/Article';
 import { token as editToken } from './useEdit';
+import { token as diffToken } from './useDiff';
 
 export default defineComponent({
   components: {
@@ -22,6 +24,7 @@ export default defineComponent({
     Button,
     EditOutlined,
     FileSyncOutlined,
+    DiffOutlined,
   },
   props: { type: { required: true, type: String as PropType<'published' | 'unpublished'> } },
   setup(props) {
@@ -36,6 +39,8 @@ export default defineComponent({
       inject(token)!;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { edit } = inject(editToken)!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const { viewDiff } = inject(diffToken)!;
     const articles = props.type === 'published' ? publishedArticles : unpublishedArticles;
 
     return {
@@ -47,6 +52,7 @@ export default defineComponent({
       moment,
       edit,
       updateArticle,
+      viewDiff,
     };
   },
 });
@@ -83,16 +89,20 @@ export default defineComponent({
         <template #icon><EditOutlined /></template>
         Edit
       </Button>
-      <Tooltip title="Overwrite article's content with Joplin note's current content">
-        <Button
-          v-if="article.noteContent !== article.content"
-          type="text"
-          @click="updateArticle(article)"
-        >
-          <template #icon><FileSyncOutlined /></template>
-          Sync with Joplin
-        </Button>
-      </Tooltip>
+      <template v-if="article.noteContent !== article.content">
+        <Tooltip title="View diff between article's content and Joplin note's content">
+          <Button type="text" @click="viewDiff(article)">
+            <template #icon><DiffOutlined /></template>
+            View Diff
+          </Button>
+        </Tooltip>
+        <Tooltip title="Overwrite article's content with Joplin note's current content">
+          <Button type="text" @click="updateArticle(article)">
+            <template #icon><FileSyncOutlined /></template>
+            Sync with Joplin
+          </Button>
+        </Tooltip>
+      </template>
     </div>
   </div>
 </template>

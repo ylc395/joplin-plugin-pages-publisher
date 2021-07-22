@@ -4,8 +4,10 @@ import { debounce, filter } from 'lodash';
 import { Select, Button, Collapse, Tag, Modal } from 'ant-design-vue';
 import CardList from './CardList.vue';
 import Edit from './Edit.vue';
+import DiffView from './DiffView.vue';
 import { token } from '../../../domain/service/ArticleService';
 import { useEdit } from './useEdit';
+import { useDiff } from './useDiff';
 
 export default defineComponent({
   components: {
@@ -18,6 +20,7 @@ export default defineComponent({
     Tag,
     Modal,
     Edit,
+    DiffView,
   },
   setup() {
     const {
@@ -45,6 +48,7 @@ export default defineComponent({
         activePanels.value = [...activePanels.value, 'unpublished'];
       }
     };
+    const { isViewing: isViewingDiff, stopDiff: stopViewingDiff } = useDiff();
 
     return {
       selectedNoteIds,
@@ -68,6 +72,8 @@ export default defineComponent({
       selectedUnpublishedLength: computed(
         () => filter(selectedArticles.value, { published: false }).length,
       ),
+      isViewingDiff,
+      stopViewingDiff,
     };
   },
 });
@@ -158,6 +164,15 @@ export default defineComponent({
     :footer="null"
   >
     <Edit />
+  </Modal>
+  <Modal
+    v-model:visible="isViewingDiff"
+    :getContainer="getModalContainer"
+    :maskClosable="false"
+    :footer="null"
+    @cancel="stopViewingDiff"
+  >
+    <DiffView />
   </Modal>
 </template>
 <style scoped>
