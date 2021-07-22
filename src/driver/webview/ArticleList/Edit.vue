@@ -99,7 +99,7 @@ export default defineComponent({
         <DatePicker v-model:value="modelRef.updatedAt" showTime :allowClear="false" />
       </FormItem>
       <FormItem label="Tags" v-bind="validateInfos.tags">
-        <Select v-model:value="modelRef.tags" mode="multiple">
+        <Select v-model:value="modelRef.tags" mode="tags">
           <template v-if="article && article.tags">
             <SelectOption v-for="tag of article.tags" :key="tag">{{ tag }}</SelectOption>
           </template>
