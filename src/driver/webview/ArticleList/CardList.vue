@@ -1,17 +1,37 @@
 <script lang="ts">
-import { Checkbox, Tag } from 'ant-design-vue';
+import { Checkbox, Tag, Button, Tooltip } from 'ant-design-vue';
 import { computed, defineComponent, inject, PropType } from 'vue';
 import moment from 'moment';
-import { CalendarOutlined, TagOutlined } from '@ant-design/icons-vue';
+import {
+  CalendarOutlined,
+  TagOutlined,
+  EditOutlined,
+  FileSyncOutlined,
+} from '@ant-design/icons-vue';
 import { token } from '../../../domain/service/ArticleService';
 import { Article } from '../../../domain/model/Article';
 import { token as editToken } from './useEdit';
 
 export default defineComponent({
-  components: { CalendarOutlined, TagOutlined, Checkbox, Tag },
+  components: {
+    CalendarOutlined,
+    TagOutlined,
+    Checkbox,
+    Tag,
+    Tooltip,
+    Button,
+    EditOutlined,
+    FileSyncOutlined,
+  },
   props: { type: { required: true, type: String as PropType<'published' | 'unpublished'> } },
   setup(props) {
-    const { publishedArticles, unpublishedArticles, toggleArticleSelected, selectedArticles } =
+    const {
+      publishedArticles,
+      unpublishedArticles,
+      toggleArticleSelected,
+      selectedArticles,
+      updateArticle,
+    } =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(token)!;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -26,6 +46,7 @@ export default defineComponent({
       },
       moment,
       edit,
+      updateArticle,
     };
   },
 });
@@ -39,7 +60,7 @@ export default defineComponent({
     <div class="flex w-14 justify-center items-center flex-shrink-0">
       <Checkbox :checked="isChecked(article).value" @change="toggleArticleSelected(article)" />
     </div>
-    <div class="py-4 cursor-pointer flex-shrink" @click="edit(article)">
+    <div class="py-4 flex-grow">
       <h2 class="font-normal text-base">{{ article.title }}</h2>
       <div class="flex flex-col flex-wrap">
         <div class="info">
@@ -56,6 +77,22 @@ export default defineComponent({
           </div>
         </div>
       </div>
+    </div>
+    <div class="flex items-start justify-center flex-col w-40">
+      <Button type="text" @click="edit(article)">
+        <template #icon><EditOutlined /></template>
+        Edit
+      </Button>
+      <Tooltip title="Overwrite article's content with Joplin note's current content">
+        <Button
+          v-if="article.noteContent !== article.content"
+          type="text"
+          @click="updateArticle(article)"
+        >
+          <template #icon><FileSyncOutlined /></template>
+          Sync with Joplin
+        </Button>
+      </Tooltip>
     </div>
   </div>
 </template>

@@ -57,6 +57,17 @@ export class ArticleService {
 
   private async init() {
     const articles = await this.pluginDataRepository.getArticles();
+
+    if (articles) {
+      const contents = await Promise.all(
+        articles.map(({ noteId }) => this.joplinDataRepository.getNoteContentOf(noteId)),
+      );
+
+      for (let i = 0; i < contents.length; i++) {
+        articles[i].noteContent = contents[i];
+      }
+    }
+
     this.articles.push(...(articles ?? []));
   }
 
@@ -75,7 +86,10 @@ export class ArticleService {
   }
 
   private async noteToArticle(note: Note): Promise<Article> {
-    const tags = await this.joplinDataRepository.getTagsOf(note.id);
+    const [tags, noteContent] = await Promise.all([
+      this.joplinDataRepository.getTagsOf(note.id),
+      this.joplinDataRepository.getNoteContentOf(note.id),
+    ]);
 
     return {
       published: false,
@@ -84,8 +98,8 @@ export class ArticleService {
       createdAt: note.user_created_time,
       updatedAt: note.user_updated_time,
       tags: map(tags, 'title'),
-      attachments: [],
-      images: [],
+      noteContent,
+      content: noteContent,
       url: slugify(note.title, { lower: true }) || 'untitled',
     };
   }
@@ -195,6 +209,15 @@ export class ArticleService {
     }
 
     return true;
+  }
+
+  updateArticle(article: Article) {
+    if (article.noteContent === undefined) {
+      throw new Error('no noteContent when updating');
+    }
+
+    article.content = article.noteContent;
+    article.updatedAt = Date.now();
   }
 
   private getValidUrl(baseUrl: string) {
