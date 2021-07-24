@@ -14,6 +14,7 @@ export interface JoplinResponse<T> {
 }
 
 declare const webviewApi: {
+  // warning: even if this method returns promise, it is still a sync method
   postMessage: <T>(payload: JoplinDataRequest) => Promise<T>;
 };
 

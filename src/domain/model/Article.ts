@@ -12,5 +12,5 @@ export interface Article {
   images?: File[];
   attachments?: File[];
   published: boolean;
-  sourceStatus?: 'same' | 'diff' | 'deleted';
+  coverImg: string | null;
 }

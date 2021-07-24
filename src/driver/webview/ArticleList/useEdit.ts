@@ -1,4 +1,5 @@
-import { ref, provide, InjectionKey, inject } from 'vue';
+import { ref, provide, InjectionKey, inject, computed } from 'vue';
+import { bytesToBase64 } from 'byte-base64';
 import type { Article } from '../../../domain/model/Article';
 import { token as articleToken } from '../../../domain/service/ArticleService';
 
@@ -9,16 +10,33 @@ export function useEdit() {
   const isEditing = ref(false);
   const article = ref<Article | null>(null);
   const edit = async (_article: Article) => {
+    isEditing.value = true;
     await loadArticle(_article);
     article.value = _article;
-    isEditing.value = true;
   };
   const stopEditing = () => {
     isEditing.value = false;
     article.value = null;
   };
+  const images = computed(() => {
+    return (
+      article.value?.images?.map((img) => ({
+        name: img.attachmentFilename,
+        url: `data:${img.contentType};base64,${bytesToBase64(img.body)}`,
+      })) || []
+    );
+  });
 
-  const service = { isEditing, article, edit, stopEditing, saveArticle, isValidUrl, updateArticle };
+  const service = {
+    isEditing,
+    article,
+    edit,
+    stopEditing,
+    saveArticle,
+    isValidUrl,
+    updateArticle,
+    images,
+  };
 
   provide(token, service);
   return service;

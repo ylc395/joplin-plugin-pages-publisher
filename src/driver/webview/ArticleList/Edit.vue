@@ -1,6 +1,6 @@
 <script lang="ts">
 import { computed, defineComponent, inject, reactive } from 'vue';
-import { Form, Select, Input, DatePicker, Button, Alert } from 'ant-design-vue';
+import { Form, Select, Input, DatePicker, Button, Alert, Image, Spin } from 'ant-design-vue';
 import moment from 'moment';
 import { cloneDeep, mapValues } from 'lodash';
 import { token as editToken } from './useEdit';
@@ -17,10 +17,12 @@ export default defineComponent({
     DatePicker,
     Button,
     Alert,
+    Image,
+    Spin,
   },
   setup() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const { article, stopEditing, saveArticle, isValidUrl } = inject(editToken)!;
+    const { article, stopEditing, saveArticle, isValidUrl, images } = inject(editToken)!;
     const modelRef = computed(() => {
       if (!article.value) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -71,7 +73,14 @@ export default defineComponent({
       stopEditing();
     };
 
-    return { modelRef, validateInfos, article, save, stopEditing };
+    return {
+      modelRef,
+      validateInfos,
+      article,
+      images,
+      save,
+      stopEditing,
+    };
   },
 });
 </script>
@@ -83,32 +92,42 @@ export default defineComponent({
       message="Any modification here won't affect origin note."
       class="mb-4"
     />
-    <Form v-if="modelRef" :labelCol="{ span: 6 }">
-      <FormItem label="Url" v-bind="validateInfos.url">
-        <Input v-model:value="modelRef.url" />
-      </FormItem>
-      <FormItem label="Title" v-bind="validateInfos.title">
-        <Input v-model:value="modelRef.title" />
-      </FormItem>
-      <FormItem label="Content" v-bind="validateInfos.content">
-        <Textarea v-model:value="modelRef.content" :rows="10" showCount />
-      </FormItem>
-      <FormItem label="Created At" v-bind="validateInfos.createdAt">
-        <DatePicker v-model:value="modelRef.createdAt" showTime :allowClear="false" />
-      </FormItem>
-      <FormItem label="Updated At" v-bind="validateInfos.updatedAt">
-        <DatePicker v-model:value="modelRef.updatedAt" showTime :allowClear="false" />
-      </FormItem>
-      <FormItem label="Tags" v-bind="validateInfos.tags">
-        <Select v-model:value="modelRef.tags" mode="tags">
-          <template v-if="article && article.tags">
-            <SelectOption v-for="tag of article.tags" :key="tag">{{ tag }}</SelectOption>
-          </template>
-        </Select>
-      </FormItem>
-    </Form>
+    <Spin :spinning="!article">
+      <Form v-if="modelRef" :labelCol="{ span: 6 }">
+        <FormItem label="Url" v-bind="validateInfos.url">
+          <Input v-model:value="modelRef.url" />
+        </FormItem>
+        <FormItem label="Title" v-bind="validateInfos.title">
+          <Input v-model:value="modelRef.title" />
+        </FormItem>
+        <FormItem label="Content" v-bind="validateInfos.content">
+          <Textarea v-model:value="modelRef.content" :rows="10" showCount />
+        </FormItem>
+        <FormItem label="Created At" v-bind="validateInfos.createdAt">
+          <DatePicker v-model:value="modelRef.createdAt" showTime :allowClear="false" />
+        </FormItem>
+        <FormItem label="Updated At" v-bind="validateInfos.updatedAt">
+          <DatePicker v-model:value="modelRef.updatedAt" showTime :allowClear="false" />
+        </FormItem>
+        <FormItem label="Tags">
+          <Select v-model:value="modelRef.tags" mode="tags">
+            <template v-if="article && article.tags">
+              <SelectOption v-for="tag of article.tags" :key="tag">{{ tag }}</SelectOption>
+            </template>
+          </Select>
+        </FormItem>
+        <FormItem label="Cover Image">
+          <Select v-model:value="modelRef.coverImg" optionLabelProp="value">
+            <SelectOption v-for="img of images" :key="img.name" :title="img.name">
+              <Image width="50px" height="50px" :src="img.url" @click.stop />
+              {{ img.name }}
+            </SelectOption>
+          </Select>
+        </FormItem>
+      </Form>
+    </Spin>
     <div class="text-right">
-      <Button type="primary" class="mr-2" @click="save">Save</Button>
+      <Button type="primary" class="mr-2" :disabled="!article" @click="save">Save</Button>
       <Button @click="stopEditing">Cancel</Button>
     </div>
   </div>

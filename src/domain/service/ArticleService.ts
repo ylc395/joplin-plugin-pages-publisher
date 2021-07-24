@@ -101,6 +101,7 @@ export class ArticleService {
       noteContent,
       content: noteContent,
       url: slugify(note.title, { lower: true }) || 'untitled',
+      coverImg: null,
     };
   }
 
