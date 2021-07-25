@@ -4,7 +4,8 @@ import { container, InjectionToken } from 'tsyringe';
 import { toRaw } from 'vue';
 import type { Article } from '../model/Article';
 import type { Vars } from '../model/Page';
-import { defaultTheme, Site, Theme, THEME_SCHEMA } from '../model/Site';
+import { Site } from '../model/Site';
+import { defaultTheme, Theme, THEME_SCHEMA } from '../model/Theme';
 import type { PagesFieldVars } from '../service/PageService';
 
 const validator = new Ajv();
@@ -75,6 +76,7 @@ export class PluginDataRepository {
 
     return theme;
   }
+
   async getThemes() {
     const themes = await this.themeFetcher.fetchAll();
 

@@ -10,7 +10,7 @@ export default defineComponent({
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { site, themes, saveSite } = inject(token)!;
     const modelRef = computed(() => {
-      return (site.value ? reactive(cloneDeep(site.value)) : {}) as Record<string, any>;
+      return (site.value ? reactive(cloneDeep(site.value)) : {}) as Record<string, unknown>;
     });
 
     const { validateInfos, validate } = Form.useForm(
@@ -18,9 +18,6 @@ export default defineComponent({
       reactive({
         name: [{ required: true }],
         themeName: [{ required: true }],
-        articlePagePrefix: [{ required: true }],
-        archivesPagePrefix: [{ required: true }],
-        tagPagePrefix: [{ required: true }],
       }),
     );
     const save = async () => {
@@ -59,15 +56,6 @@ export default defineComponent({
         <Select v-model:value="modelRef.themeName">
           <SelectOption v-for="{ name } of themes" :key="name">{{ name }}</SelectOption>
         </Select>
-      </FormItem>
-      <FormItem label="Article Pages Path" v-bind="validateInfos.articlePagePrefix">
-        <Input v-model:value="modelRef.articlePagePrefix" />
-      </FormItem>
-      <FormItem label="Archives Pages Path" v-bind="validateInfos.archivesPagePrefix">
-        <Input v-model:value="modelRef.archivesPagePrefix" />
-      </FormItem>
-      <FormItem label="Tag Pages Path" v-bind="validateInfos.tagPagePrefix">
-        <Input v-model:value="modelRef.tagPagePrefix" />
       </FormItem>
     </Form>
     <div class="buttons">

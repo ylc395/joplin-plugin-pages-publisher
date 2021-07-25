@@ -1,5 +1,5 @@
 import joplin from 'api';
-import type { Db } from './driver/db';
+import { Db } from './driver/db';
 import type { DbReadRequest, DbWriteRequest } from './driver/db/webviewApi';
 import type { JoplinDataRequest } from './driver/joplinApi';
 import type {
@@ -8,8 +8,10 @@ import type {
 } from './driver/themeLoader/webviewApi';
 import { loadTheme, loadThemes } from './driver/themeLoader';
 
-export default (db: Db) =>
-  (
+export default () => {
+  const db = new Db();
+
+  return (
     request:
       | DbReadRequest
       | DbWriteRequest
@@ -32,3 +34,4 @@ export default (db: Db) =>
         break;
     }
   };
+};

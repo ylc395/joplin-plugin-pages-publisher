@@ -1,6 +1,7 @@
 import { container, singleton } from 'tsyringe';
 import { Ref, ref, watchEffect, InjectionKey } from 'vue';
-import { Site, Theme, defaultSite, DEFAULT_THEME } from '../model/Site';
+import { Theme, DEFAULT_THEME_NAME } from '../model/Theme';
+import { Site, defaultSite } from '../model/Site';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { ArticleService } from './ArticleService';
 
@@ -15,7 +16,10 @@ export class SiteService {
     this.init();
   }
   private async init() {
-    this.site.value = { ...defaultSite, ...(await this.pluginDataRepository.getSite()) };
+    this.site.value = {
+      ...defaultSite,
+      ...(await this.pluginDataRepository.getSite()),
+    };
     watchEffect(this.loadTheme.bind(this));
     watchEffect(this.loadArticles.bind(this));
     this.themes.value = await this.pluginDataRepository.getThemes();
@@ -46,7 +50,7 @@ export class SiteService {
     if (theme) {
       site.themeConfig = theme;
     } else {
-      site.themeName = site.themeConfig?.name || DEFAULT_THEME;
+      site.themeName = site.themeConfig?.name || DEFAULT_THEME_NAME;
     }
   }
 

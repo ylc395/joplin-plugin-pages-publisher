@@ -16,6 +16,7 @@ import { filter, range } from 'lodash';
 
 export const token: InjectionKey<PageService> = Symbol('pageService');
 export type PagesFieldVars = Record<string, Vars | undefined>;
+
 @singleton()
 export class PageService {
   private readonly siteService = container.resolve(SiteService);

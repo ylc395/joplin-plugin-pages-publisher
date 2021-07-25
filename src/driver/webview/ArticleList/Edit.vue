@@ -118,7 +118,7 @@ export default defineComponent({
         </FormItem>
         <FormItem label="Cover Image">
           <Select v-model:value="modelRef.coverImg" optionLabelProp="value">
-            <SelectOption v-for="img of images" :key="img.name" :title="img.name">
+            <SelectOption v-for="img of images" :key="img.name">
               <Image width="50px" height="50px" :src="img.url" @click.stop />
               {{ img.name }}
             </SelectOption>

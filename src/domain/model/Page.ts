@@ -93,15 +93,17 @@ export class HomePage extends Page {
 export class ArticlePage extends Page {
   static readonly pageName = ARTICLE_PAGE_NAME;
   readonly pageId = this.article ? ArticlePage.getPageId(this.article) : ArticlePage.pageName;
-  protected readonly defaultFields = [] as const;
+  protected readonly defaultFields = [
+    {
+      name: 'url',
+      defaultValue: 'article',
+      required: true,
+    },
+  ] as const;
   readonly defaultVars: Vars = {
     article: this.article,
   };
-  readonly route = computed(() => {
-    const path = [encodeURIComponent(this.site.articlePagePrefix), ':article-url'].join('/');
-
-    return `/${path}`;
-  });
+  readonly route = ref<string>(this.fieldVars.url);
 
   constructor(site: Site, fieldVars: Vars, readonly article?: Article) {
     super(site, fieldVars);
@@ -118,20 +120,19 @@ export class ArchivesPage extends Page {
   readonly pageId = this.pageNum
     ? `${ArchivesPage.pageName}_${this.pageNum}`
     : ArchivesPage.pageName;
-  readonly route = computed(() => {
-    const path = [
-      encodeURIComponent(this.site.archivesPagePrefix),
-      this.pageNum ? encodeURIComponent(this.pageNum) : ':page',
-    ].join('/');
-
-    return `/${path}`;
-  });
+  readonly route = ref<string>(this.fieldVars.url);
   protected readonly defaultFields = [
     {
       name: 'articlesCount',
       label: 'Articles Per Page',
       defaultValue: ArchivesPage.defaultArticlesCount,
       inputType: 'number',
+      required: true,
+    },
+    {
+      name: 'url',
+      defaultValue: 'archives',
+      required: true,
     },
   ] as const;
 
@@ -159,7 +160,7 @@ export class TagPage extends Page {
   readonly pageId = this.tag ? `${TagPage.pageName}_${this.tag}` : TagPage.pageName;
   readonly route = computed(() => {
     const path = [
-      encodeURIComponent(this.site.tagPagePrefix),
+      encodeURIComponent(this.fieldVars.url),
       this.tag ? encodeURIComponent(slugify(this.tag)) : ':tag',
     ].join('/');
 
@@ -170,17 +171,29 @@ export class TagPage extends Page {
     tag: this.tag,
   } as const;
 
-  protected readonly defaultFields = [] as const;
+  protected readonly defaultFields = [
+    {
+      name: 'url',
+      defaultValue: 'archives',
+      required: true,
+    },
+  ] as const;
   constructor(site: Site, fieldVars: Vars, private readonly tag?: string) {
     super(site, fieldVars);
   }
 }
 
 export class CustomPage extends Page {
-  protected readonly defaultFields = [] as const;
+  protected readonly defaultFields = [
+    {
+      name: 'url',
+      defaultValue: 'archives',
+      required: true,
+    },
+  ] as const;
   protected readonly defaultVars = {} as const;
   readonly pageId = this.pageName;
-  readonly route = readonly(ref(`/${encodeURIComponent(this.pageName)}`));
+  readonly route = computed(() => `/${encodeURIComponent(this.fieldVars.url || this.pageName)}`);
   constructor(private readonly pageName: string, site: Site, fieldVars: Vars) {
     super(site, fieldVars);
   }
