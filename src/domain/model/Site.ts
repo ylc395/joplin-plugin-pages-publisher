@@ -21,11 +21,11 @@ export interface Site {
   description: string;
   language: string;
   icon: ArrayBuffer | null;
-  RSSMode: 'full' | 'abstract';
+  RSSMode: 'full' | 'digest' | 'none';
   RSSLength: number;
   menu: Menu;
   footer: string;
-  generatedAt: number | null;
+  generatedAt?: number;
   tags?: Array<Tag['title']>;
   articles?: Article[];
 }
@@ -37,11 +37,10 @@ export const defaultSite: Site = {
   themeConfig: null,
   language: '',
   icon: null,
-  RSSMode: 'full',
+  RSSMode: 'none',
   RSSLength: 10,
   menu: [],
   footer: '',
-  generatedAt: null,
   articles: [],
   tags: [],
 };
