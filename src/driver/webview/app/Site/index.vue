@@ -1,8 +1,9 @@
 <script lang="ts">
-import { computed, defineComponent, inject, reactive } from 'vue';
+import { defineComponent, inject, Ref } from 'vue';
 import { Form, Input, Select, Button, InputNumber } from 'ant-design-vue';
-import { token } from '../../../domain/service/SiteService';
-import { cloneDeep, every, isEqual, pick } from 'lodash';
+import { token } from '../../../../domain/service/SiteService';
+import { pick } from 'lodash';
+import { useDraftForm } from '../../composable/useDraftForm';
 
 export default defineComponent({
   components: {
@@ -27,31 +28,19 @@ export default defineComponent({
     ] as const;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { site, themes, saveSite } = inject(token)!;
-    const modelRef = computed(() => {
-      return (site.value ? reactive(cloneDeep(pick(site.value, fields))) : {}) as Record<
-        string,
-        unknown
-      >;
-    });
-
-    const { validateInfos, validate } = Form.useForm(
-      modelRef,
-      computed(() => ({
+    const { modelRef, validateInfos, save, canSave } = useDraftForm(
+      site as Ref<Record<string, unknown> | null>,
+      (data) => ({
         name: [{ required: true }],
         themeName: [{ required: true }],
-        RSSLength: [{ required: modelRef.value.RSSMode !== 'none' }],
-      })),
+        RSSLength: [{ required: data.RSSMode !== 'none' }],
+      }),
+      async (data) => {
+        await saveSite(data);
+        return data;
+      },
+      (model) => pick(model, fields),
     );
-    const save = async () => {
-      await validate();
-      saveSite(modelRef.value);
-    };
-    const canSave = computed(() => {
-      const origin = pick(site.value, fields);
-      return (
-        every(validateInfos, { validateStatus: 'success' }) && !isEqual(modelRef.value, origin)
-      );
-    });
 
     return {
       themes,

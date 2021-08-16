@@ -1,10 +1,11 @@
 <script lang="ts">
-import { computed, defineComponent, inject, reactive } from 'vue';
+import { defineComponent, inject } from 'vue';
 import { Form, Select, Input, DatePicker, Button, Alert, Image, Spin } from 'ant-design-vue';
 import moment from 'moment';
-import { cloneDeep, mapValues } from 'lodash';
+import { mapValues } from 'lodash';
 import { token as editToken } from './useEdit';
-import type { Article } from '../../../domain/model/Article';
+import type { Article } from '../../../../domain/model/Article';
+import { useDraftForm } from '../../composable/useDraftForm';
 
 export default defineComponent({
   components: {
@@ -23,33 +24,14 @@ export default defineComponent({
   setup() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { article, stopEditing, saveArticle, isValidUrl, images } = inject(editToken)!;
-    const modelRef = computed(() => {
-      if (!article.value) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return {} as Record<string, any>;
-      }
-
-      return reactive(
-        mapValues(cloneDeep(article.value), (value, key) => {
-          if (['createdAt', 'updatedAt'].includes(key)) {
-            return moment(value as number);
-          }
-
-          return value;
-        }),
-      );
-    });
-
-    const { validateInfos, validate } = Form.useForm(
-      modelRef,
-      reactive({
+    const { modelRef, canSave, save, validateInfos } = useDraftForm(
+      article,
+      (data) => ({
         url: [
           { required: true },
           {
             validator: (rule: unknown, value: string) =>
-              isValidUrl(value, modelRef.value.noteId)
-                ? Promise.resolve()
-                : Promise.reject('duplicated url'),
+              isValidUrl(value, data.noteId) ? Promise.resolve() : Promise.reject('duplicated url'),
           },
         ],
         title: [{ required: true }],
@@ -57,21 +39,25 @@ export default defineComponent({
         createdAt: [{ required: true }],
         updatedAt: [{ required: true }],
       }),
+      async (model) => {
+        const result = mapValues(model, (value) => {
+          if (moment.isMoment(value)) {
+            return Number(value.format('x'));
+          }
+
+          return value;
+        }) as Partial<Article>;
+
+        await saveArticle(result);
+        stopEditing();
+        return result;
+      },
+      (article) => {
+        return mapValues(article, (value, key) => {
+          return ['createdAt', 'updatedAt'].includes(key) ? moment(value as number) : value;
+        });
+      },
     );
-    const save = async () => {
-      await validate();
-
-      const article = mapValues(modelRef.value, (value) => {
-        if (moment.isMoment(value)) {
-          return Number(value.format('x'));
-        }
-
-        return value;
-      }) as Partial<Article>;
-
-      await saveArticle(article);
-      stopEditing();
-    };
 
     return {
       modelRef,
@@ -80,6 +66,7 @@ export default defineComponent({
       images,
       save,
       stopEditing,
+      canSave,
     };
   },
 });
@@ -127,7 +114,9 @@ export default defineComponent({
       </Form>
     </Spin>
     <div class="text-right">
-      <Button type="primary" class="mr-2" :disabled="!article" @click="save">Save</Button>
+      <Button type="primary" class="mr-2" :disabled="!article || !canSave" @click="save"
+        >Save</Button
+      >
       <Button @click="stopEditing">Cancel</Button>
     </div>
   </div>

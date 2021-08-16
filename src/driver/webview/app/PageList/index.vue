@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent, inject } from 'vue';
 import { List } from 'ant-design-vue';
-import { token } from '../../../domain/service/PageService';
+import { token } from '../../../../domain/service/PageService';
 
 export default defineComponent({
   components: {

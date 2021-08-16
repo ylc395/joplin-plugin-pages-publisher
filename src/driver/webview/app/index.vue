@@ -4,9 +4,9 @@ import { defineComponent, provide } from 'vue';
 import { Tabs } from 'ant-design-vue';
 import ArticleList from './ArticleList/index.vue';
 import Site from './Site/index.vue';
-import { ArticleService, token as articleToken } from '../../domain/service/ArticleService';
-import { SiteService, token as siteToken } from '../../domain/service/SiteService';
-import { PageService, token as pageToken } from '../../domain/service/PageService';
+import { ArticleService, token as articleToken } from '../../../domain/service/ArticleService';
+import { SiteService, token as siteToken } from '../../../domain/service/SiteService';
+import { PageService, token as pageToken } from '../../../domain/service/PageService';
 
 function selfish<T>(target: T) {
   const cache = new WeakMap();

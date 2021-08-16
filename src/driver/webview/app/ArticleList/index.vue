@@ -1,35 +1,29 @@
 <script lang="ts">
 import { computed, defineComponent, inject, ref } from 'vue';
-import { debounce, filter } from 'lodash';
-import { Select, Button, Collapse, Tag, Modal } from 'ant-design-vue';
+import { filter } from 'lodash';
+import { Button, Collapse, Modal } from 'ant-design-vue';
 import CardList from './CardList.vue';
 import Edit from './Edit.vue';
 import DiffView from './DiffView.vue';
-import { token } from '../../../domain/service/ArticleService';
+import Search from './Search.vue';
+import { token } from '../../../../domain/service/ArticleService';
 import { useEdit } from './useEdit';
 import { useDiff } from './useDiff';
 
 export default defineComponent({
   components: {
-    Select,
-    SelectOption: Select.Option,
     Button,
     CardList,
     Collapse,
     CollapsePanel: Collapse.Panel,
-    Tag,
     Modal,
     Edit,
     DiffView,
+    Search,
   },
   setup() {
     const {
-      searchedNotes,
-      searchNotes,
-      addNote,
-      removeNote,
       removeArticles,
-      submitAsArticles,
       unpublishedArticles,
       publishedArticles,
       togglePublished,
@@ -38,12 +32,8 @@ export default defineComponent({
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(token)!;
     const { isEditing } = useEdit();
-    const selectedNoteIds = ref<string[]>([]);
     const activePanels = ref(['published', 'unpublished']);
-    const submit = async () => {
-      await submitAsArticles();
-      selectedNoteIds.value = [];
-
+    const handleSubmit = () => {
       if (!activePanels.value.includes('unpublished')) {
         activePanels.value = [...activePanels.value, 'unpublished'];
       }
@@ -51,16 +41,11 @@ export default defineComponent({
     const { isViewing: isViewingDiff, stopDiff: stopViewingDiff } = useDiff();
 
     return {
-      selectedNoteIds,
       isEditing,
-      searchNotes: debounce(searchNotes, 500),
-      searchedNotes,
       unpublishedArticles,
       publishedArticles,
-      submit,
+      handleSubmit,
       activePanels,
-      addNote,
-      removeNote,
       removeArticles,
       togglePublished,
       selectAll,
@@ -79,40 +64,10 @@ export default defineComponent({
 });
 </script>
 <template>
-  <div class="flex mb-2">
-    <Select
-      v-model:value="selectedNoteIds"
-      class="flex-grow mr-3"
-      size="large"
-      placeholder="Search notes to add"
-      mode="multiple"
-      :filterOption="false"
-      @search="searchNotes"
-      @select="addNote"
-      @deselect="removeNote"
-    >
-      <SelectOption v-for="note of searchedNotes" :key="note.id" :disabled="note.status !== 'none'">
-        {{ note.title }}
-        <Tag
-          v-if="note.status !== 'none'"
-          :color="note.status === 'unpublished' ? 'processing' : 'success'"
-          >{{ note.status }}</Tag
-        >
-      </SelectOption>
-    </Select>
-    <Button
-      :disabled="selectedNoteIds.length === 0"
-      type="primary"
-      size="large"
-      class="mr-2"
-      @click="submit"
-    >
-      Add
-    </Button>
-    <Button size="large" danger :disabled="selectedArticles.length === 0" @click="removeArticles">
-      Remove{{ selectedArticles.length > 0 ? `(${selectedArticles.length})` : '' }}</Button
-    >
-  </div>
+  <Search @submit="handleSubmit" />
+  <Button size="large" danger :disabled="selectedArticles.length === 0" @click="removeArticles">
+    Remove{{ selectedArticles.length > 0 ? `(${selectedArticles.length})` : '' }}</Button
+  >
   <Collapse v-model:activeKey="activePanels">
     <CollapsePanel
       key="published"

@@ -9,8 +9,8 @@ import {
   FileSyncOutlined,
   DiffOutlined,
 } from '@ant-design/icons-vue';
-import { token } from '../../../domain/service/ArticleService';
-import { Article } from '../../../domain/model/Article';
+import { token } from '../../../../domain/service/ArticleService';
+import { Article } from '../../../../domain/model/Article';
 import { token as editToken } from './useEdit';
 import { token as diffToken } from './useDiff';
 
@@ -33,7 +33,7 @@ export default defineComponent({
       unpublishedArticles,
       toggleArticleSelected,
       selectedArticles,
-      updateArticle,
+      updateArticleContent,
     } =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(token)!;
@@ -51,7 +51,7 @@ export default defineComponent({
       },
       moment,
       edit,
-      updateArticle,
+      updateArticleContent,
       viewDiff,
     };
   },
@@ -97,7 +97,7 @@ export default defineComponent({
           </Button>
         </Tooltip>
         <Tooltip title="Overwrite article's content with Joplin note's current content">
-          <Button type="text" @click="updateArticle(article)">
+          <Button type="text" @click="updateArticleContent(article)">
             <template #icon><FileSyncOutlined /></template>
             Sync with Joplin
           </Button>

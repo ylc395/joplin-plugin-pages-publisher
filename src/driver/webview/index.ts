@@ -4,6 +4,6 @@ import { createApp } from 'vue';
 import '../db/webviewApi';
 import '../themeLoader/webviewApi';
 import '../joplinApi';
-import App from './App.vue';
+import App from './app/index.vue';
 
 createApp(App).mount('#joplin-plugin-content');

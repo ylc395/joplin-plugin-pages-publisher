@@ -1,12 +1,12 @@
 import { ref, provide, InjectionKey, inject, computed } from 'vue';
 import { bytesToBase64 } from 'byte-base64';
-import type { Article } from '../../../domain/model/Article';
-import { token as articleToken } from '../../../domain/service/ArticleService';
+import type { Article } from '../../../../domain/model/Article';
+import { token as articleToken } from '../../../../domain/service/ArticleService';
 
 export const token: InjectionKey<ReturnType<typeof useEdit>> = Symbol();
 export function useEdit() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { loadArticle, saveArticle, isValidUrl, updateArticle } = inject(articleToken)!;
+  const { loadArticle, saveArticle, isValidUrl, updateArticleContent } = inject(articleToken)!;
   const isEditing = ref(false);
   const article = ref<Article | null>(null);
   const edit = async (_article: Article) => {
@@ -34,7 +34,7 @@ export function useEdit() {
     stopEditing,
     saveArticle,
     isValidUrl,
-    updateArticle,
+    updateArticleContent,
     images,
   };
 
