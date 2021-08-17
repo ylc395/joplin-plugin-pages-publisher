@@ -39,7 +39,7 @@ export default defineComponent({
 });
 </script>
 <template>
-  <div class="flex mb-2">
+  <div>
     <Select
       v-model:value="selectedNoteIds"
       class="flex-grow mr-3"

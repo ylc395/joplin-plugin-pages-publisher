@@ -64,8 +64,14 @@ export default defineComponent({
 });
 </script>
 <template>
-  <Search @submit="handleSubmit" />
-  <Button size="large" danger :disabled="selectedArticles.length === 0" @click="removeArticles">
+  <Search class="flex mb-2" @submit="handleSubmit" />
+  <Button
+    class="mb-2"
+    size="large"
+    danger
+    :disabled="selectedArticles.length === 0"
+    @click="removeArticles"
+  >
     Remove{{ selectedArticles.length > 0 ? `(${selectedArticles.length})` : '' }}</Button
   >
   <Collapse v-model:activeKey="activePanels">
