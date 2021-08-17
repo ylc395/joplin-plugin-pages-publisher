@@ -7,22 +7,7 @@ import Site from './Site/index.vue';
 import { ArticleService, token as articleToken } from '../../../domain/service/ArticleService';
 import { SiteService, token as siteToken } from '../../../domain/service/SiteService';
 import { PageService, token as pageToken } from '../../../domain/service/PageService';
-
-function selfish<T>(target: T) {
-  const cache = new WeakMap();
-  return new Proxy(target as never, {
-    get(target, key) {
-      const value = Reflect.get(target, key);
-      if (typeof value !== 'function') {
-        return value;
-      }
-      if (!cache.has(value)) {
-        cache.set(value, value.bind(target));
-      }
-      return cache.get(value);
-    },
-  }) as T;
-}
+import { selfish } from '../utils';
 
 export default defineComponent({
   components: { Tabs, TabPane: Tabs.TabPane, ArticleList, Site },

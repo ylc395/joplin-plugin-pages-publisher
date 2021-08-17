@@ -4,6 +4,7 @@ import { debounce } from 'lodash';
 import { Select, Button, Tag } from 'ant-design-vue';
 import { NoteService } from '../../../../domain/service/NoteService';
 import { container } from 'tsyringe';
+import { selfish } from '../../utils';
 
 export default defineComponent({
   components: {
@@ -14,8 +15,9 @@ export default defineComponent({
   },
   emits: ['submit'],
   setup(_, { emit }) {
-    const { searchedNotes, searchNotes, addNote, removeNote, submitAsArticles } =
-      container.resolve(NoteService);
+    const { searchedNotes, searchNotes, addNote, removeNote, submitAsArticles } = selfish(
+      container.resolve(NoteService),
+    );
 
     const selectedNoteIds = ref<string[]>([]);
     const submit = async () => {
