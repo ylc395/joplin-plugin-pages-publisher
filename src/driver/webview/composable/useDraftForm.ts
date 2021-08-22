@@ -8,7 +8,7 @@ type Rules = Record<string, unknown>;
 export function useDraftForm(
   model: Ref<Data | null>,
   rules: Ref<Rules> | ((modelRef: Data) => Rules),
-  saveFunc: (model: Data) => Promise<Data>,
+  saveFunc: (model: Data) => Promise<Data | void>,
   transformer: (model: Data) => Data = identity,
 ) {
   let origin: null | Data = null;
@@ -28,7 +28,7 @@ export function useDraftForm(
   const save = async () => {
     await validate();
     const result = await saveFunc(modelRef.value);
-    origin = result;
+    origin = result || modelRef.value;
   };
 
   const canSave = computed(() => {

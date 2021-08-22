@@ -1,6 +1,6 @@
 import { container, singleton } from 'tsyringe';
 import { Ref, ref, watchEffect, InjectionKey } from 'vue';
-import { Theme, DEFAULT_THEME_NAME } from '../model/Theme';
+import { Theme, DEFAULT_THEME_NAME, defaultTheme } from '../model/Theme';
 import { Site, defaultSite } from '../model/Site';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { ArticleService } from './ArticleService';
@@ -41,7 +41,9 @@ export class SiteService {
       throw new Error('site is not initialized');
     }
 
-    if (site.themeName === site.themeConfig?.name) {
+    const oldThemeName = site.themeConfig?.name;
+
+    if (site.themeName === oldThemeName) {
       return;
     }
 
@@ -50,7 +52,8 @@ export class SiteService {
     if (theme) {
       site.themeConfig = theme;
     } else {
-      site.themeName = site.themeConfig?.name || DEFAULT_THEME_NAME;
+      site.themeName = oldThemeName || DEFAULT_THEME_NAME;
+      site.themeConfig = defaultTheme;
     }
   }
 

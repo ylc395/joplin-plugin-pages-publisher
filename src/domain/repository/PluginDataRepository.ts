@@ -29,12 +29,12 @@ export class PluginDataRepository {
   private readonly pluginDataFetcher = container.resolve(pluginDataDbToken);
   private readonly themeFetcher = container.resolve(themeFetcherToken);
 
-  getFieldVarsOfTheme(theme: string) {
-    return this.pluginDataFetcher.fetch<PagesFieldVars>(['pagesFieldVars', theme]);
+  getFieldVarsOfTheme(themeName: string) {
+    return this.pluginDataFetcher.fetch<PagesFieldVars>(['pagesFieldVars', themeName]);
   }
 
-  saveFieldVars(theme: string, pageId: string, vars: Vars) {
-    return this.pluginDataFetcher.save(['pagesFieldVars', theme, pageId], toRaw(vars));
+  saveFieldVars(themeName: string, pageName: string, vars: Vars) {
+    return this.pluginDataFetcher.save(['pagesFieldVars', themeName, pageName], toRaw(vars));
   }
 
   getArticles() {

@@ -17,7 +17,7 @@ type Menu = Array<MenuItem | MenuItemGroup>;
 export interface Site {
   name: string;
   themeName: string;
-  themeConfig?: Theme | null;
+  themeConfig: Theme | null;
   description: string;
   language: string;
   icon: ArrayBuffer | null;

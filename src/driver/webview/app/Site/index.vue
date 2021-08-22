@@ -1,7 +1,7 @@
 <script lang="ts">
-import { defineComponent, inject, Ref } from 'vue';
+import { defineComponent, Ref, inject } from 'vue';
 import { Form, Input, Select, Button, InputNumber } from 'ant-design-vue';
-import { token } from '../../../../domain/service/SiteService';
+import { token as siteToken } from '../../../../domain/service/SiteService';
 import { pick } from 'lodash';
 import { useDraftForm } from '../../composable/useDraftForm';
 
@@ -27,7 +27,7 @@ export default defineComponent({
       'footer',
     ] as const;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const { site, themes, saveSite } = inject(token)!;
+    const { site, themes, saveSite } = inject(siteToken)!;
     const { modelRef, validateInfos, save, canSave } = useDraftForm(
       site as Ref<Record<string, unknown> | null>,
       (data) => ({
@@ -35,10 +35,7 @@ export default defineComponent({
         themeName: [{ required: true }],
         RSSLength: [{ required: data.RSSMode !== 'none' }],
       }),
-      async (data) => {
-        await saveSite(data);
-        return data;
-      },
+      saveSite,
       (model) => pick(model, fields),
     );
 
@@ -83,14 +80,8 @@ export default defineComponent({
         <Textarea v-model:value="modelRef.footer" />
       </FormItem>
     </Form>
-    <div class="buttons">
+    <div class="text-right">
       <Button type="primary" :disabled="!canSave" @click="save">Save</Button>
     </div>
   </div>
 </template>
-<style scoped>
-.buttons {
-  display: flex;
-  justify-content: flex-end;
-}
-</style>

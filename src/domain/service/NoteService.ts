@@ -7,6 +7,7 @@ import type { Note } from '../model/JoplinData';
 import type { Article } from '../model/Article';
 import { ArticleService } from './ArticleService';
 
+export const token: InjectionKey<NoteService> = Symbol();
 interface SearchedNote extends Note {
   status: 'none' | 'published' | 'unpublished';
 }

@@ -9,7 +9,7 @@ import {
   FileSyncOutlined,
   DiffOutlined,
 } from '@ant-design/icons-vue';
-import { token } from '../../../../domain/service/ArticleService';
+import { token as articleToken } from '../../../../domain/service/ArticleService';
 import { Article } from '../../../../domain/model/Article';
 import { token as editToken } from './useEdit';
 import { token as diffToken } from './useDiff';
@@ -34,9 +34,9 @@ export default defineComponent({
       toggleArticleSelected,
       selectedArticles,
       updateArticleContent,
-    } =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      inject(token)!;
+    } = inject(articleToken)!;
+
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { edit } = inject(editToken)!;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

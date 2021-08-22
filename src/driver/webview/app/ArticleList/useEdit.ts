@@ -2,6 +2,7 @@ import { ref, provide, InjectionKey, inject, computed } from 'vue';
 import { bytesToBase64 } from 'byte-base64';
 import type { Article } from '../../../../domain/model/Article';
 import { token as articleToken } from '../../../../domain/service/ArticleService';
+import { result } from 'lodash';
 
 export const token: InjectionKey<ReturnType<typeof useEdit>> = Symbol();
 export function useEdit() {
