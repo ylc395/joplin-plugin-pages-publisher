@@ -39,6 +39,7 @@ export class PageService {
       throw new Error('no theme name when save page');
     }
 
-    this.pluginDataRepository.saveFieldVars(themeName, page.name, vars);
+    Object.assign(page.fieldVars, vars);
+    return this.pluginDataRepository.saveFieldVars(themeName, page.name, vars);
   }
 }

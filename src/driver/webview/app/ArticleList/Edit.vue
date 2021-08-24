@@ -114,9 +114,7 @@ export default defineComponent({
       </Form>
     </Spin>
     <div class="text-right">
-      <Button type="primary" class="mr-2" :disabled="!article || !canSave" @click="save"
-        >Save</Button
-      >
+      <Button type="primary" class="mr-2" :disabled="!canSave" @click="save">Save</Button>
       <Button @click="stopEditing">Cancel</Button>
     </div>
   </div>

@@ -13,7 +13,6 @@ import {
 } from 'ant-design-vue';
 import { token as customizeToken } from './useCustomize';
 import { useDraftForm } from '../../composable/useDraftForm';
-import { mapValues, constant } from 'lodash';
 
 export default defineComponent({
   components: {
@@ -31,11 +30,16 @@ export default defineComponent({
   },
   setup() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const { fields, filedVars, savePage, page, stopCustomize } = inject(customizeToken)!;
+    const { fields, filedVars, savePage, page, stopCustomize, rules } = inject(customizeToken)!;
     const { save, canSave, modelRef, validateInfos } = useDraftForm(
       filedVars,
-      (data) => mapValues(data, constant([{ required: true }])),
-      (data) => savePage(page, data),
+      rules,
+      async (data) => {
+        if (page.value) {
+          await savePage(page.value, data);
+        }
+        stopCustomize();
+      },
     );
 
     return { save, canSave, modelRef, validateInfos, fields, stopCustomize };

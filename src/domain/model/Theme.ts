@@ -25,7 +25,7 @@ export const defaultTheme: Theme = {
     [INDEX_PAGE_NAME]: [{ name: 'slogan' }],
     [ARTICLE_PAGE_NAME]: [],
     [ARCHIVES_PAGE_NAME]: [],
-    about: [{ name: 'content', inputType: 'textarea', required: true }],
+    about: [{ name: 'content', inputType: 'textarea', rules: [{ required: true }] }],
   },
 };
 

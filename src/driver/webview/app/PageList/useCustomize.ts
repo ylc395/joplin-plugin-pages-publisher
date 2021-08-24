@@ -10,6 +10,15 @@ export function useCustomize() {
   const page: Ref<null | Page> = shallowRef(null);
   const fields = computed(() => page.value?.fields.value || []);
   const filedVars: Ref<null | Vars> = ref(null);
+  const rules = computed(() => {
+    return fields.value.reduce((result, field) => {
+      if (field.rules) {
+        result[field.name] = field.rules;
+      }
+
+      return result;
+    }, {} as Record<string, unknown>);
+  });
   const customize = (_page: Page) => {
     isCustomizing.value = true;
     page.value = _page;
@@ -22,7 +31,16 @@ export function useCustomize() {
     filedVars.value = null;
   };
 
-  const service = { savePage, isCustomizing, page, customize, fields, filedVars, stopCustomize };
+  const service = {
+    savePage,
+    isCustomizing,
+    page,
+    customize,
+    fields,
+    filedVars,
+    stopCustomize,
+    rules,
+  };
 
   provide(token, service);
 

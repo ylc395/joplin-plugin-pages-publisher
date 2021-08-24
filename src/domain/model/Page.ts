@@ -1,5 +1,5 @@
 import { compact } from 'lodash';
-import { computed } from 'vue';
+import { computed, reactive } from 'vue';
 import type { Site } from './Site';
 
 export interface Field {
@@ -7,7 +7,7 @@ export interface Field {
   readonly label?: string;
   readonly tip?: string;
   readonly defaultValue?: unknown;
-  readonly required?: boolean;
+  readonly rules?: Record<string, unknown>[];
   readonly inputType?:
     | 'input'
     | 'select'
@@ -55,11 +55,14 @@ export const ARTICLE_PAGE_NAME = 'article';
 export const ARCHIVES_PAGE_NAME = 'archives';
 
 export class Page {
+  readonly fieldVars: Vars; // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
   constructor(
     readonly name: string,
-    readonly fieldVars: Vars, // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
+    fieldVars: Vars, // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
     private readonly site: Site,
-  ) {}
+  ) {
+    this.fieldVars = reactive(fieldVars);
+  }
 
   url = computed(() => {
     if (this.name === ARTICLE_PAGE_NAME) {
@@ -73,7 +76,7 @@ export class Page {
     return `/${this.fieldVars.url || this.name}`;
   });
 
-  fields = computed(() => {
+  fields = computed<Field[]>(() => {
     const { themeConfig } = this.site;
 
     if (!themeConfig) {
@@ -83,7 +86,7 @@ export class Page {
     return compact([
       this.name === INDEX_PAGE_NAME
         ? null
-        : { name: 'url', defaultValue: this.name, required: true },
+        : { name: 'url', defaultValue: this.name, rules: [{ required: true }] },
       ...(themeConfig.pages[this.name] ?? []),
     ]);
   });
