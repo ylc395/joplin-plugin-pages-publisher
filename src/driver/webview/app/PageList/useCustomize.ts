@@ -5,15 +5,30 @@ import { token as pageToken } from '../../../../domain/service/PageService';
 export const token: InjectionKey<ReturnType<typeof useCustomize>> = Symbol();
 export function useCustomize() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { savePage } = inject(pageToken)!;
+  const { savePage, isValidUrl } = inject(pageToken)!;
   const isCustomizing = ref(false);
   const page: Ref<null | Page> = shallowRef(null);
   const fields = computed(() => page.value?.fields.value || []);
   const filedVars: Ref<null | Vars> = ref(null);
   const rules = computed(() => {
+    if (!page.value) {
+      return {};
+    }
     return fields.value.reduce((result, field) => {
       if (field.rules) {
         result[field.name] = field.rules;
+      }
+
+      if (field.name === 'url') {
+        result[field.name] = [
+          {
+            validator: (rule: unknown, value: string) =>
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              isValidUrl(value, page.value!.name)
+                ? Promise.resolve()
+                : Promise.reject('duplicated url'),
+          },
+        ];
       }
 
       return result;

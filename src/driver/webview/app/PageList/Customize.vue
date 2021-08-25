@@ -51,8 +51,13 @@ export default defineComponent({
         v-model:value="modelRef[field.name]"
         :mode="field.inputType === 'multiple-select' ? 'multiple' : ''"
         :options="field.options"
+        :placeholder="field.placeholder"
       />
-      <Textarea v-else-if="field.inputType === 'textarea'" v-model:value="modelRef[field.name]" />
+      <Textarea
+        v-else-if="field.inputType === 'textarea'"
+        v-model:value="modelRef[field.name]"
+        :placeholder="field.placeholder"
+      />
       <Switch v-else-if="field.inputType === 'switch'" v-model:value="modelRef[field.name]" />
       <InputNumber v-else-if="field.inputType === 'number'" v-model:value="modelRef[field.name]" />
       <RadioGroup
@@ -66,7 +71,7 @@ export default defineComponent({
         :options="field.options"
       />
       <DatePicker v-else-if="field.inputType === 'date'" v-model:value="modelRef[field.name]" />
-      <Input v-else v-model:value="modelRef[field.name]" />
+      <Input v-else v-model:value="modelRef[field.name]" :placeholder="field.placeholder" />
     </FormItem>
   </Form>
   <div class="text-right">

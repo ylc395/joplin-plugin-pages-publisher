@@ -42,4 +42,11 @@ export class PageService {
     Object.assign(page.fieldVars, vars);
     return this.pluginDataRepository.saveFieldVars(themeName, page.name, vars);
   }
+
+  isValidUrl(url: string, pageName: string) {
+    return this.pages.value.every((page) => {
+      const path = page.url.value.split('/')[1];
+      return page.name === pageName || path !== url;
+    });
+  }
 }

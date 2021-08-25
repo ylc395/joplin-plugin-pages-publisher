@@ -6,6 +6,7 @@ export interface Field {
   readonly name: string;
   readonly label?: string;
   readonly tip?: string;
+  readonly placeholder?: string;
   readonly defaultValue?: unknown;
   readonly rules?: Record<string, unknown>[];
   readonly inputType?:
@@ -66,7 +67,7 @@ export class Page {
 
   url = computed(() => {
     if (this.name === ARTICLE_PAGE_NAME) {
-      return `/${this.fieldVars.url || this.name}/:title`;
+      return `/${this.fieldVars.url || this.name}/:articleUrl`;
     }
 
     if (this.name === INDEX_PAGE_NAME) {
@@ -86,7 +87,11 @@ export class Page {
     return compact([
       this.name === INDEX_PAGE_NAME
         ? null
-        : { name: 'url', defaultValue: this.name, rules: [{ required: true }] },
+        : {
+            name: 'url',
+            defaultValue: this.name,
+            placeholder: 'If url is empty, page name will be used as url.',
+          },
       ...(themeConfig.pages[this.name] ?? []),
     ]);
   });
