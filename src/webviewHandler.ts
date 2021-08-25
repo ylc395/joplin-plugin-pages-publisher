@@ -8,7 +8,7 @@ import type {
 } from './driver/themeLoader/webviewApi';
 import { loadTheme, loadThemes } from './driver/themeLoader';
 
-export default () => {
+export default (panelId: string) => {
   const db = new Db();
 
   return (
@@ -17,7 +17,8 @@ export default () => {
       | DbWriteRequest
       | JoplinDataRequest
       | ThemeConfigLoadRequest
-      | ThemeConfigsLoadRequest,
+      | ThemeConfigsLoadRequest
+      | { event: 'quitApp' },
   ) => {
     switch (request.event) {
       case 'dbFetch':
@@ -30,6 +31,9 @@ export default () => {
         return loadTheme(request.themeName);
       case 'loadThemeConfigs':
         return loadThemes();
+      case 'quitApp':
+        joplin.views.panels.hide(panelId);
+        return;
       default:
         break;
     }

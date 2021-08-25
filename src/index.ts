@@ -3,6 +3,7 @@ import webviewHandler from './webviewHandler';
 
 const OPEN_PAGES_PUBLISHER_COMMAND = 'openPagesPublisher';
 const panels = joplin.views.panels;
+let mainWindow: string;
 
 joplin.plugins.register({
   onStart: async function () {
@@ -10,11 +11,12 @@ joplin.plugins.register({
       name: OPEN_PAGES_PUBLISHER_COMMAND,
       label: 'Pages Publisher',
       async execute() {
-        const mainWindow = await panels.create('mainWindow');
-
-        panels.onMessage(mainWindow, webviewHandler());
-        await panels.addScript(mainWindow, './driver/webview/module-polyfill.js');
-        await panels.addScript(mainWindow, './driver/webview/index.js');
+        if (!mainWindow) {
+          mainWindow = await panels.create('mainWindow');
+          panels.onMessage(mainWindow, webviewHandler(mainWindow));
+          await panels.addScript(mainWindow, './driver/webview/module-polyfill.js');
+          await panels.addScript(mainWindow, './driver/webview/index.js');
+        }
         await panels.show(mainWindow);
       },
     });

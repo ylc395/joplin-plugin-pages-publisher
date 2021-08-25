@@ -13,3 +13,11 @@ export function selfish<T>(target: T) {
     },
   }) as T;
 }
+
+declare const webviewApi: {
+  postMessage: (payload: { event: 'quitApp' }) => Promise<void>;
+};
+
+export function quitApp() {
+  webviewApi.postMessage({ event: 'quitApp' });
+}
