@@ -50,10 +50,7 @@ export class ArticleService {
   }
 
   async loadArticle(article: Article) {
-    const [files, noteContent] = await Promise.all([
-      this.joplinDataRepository.getFilesOf(article.noteId),
-      this.joplinDataRepository.getNoteContentOf(article.noteId),
-    ]);
+    const files = await this.joplinDataRepository.getFilesOf(article.noteId);
 
     const isImage = ({ contentType }: File) => {
       return contentType.startsWith('image');
@@ -61,8 +58,6 @@ export class ArticleService {
 
     article.images = files.filter(isImage);
     article.attachments = files.filter(negate(isImage));
-    article.noteContent = noteContent;
-    article.content = article.content ?? noteContent;
   }
 
   async removeArticles() {
