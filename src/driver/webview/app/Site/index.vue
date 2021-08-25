@@ -1,8 +1,7 @@
 <script lang="ts">
-import { defineComponent, Ref, inject } from 'vue';
+import { defineComponent, inject } from 'vue';
 import { Form, Input, Select, Button, InputNumber } from 'ant-design-vue';
 import { token as siteToken } from '../../../../domain/service/SiteService';
-import { pick } from 'lodash';
 import { useDraftForm } from '../../composable/useDraftForm';
 
 export default defineComponent({
@@ -17,26 +16,16 @@ export default defineComponent({
     Textarea: Input.TextArea,
   },
   setup() {
-    const fields = [
-      'name',
-      'description',
-      'language',
-      'themeName',
-      'RSSMode',
-      'RSSLength',
-      'footer',
-    ] as const;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { site, themes, saveSite } = inject(siteToken)!;
     const { modelRef, validateInfos, save, canSave } = useDraftForm(
-      site as Ref<Record<string, unknown> | null>,
+      site,
+      saveSite,
       (data) => ({
         name: [{ required: true }],
         themeName: [{ required: true }],
         RSSLength: [{ required: data.RSSMode !== 'none' }],
       }),
-      saveSite,
-      (model) => pick(model, fields),
     );
 
     return {

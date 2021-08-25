@@ -31,10 +31,18 @@ export function useCustomize() {
     filedVars.value = null;
   };
 
+  const save = async (data: Vars) => {
+    if (!page.value) {
+      throw new Error('no page to save');
+    }
+
+    await savePage(page.value, data);
+    stopCustomize();
+  };
+
   const service = {
-    savePage,
+    savePage: save,
     isCustomizing,
-    page,
     customize,
     fields,
     filedVars,

@@ -57,7 +57,7 @@ export class SiteService {
     }
   }
 
-  async saveSite(site?: Partial<Site>) {
+  async saveSite(site: Partial<Site>) {
     await this.pluginDataRepository.saveSite(Object.assign(this.site.value, site));
   }
 }

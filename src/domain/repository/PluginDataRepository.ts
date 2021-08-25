@@ -44,7 +44,7 @@ export class PluginDataRepository {
   saveArticles(articles: Article[]) {
     return this.pluginDataFetcher.save(
       ['articles'],
-      toRaw(articles).map((article) => omit(article, ['images', 'attachments', 'sourceStatus'])),
+      toRaw(articles).map((article) => omit(article, ['images', 'attachments', 'noteContent'])),
     );
   }
 

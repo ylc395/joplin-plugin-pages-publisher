@@ -100,16 +100,8 @@ export class ArticleService {
     this.selectedArticles.value = uniq(this.selectedArticles.value.concat(articles));
   }
 
-  saveArticle(article: Partial<Article>) {
-    if (!article.noteId) {
-      throw new Error('no article noteId when saving');
-    }
-
+  saveArticle(article: Article) {
     const index = findIndex(this.articles, { noteId: article.noteId });
-
-    if (!this.articles[index]) {
-      throw new Error('no article when saving');
-    }
 
     Object.assign(this.articles[index], article);
     return this.saveArticles();
@@ -132,6 +124,7 @@ export class ArticleService {
 
     article.content = article.noteContent;
     article.updatedAt = Date.now();
+    this.saveArticle(article);
   }
 
   getValidUrl(baseUrl: string) {

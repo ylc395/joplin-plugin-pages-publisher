@@ -30,17 +30,8 @@ export default defineComponent({
   },
   setup() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const { fields, filedVars, savePage, page, stopCustomize, rules } = inject(customizeToken)!;
-    const { save, canSave, modelRef, validateInfos } = useDraftForm(
-      filedVars,
-      rules,
-      async (data) => {
-        if (page.value) {
-          await savePage(page.value, data);
-        }
-        stopCustomize();
-      },
-    );
+    const { fields, filedVars, savePage, stopCustomize, rules } = inject(customizeToken)!;
+    const { save, canSave, modelRef, validateInfos } = useDraftForm(filedVars, savePage, rules);
 
     return { save, canSave, modelRef, validateInfos, fields, stopCustomize };
   },

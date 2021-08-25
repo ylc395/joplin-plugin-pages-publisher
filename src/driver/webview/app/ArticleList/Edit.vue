@@ -1,10 +1,7 @@
 <script lang="ts">
 import { defineComponent, inject } from 'vue';
 import { Form, Select, Input, DatePicker, Button, Alert, Image, Spin } from 'ant-design-vue';
-import moment from 'moment';
-import { mapValues } from 'lodash';
 import { token as editToken } from './useEdit';
-import type { Article } from '../../../../domain/model/Article';
 import { useDraftForm } from '../../composable/useDraftForm';
 
 export default defineComponent({
@@ -22,10 +19,12 @@ export default defineComponent({
     Spin,
   },
   setup() {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const { article, stopEditing, saveArticle, isValidUrl, images } = inject(editToken)!;
+    const { article, stopEditing, saveArticle, isValidUrl, images } =
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      inject(editToken)!;
     const { modelRef, canSave, save, validateInfos } = useDraftForm(
       article,
+      saveArticle,
       (data) => ({
         url: [
           { required: true },
@@ -39,24 +38,6 @@ export default defineComponent({
         createdAt: [{ required: true }],
         updatedAt: [{ required: true }],
       }),
-      async (model) => {
-        const result = mapValues(model, (value) => {
-          if (moment.isMoment(value)) {
-            return Number(value.format('x'));
-          }
-
-          return value;
-        }) as Partial<Article>;
-
-        await saveArticle(result);
-        stopEditing();
-        return result;
-      },
-      (article) => {
-        return mapValues(article, (value, key) => {
-          return ['createdAt', 'updatedAt'].includes(key) ? moment(value as number) : value;
-        });
-      },
     );
 
     return {

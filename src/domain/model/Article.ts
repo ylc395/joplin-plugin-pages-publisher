@@ -1,3 +1,4 @@
+import type { Moment } from 'moment';
 import { Tag, File } from './JoplinData';
 
 export interface Article {
@@ -6,8 +7,8 @@ export interface Article {
   content: string;
   noteContent?: string;
   title: string;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: number | Moment;
+  updatedAt: number | Moment;
   tags: Tag['title'][];
   images?: File[];
   attachments?: File[];
