@@ -60,7 +60,7 @@ export default defineComponent({
       message="Any modification here won't affect origin note."
       class="mb-4"
     />
-    <Spin :spinning="!article">
+    <Spin :spinning="!article" tip="Loading article and its resources...">
       <Form v-if="modelRef" :labelCol="{ span: 6 }">
         <FormItem label="Url" v-bind="validateInfos.url">
           <Input v-model:value="modelRef.url" />

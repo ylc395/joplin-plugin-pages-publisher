@@ -23,7 +23,7 @@ export class PageService {
       return;
     }
 
-    const pagesVars: PagesFieldVars =
+    const pagesVars =
       (await this.pluginDataRepository.getFieldVarsOfTheme(site.value.themeName)) || {};
 
     this.pages.value = Object.keys(site.value.themeConfig.pages).map(
