@@ -1,6 +1,7 @@
 import joplin from 'api';
 import { get, set } from 'lodash';
 import { Low } from 'lowdb/lib';
+import { singleton } from 'tsyringe';
 import { JSONFile } from './adaptor';
 import type { Article } from '../../domain/model/Article';
 import type { Site } from '../../domain/model/Site';
@@ -8,10 +9,11 @@ import type { PagesFieldVars } from '../../domain/service/PageService';
 
 interface DbData {
   site: Partial<Site>;
-  pageFieldVars: Record<Site['themeName'], PagesFieldVars>;
+  pagesFieldVars: Record<Site['themeName'], PagesFieldVars>;
   articles: Article[];
 }
 
+@singleton()
 export class Db {
   private db: Low<DbData> | null = null;
   private ready = new Promise((resolve) => {
@@ -25,7 +27,7 @@ export class Db {
     if (this.db.data === null) {
       this.db.data = {
         articles: [],
-        pageFieldVars: {},
+        pagesFieldVars: {},
         site: {},
       };
     }
@@ -33,7 +35,7 @@ export class Db {
 
   fetch<T>(path: string[]) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return this.ready.then<T>(() => get(this.db!.data, path, null));
+    return this.ready.then<T | null>(() => get(this.db!.data, path, null));
   }
 
   save(path: string[], data: unknown) {

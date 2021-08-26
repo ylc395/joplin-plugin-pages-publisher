@@ -1,4 +1,4 @@
-import { Field, INDEX_PAGE_NAME, ARTICLE_PAGE_NAME, FIELD_SCHEMA } from './Page';
+import { Field, INDEX_PAGE_NAME, ARTICLE_PAGE_NAME } from './Page';
 
 type PageName = string;
 
@@ -22,13 +22,3 @@ export const defaultTheme: Theme = {
     about: [{ name: 'content', inputType: 'textarea', rules: [{ required: true }] }],
   },
 };
-
-export const THEME_SCHEMA = {
-  type: 'object',
-  properties: {
-    name: { type: 'string' },
-    version: { type: 'string' },
-    pages: { type: 'array', items: FIELD_SCHEMA },
-  },
-  required: ['name', 'version', 'pages'],
-} as const;

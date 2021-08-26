@@ -23,31 +23,6 @@ export interface Field {
   readonly options?: Array<Readonly<{ label: string; value: string; tip?: string }>>;
 }
 
-export const FIELD_SCHEMA = {
-  type: 'object',
-  properties: {
-    name: { type: 'string' },
-    label: { type: 'string' },
-    tip: { type: 'string' },
-    required: { type: 'boolean' },
-    inputType: {
-      enum: [
-        'input',
-        'select',
-        'multiple-select',
-        'textarea',
-        'radio',
-        'switch',
-        'image-picker',
-        'number',
-        'checkbox',
-        'date',
-      ],
-    },
-  },
-  required: ['name'],
-} as const;
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Vars = Record<string, any>;
 

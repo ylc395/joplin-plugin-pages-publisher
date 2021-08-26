@@ -1,3 +1,4 @@
+import 'core-js/proposals/reflect-metadata';
 import joplin from 'api';
 import webviewHandler from './webviewHandler';
 

@@ -1,15 +1,11 @@
-import Ajv from 'ajv';
 import { omit } from 'lodash';
 import { container, InjectionToken } from 'tsyringe';
 import { toRaw } from 'vue';
 import type { Article } from '../model/Article';
 import type { Vars } from '../model/Page';
 import { Site } from '../model/Site';
-import { defaultTheme, Theme, THEME_SCHEMA } from '../model/Theme';
+import { defaultTheme, Theme } from '../model/Theme';
 import type { PagesFieldVars } from '../service/PageService';
-
-const validator = new Ajv();
-const themeValidate = validator.compile(THEME_SCHEMA);
 
 export interface PluginDataDb {
   fetch: <T>(path: string[]) => Promise<T | null>;
@@ -66,11 +62,8 @@ export class PluginDataRepository {
 
     const theme = await this.themeFetcher.fetch(themeName);
 
-    if (!theme || !themeValidate(theme)) {
-      const msg = themeValidate.errors
-        ? themeValidate.errors.map(({ message }) => message).join('\n')
-        : '';
-      console.warn(`fail to load theme: ${themeName}. ${msg}`);
+    if (!theme) {
+      console.warn(`fail to load theme: ${themeName}.`);
       return null;
     }
 
@@ -80,6 +73,6 @@ export class PluginDataRepository {
   async getThemes() {
     const themes = await this.themeFetcher.fetchAll();
 
-    return [defaultTheme, ...themes.filter((theme) => themeValidate(theme))];
+    return [defaultTheme, ...themes];
   }
 }
