@@ -15,7 +15,7 @@ export default defineComponent({
     DatePicker,
     Button,
     Alert,
-    Image,
+    // Image,
     Spin,
   },
   setup() {
@@ -84,14 +84,14 @@ export default defineComponent({
             </template>
           </Select>
         </FormItem>
-        <FormItem label="Cover Image">
+        <!-- <FormItem label="Cover Image">
           <Select v-model:value="modelRef.coverImg" optionLabelProp="value">
             <SelectOption v-for="img of images" :key="img.name">
               <Image width="50px" height="50px" :src="img.url" @click.stop />
               {{ img.name }}
             </SelectOption>
           </Select>
-        </FormItem>
+        </FormItem> -->
       </Form>
     </Spin>
     <div class="text-right">
