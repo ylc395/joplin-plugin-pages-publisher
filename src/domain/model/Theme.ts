@@ -1,10 +1,4 @@
-import {
-  Field,
-  INDEX_PAGE_NAME,
-  ARTICLE_PAGE_NAME,
-  ARCHIVES_PAGE_NAME,
-  FIELD_SCHEMA,
-} from './Page';
+import { Field, INDEX_PAGE_NAME, ARTICLE_PAGE_NAME, FIELD_SCHEMA } from './Page';
 
 type PageName = string;
 
@@ -24,7 +18,7 @@ export const defaultTheme: Theme = {
   pages: {
     [INDEX_PAGE_NAME]: [{ name: 'slogan' }],
     [ARTICLE_PAGE_NAME]: [],
-    [ARCHIVES_PAGE_NAME]: [],
+    archives: [],
     about: [{ name: 'content', inputType: 'textarea', rules: [{ required: true }] }],
   },
 };

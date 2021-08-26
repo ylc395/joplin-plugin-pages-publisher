@@ -51,9 +51,9 @@ export const FIELD_SCHEMA = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Vars = Record<string, any>;
 
+// page with these names will be handled in some special ways
 export const INDEX_PAGE_NAME = 'index';
 export const ARTICLE_PAGE_NAME = 'article';
-export const ARCHIVES_PAGE_NAME = 'archives';
 
 export class Page {
   readonly fieldVars: Vars; // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
