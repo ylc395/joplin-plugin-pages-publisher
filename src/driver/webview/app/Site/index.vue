@@ -1,5 +1,6 @@
 <script lang="ts">
-import { defineComponent, inject } from 'vue';
+import { computed, defineComponent, inject } from 'vue';
+import { omit } from 'lodash';
 import { Form, Input, Select, Button, InputNumber } from 'ant-design-vue';
 import { token as siteToken } from '../../../../domain/service/SiteService';
 import { useDraftForm } from '../../composable/useDraftForm';
@@ -17,11 +18,15 @@ export default defineComponent({
   setup() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { site, themes, saveSite } = inject(siteToken)!;
-    const { modelRef, validateInfos, save, canSave } = useDraftForm(site, saveSite, (data) => ({
-      name: [{ required: true }],
-      themeName: [{ required: true }],
-      RSSLength: [{ required: data.RSSMode !== 'none' }],
-    }));
+    const { modelRef, validateInfos, save, canSave } = useDraftForm(
+      computed(() => omit(site.value, ['themeConfig'])),
+      saveSite,
+      (data) => ({
+        name: [{ required: true }],
+        themeName: [{ required: true }],
+        RSSLength: [{ required: data.RSSMode !== 'none' }],
+      }),
+    );
 
     return {
       themes,
