@@ -13,20 +13,15 @@ export default defineComponent({
     SelectOption: Select.Option,
     Button,
     InputNumber,
-    Textarea: Input.TextArea,
   },
   setup() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { site, themes, saveSite } = inject(siteToken)!;
-    const { modelRef, validateInfos, save, canSave } = useDraftForm(
-      site,
-      saveSite,
-      (data) => ({
-        name: [{ required: true }],
-        themeName: [{ required: true }],
-        RSSLength: [{ required: data.RSSMode !== 'none' }],
-      }),
-    );
+    const { modelRef, validateInfos, save, canSave } = useDraftForm(site, saveSite, (data) => ({
+      name: [{ required: true }],
+      themeName: [{ required: true }],
+      RSSLength: [{ required: data.RSSMode !== 'none' }],
+    }));
 
     return {
       themes,
@@ -44,12 +39,6 @@ export default defineComponent({
       <FormItem label="Site Name" v-bind="validateInfos.name">
         <Input v-model:value="modelRef.name" />
       </FormItem>
-      <FormItem label="Site Description">
-        <Input v-model:value="modelRef.description" />
-      </FormItem>
-      <FormItem label="Site Language">
-        <Input v-model:value="modelRef.language" />
-      </FormItem>
       <FormItem label="Theme" v-bind="validateInfos.themeName">
         <Select v-model:value="modelRef.themeName">
           <SelectOption v-for="{ name } of themes" :key="name">{{ name }}</SelectOption>
@@ -64,9 +53,6 @@ export default defineComponent({
       </FormItem>
       <FormItem v-if="modelRef.RSSMode !== 'none'" label="RSS Length">
         <InputNumber v-model:value="modelRef.RSSLength" :min="1" />
-      </FormItem>
-      <FormItem label="Footer">
-        <Textarea v-model:value="modelRef.footer" />
       </FormItem>
     </Form>
     <div class="text-right">
