@@ -8,7 +8,7 @@ import type { PagesFieldVars } from '../../domain/service/PageService';
 
 interface DbData {
   site: Partial<Site>;
-  fieldsVars: Record<Site['themeName'], PagesFieldVars>;
+  pageFieldVars: Record<Site['themeName'], PagesFieldVars>;
   articles: Article[];
 }
 
@@ -25,7 +25,7 @@ export class Db {
     if (this.db.data === null) {
       this.db.data = {
         articles: [],
-        fieldsVars: {},
+        pageFieldVars: {},
         site: {},
       };
     }
