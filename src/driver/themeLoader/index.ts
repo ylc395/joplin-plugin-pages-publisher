@@ -1,6 +1,7 @@
 import joplin from 'api';
 import Ajv from 'ajv';
 import type { readJSON as IReadJSON, readdir as IReaddir } from 'fs-extra';
+import type { Theme } from '../../domain/model/Theme';
 
 const { readJson, readdir } = joplin.require('fs-extra') as {
   readJson: typeof IReadJSON;
@@ -35,18 +36,20 @@ const FIELD_SCHEMA = {
 const THEME_SCHEMA = {
   type: 'object',
   properties: {
+    name: { type: 'string' },
     version: { type: 'string' },
     pages: { type: 'object', additionalProperties: { type: 'array', items: FIELD_SCHEMA } },
   },
-  required: ['version', 'pages'],
+  required: ['name', 'version', 'pages'],
 } as const;
 
-const themeValidate = new Ajv().compile<any>(THEME_SCHEMA);
+const themeValidate = new Ajv().compile<Theme>(THEME_SCHEMA);
 
 export async function loadTheme(themeName: string) {
   const pluginDir = await joplin.plugins.dataDir();
   try {
     const res = await readJson(`${pluginDir}/themes/${themeName}/config.json`);
+    res.name = res.name || themeName;
 
     if (!themeValidate(res)) {
       const errMsg = themeValidate.errors
