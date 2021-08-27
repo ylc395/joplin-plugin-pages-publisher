@@ -1,5 +1,5 @@
 import { container } from 'tsyringe';
-import { themeFetcherToken } from '../../domain/repository/PluginDataRepository';
+import { themeLoaderToken } from '../../domain/repository/PluginDataRepository';
 import type { Theme } from '../../domain/model/Theme';
 
 export interface ThemeConfigLoadRequest {
@@ -15,7 +15,7 @@ declare const webviewApi: {
   postMessage: <T>(payload: ThemeConfigLoadRequest | ThemeConfigsLoadRequest) => Promise<T>;
 };
 
-container.registerInstance(themeFetcherToken, {
+container.registerInstance(themeLoaderToken, {
   fetch(themeName: string) {
     return webviewApi.postMessage<Theme | null>({ event: 'loadThemeConfig', themeName });
   },

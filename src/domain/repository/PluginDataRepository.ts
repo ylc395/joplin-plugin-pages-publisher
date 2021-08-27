@@ -13,43 +13,43 @@ export interface PluginDataDb {
   save: (path: string[], value: any) => Promise<void>;
 }
 
-export interface ThemeFetcher {
+export interface ThemeLoader {
   fetch: (themeName: string) => Promise<Theme | null>;
   fetchAll: () => Promise<Theme[]>;
 }
 
 export const pluginDataDbToken: InjectionToken<PluginDataDb> = Symbol('pluginDataDb');
-export const themeFetcherToken: InjectionToken<ThemeFetcher> = Symbol('themeFetcher');
+export const themeLoaderToken: InjectionToken<ThemeLoader> = Symbol('themeFetcher');
 
 export class PluginDataRepository {
-  private readonly pluginDataFetcher = container.resolve(pluginDataDbToken);
-  private readonly themeFetcher = container.resolve(themeFetcherToken);
+  private readonly pluginDataLoader = container.resolve(pluginDataDbToken);
+  private readonly themeLoader = container.resolve(themeLoaderToken);
 
   getFieldVarsOfTheme(themeName: string) {
-    return this.pluginDataFetcher.fetch<PagesFieldVars>(['pagesFieldVars', themeName]);
+    return this.pluginDataLoader.fetch<PagesFieldVars>(['pagesFieldVars', themeName]);
   }
 
   saveFieldVars(themeName: string, pageName: string, vars: Vars) {
-    return this.pluginDataFetcher.save(['pagesFieldVars', themeName, pageName], toRaw(vars));
+    return this.pluginDataLoader.save(['pagesFieldVars', themeName, pageName], toRaw(vars));
   }
 
   getArticles() {
-    return this.pluginDataFetcher.fetch<Article[]>(['articles']);
+    return this.pluginDataLoader.fetch<Article[]>(['articles']);
   }
 
   saveArticles(articles: Article[]) {
-    return this.pluginDataFetcher.save(
+    return this.pluginDataLoader.save(
       ['articles'],
       toRaw(articles).map((article) => omit(article, ['images', 'attachments', 'noteContent'])),
     );
   }
 
   getSite() {
-    return this.pluginDataFetcher.fetch<Site>(['site']);
+    return this.pluginDataLoader.fetch<Site>(['site']);
   }
 
   saveSite(site: Site) {
-    return this.pluginDataFetcher.save(
+    return this.pluginDataLoader.save(
       ['site'],
       omit(toRaw(site), ['themeConfig', 'articles', 'tags']),
     );
@@ -60,7 +60,7 @@ export class PluginDataRepository {
       return defaultTheme;
     }
 
-    const theme = await this.themeFetcher.fetch(themeName);
+    const theme = await this.themeLoader.fetch(themeName);
 
     if (!theme) {
       console.warn(`fail to load theme: ${themeName}.`);
@@ -71,7 +71,7 @@ export class PluginDataRepository {
   }
 
   async getThemes() {
-    const themes = await this.themeFetcher.fetchAll();
+    const themes = await this.themeLoader.fetchAll();
 
     return [defaultTheme, ...themes];
   }
