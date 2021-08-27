@@ -3,7 +3,6 @@ import { Ref, ref, watchEffect, InjectionKey } from 'vue';
 import { Theme, DEFAULT_THEME_NAME, defaultTheme } from '../model/Theme';
 import { Site, defaultSite } from '../model/Site';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
-import { ArticleService } from './ArticleService';
 import { ExceptionService } from './ExceptionService';
 
 export const token: InjectionKey<SiteService> = Symbol('siteService');
@@ -12,7 +11,6 @@ export class SiteService {
   private readonly pluginDataRepository = new PluginDataRepository();
   readonly site: Ref<Site | null> = ref(null);
   readonly themes: Ref<Theme[]> = ref([]);
-  private readonly articleService = container.resolve(ArticleService);
   private readonly exceptionService = container.resolve(ExceptionService);
   constructor() {
     this.init();
@@ -23,17 +21,7 @@ export class SiteService {
       ...(await this.pluginDataRepository.getSite()),
     };
     watchEffect(this.loadTheme.bind(this));
-    watchEffect(this.loadArticles.bind(this));
     this.themes.value = await this.pluginDataRepository.getThemes();
-  }
-
-  private loadArticles() {
-    if (!this.site.value) {
-      throw new Error('site is not initialized');
-    }
-
-    this.site.value.articles = this.articleService.publishedArticles.value;
-    this.site.value.tags = this.articleService.allTags;
   }
 
   private async loadTheme() {

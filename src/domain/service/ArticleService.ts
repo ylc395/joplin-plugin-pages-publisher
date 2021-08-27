@@ -25,10 +25,6 @@ export class ArticleService {
     this.init();
   }
 
-  get allTags() {
-    return uniq(map(this.publishedArticles.value, 'tags').flat());
-  }
-
   private async init() {
     const articles = await this.pluginDataRepository.getArticles();
 

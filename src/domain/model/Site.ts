@@ -1,5 +1,4 @@
 import type { Article } from './Article';
-import type { Tag } from './JoplinData';
 import { DEFAULT_THEME_NAME, Theme } from './Theme';
 
 export interface Site {
@@ -9,7 +8,6 @@ export interface Site {
   RSSMode: 'full' | 'digest' | 'none';
   RSSLength: number;
   generatedAt?: number;
-  tags?: Array<Tag['title']>;
   articles?: Article[];
 }
 
@@ -19,6 +17,4 @@ export const defaultSite: Site = {
   themeConfig: null,
   RSSMode: 'none',
   RSSLength: 10,
-  articles: [],
-  tags: [],
 };

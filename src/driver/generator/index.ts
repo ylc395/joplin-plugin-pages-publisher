@@ -1,6 +1,6 @@
 import { container } from 'tsyringe';
 import ejs from 'ejs';
-import { filter, mapValues } from 'lodash';
+import _, { filter, mapValues } from 'lodash';
 import joplin from 'api';
 import type { readFileSync as IReadFileSync, outputFile as IOutputFile } from 'fs-extra';
 import type { Site } from '../../domain/model/Site';
@@ -36,7 +36,6 @@ export default async function () {
 
     const articles = filter((await db.fetch<Data[]>(['articles'])) || [], { published: true });
     const pagesFieldVars = (await db.fetch<Data>(['pagesFieldVars', site.themeName])) || {};
-
     const { pages } = themeConfig;
     const defaultFieldVars = mapValues(pages, (fields) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -47,6 +46,9 @@ export default async function () {
     });
     const pluginDir = await joplin.plugins.dataDir();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    site.articles = articles as any;
+
     for (const pageName of Object.keys(pages)) {
       const fieldVars = { ...defaultFieldVars[pageName], ...(pagesFieldVars[pageName] || {}) };
       const templatePath = `${pluginDir}/themes/${site.themeName}/templates/${pageName}.ejs`;
@@ -55,7 +57,7 @@ export default async function () {
         for (const article of articles) {
           const htmlString = await ejs.renderFile(
             templatePath,
-            { ...fieldVars, article },
+            { ...fieldVars, $article: article, $site: site, _ },
             { async: true },
           );
           await outputFile(
@@ -64,7 +66,11 @@ export default async function () {
           );
         }
       } else {
-        const htmlString = await ejs.renderFile(templatePath, fieldVars, { async: true });
+        const htmlString = await ejs.renderFile(
+          templatePath,
+          { ...fieldVars, $site: site, _ },
+          { async: true },
+        );
         await outputFile(
           `${pluginDir}/output/${
             pageName === INDEX_PAGE_NAME ? 'index' : fieldVars.url || pageName
