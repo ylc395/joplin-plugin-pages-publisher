@@ -38,8 +38,7 @@ export default (panelId: string) => {
         joplin.views.panels.hide(panelId);
         return;
       case 'generateSite':
-        generateSite();
-        return;
+        return generateSite();
       default:
         break;
     }
