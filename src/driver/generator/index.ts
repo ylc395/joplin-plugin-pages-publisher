@@ -58,13 +58,16 @@ export default async function () {
             { ...fieldVars, article },
             { async: true },
           );
-          await outputFile(`${pluginDir}/output/${fieldVars.url}/${article.url}.html`, htmlString);
+          await outputFile(
+            `${pluginDir}/output/${fieldVars.url || pageName}/${article.url}.html`,
+            htmlString,
+          );
         }
       } else {
         const htmlString = await ejs.renderFile(templatePath, fieldVars, { async: true });
         await outputFile(
           `${pluginDir}/output/${
-            pageName === INDEX_PAGE_NAME ? 'index' : fieldVars.url || fieldVars.name
+            pageName === INDEX_PAGE_NAME ? 'index' : fieldVars.url || pageName
           }.html`,
           htmlString,
         );
