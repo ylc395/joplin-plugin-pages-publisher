@@ -31,7 +31,7 @@ export default defineComponent({
     provide(pageToken, selfish(container.resolve(PageService)));
 
     container.resolve(ExceptionService).on('error', (msg) => {
-      Modal.error({ content: msg, title: 'Oops!', style: { whiteSpace: 'pre-line' } });
+      Modal.error({ content: msg, title: 'Oops!', style: { whiteSpace: 'pre-wrap' } });
     });
 
     return { quitApp, generateSite };

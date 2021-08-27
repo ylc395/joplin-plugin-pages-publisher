@@ -38,7 +38,12 @@ const THEME_SCHEMA = {
   properties: {
     name: { type: 'string' },
     version: { type: 'string' },
-    pages: { type: 'object', additionalProperties: { type: 'array', items: FIELD_SCHEMA } },
+    pages: {
+      type: 'object',
+      additionalProperties: { type: 'array', items: FIELD_SCHEMA },
+      propertyNames: { pattern: '^[^_]' },
+    },
+    site: { type: 'array', items: FIELD_SCHEMA },
   },
   required: ['name', 'version', 'pages'],
 } as const;
@@ -54,8 +59,8 @@ export async function loadTheme(themeName: string) {
     if (!themeValidate(res)) {
       const errMsg = themeValidate.errors
         ?.map(({ message, instancePath }) => `${instancePath}: ${message}`)
-        .join('\n');
-      throw new Error(`Invalid config.json: ${errMsg}`);
+        .join(`\n${' '.repeat(4)}`);
+      throw new Error(`Invalid config.json: \n${' '.repeat(4)}${errMsg}`);
     }
     return res;
   } catch (err) {
