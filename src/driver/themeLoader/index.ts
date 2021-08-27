@@ -57,7 +57,7 @@ export async function loadTheme(themeName: string) {
     return res;
   } catch (err) {
     console.warn(err);
-    return err.message;
+    throw err;
   }
 }
 
@@ -83,6 +83,6 @@ export async function loadThemes() {
     return themes;
   } catch (err) {
     console.warn(err);
-    return [];
+    throw err;
   }
 }

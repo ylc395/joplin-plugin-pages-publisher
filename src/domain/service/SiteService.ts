@@ -57,7 +57,7 @@ export class SiteService {
       site.themeConfig = defaultTheme;
       await this.saveSite(site);
       this.exceptionService.throwError(
-        `${error.message}\n\nTheme of this site has been reset to Default Theme`,
+        `${error.message}\n\nTheme of this site has been reset to Default Theme.`,
       );
     }
   }

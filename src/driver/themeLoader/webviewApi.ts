@@ -17,7 +17,7 @@ declare const webviewApi: {
 
 container.registerInstance(themeLoaderToken, {
   fetch(themeName: string) {
-    return webviewApi.postMessage<Theme | string>({ event: 'loadThemeConfig', themeName });
+    return webviewApi.postMessage<Theme>({ event: 'loadThemeConfig', themeName });
   },
   fetchAll() {
     return webviewApi.postMessage<Theme[]>({ event: 'loadThemeConfigs' });
