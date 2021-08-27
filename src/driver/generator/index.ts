@@ -1,6 +1,6 @@
 import { container } from 'tsyringe';
 import ejs from 'ejs';
-import { filter } from 'lodash';
+import { filter, mapValues } from 'lodash';
 import joplin from 'api';
 import type { readFileSync as IReadFileSync, outputFile as IOutputFile } from 'fs-extra';
 import type { Site } from '../../domain/model/Site';
@@ -38,10 +38,17 @@ export default async function () {
     const pagesFieldVars = (await db.fetch<Data>(['pagesFieldVars', site.themeName])) || {};
 
     const { pages } = themeConfig;
+    const defaultFieldVars = mapValues(pages, (fields) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return fields!.reduce((vars, field) => {
+        vars[field.name] = field.defaultValue || '';
+        return vars;
+      }, {} as Record<string, unknown>);
+    });
     const pluginDir = await joplin.plugins.dataDir();
 
     for (const pageName of Object.keys(pages)) {
-      const fieldVars = pagesFieldVars[pageName] || {};
+      const fieldVars = { ...defaultFieldVars[pageName], ...(pagesFieldVars[pageName] || {}) };
       const templatePath = `${pluginDir}/themes/${site.themeName}/templates/${pageName}.ejs`;
 
       if (pageName === ARTICLE_PAGE_NAME) {
