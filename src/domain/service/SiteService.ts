@@ -55,6 +55,7 @@ export class SiteService {
     } catch (error) {
       site.themeName = oldThemeName || DEFAULT_THEME_NAME;
       site.themeConfig = defaultTheme;
+      await this.saveSite(site);
       this.exceptionService.throwError(
         `${error.message}\n\nTheme of this site has been reset to Default Theme`,
       );
