@@ -2,7 +2,7 @@ import { Field, INDEX_PAGE_NAME, ARTICLE_PAGE_NAME } from './Page';
 
 type PageName = string;
 
-export const DEFAULT_THEME_NAME = 'default';
+export const DEFAULT_THEME_NAME = 'Default';
 
 export interface Theme {
   readonly name: string; // no need in config.js

@@ -14,7 +14,7 @@ export interface PluginDataDb {
 }
 
 export interface ThemeLoader {
-  fetch: (themeName: string) => Promise<Theme | null>;
+  fetch: (themeName: string) => Promise<Theme | string>;
   fetchAll: () => Promise<Theme[]>;
 }
 
@@ -62,9 +62,8 @@ export class PluginDataRepository {
 
     const theme = await this.themeLoader.fetch(themeName);
 
-    if (!theme) {
-      console.warn(`fail to load theme: ${themeName}.`);
-      return null;
+    if (typeof theme === 'string') {
+      throw Error(`Fail to load theme: ${themeName}.\nReason: ${theme}`);
     }
 
     return theme;

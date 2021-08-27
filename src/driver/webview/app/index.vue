@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, provide } from 'vue';
-import { Tabs, Button } from 'ant-design-vue';
+import { Tabs, Button, Modal } from 'ant-design-vue';
 import { CloseOutlined, RocketOutlined } from '@ant-design/icons-vue';
 import { container } from 'tsyringe';
 import ArticleList from './ArticleList/index.vue';
@@ -10,6 +10,7 @@ import { ArticleService, token as articleToken } from '../../../domain/service/A
 import { SiteService, token as siteToken } from '../../../domain/service/SiteService';
 import { PageService, token as pageToken } from '../../../domain/service/PageService';
 import { NoteService, token as noteToken } from '../../../domain/service/NoteService';
+import { ExceptionService } from '../../../domain/service/ExceptionService';
 import { selfish, quitApp, generateSite } from '../utils';
 
 export default defineComponent({
@@ -28,6 +29,10 @@ export default defineComponent({
     provide(noteToken, selfish(container.resolve(NoteService)));
     provide(siteToken, selfish(container.resolve(SiteService)));
     provide(pageToken, selfish(container.resolve(PageService)));
+
+    container.resolve(ExceptionService).on('error', (msg) => {
+      Modal.error({ content: msg, title: 'Oops!', style: { whiteSpace: 'pre-line' } });
+    });
 
     return { quitApp, generateSite };
   },

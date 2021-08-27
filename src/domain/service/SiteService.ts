@@ -4,6 +4,7 @@ import { Theme, DEFAULT_THEME_NAME, defaultTheme } from '../model/Theme';
 import { Site, defaultSite } from '../model/Site';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { ArticleService } from './ArticleService';
+import { ExceptionService } from './ExceptionService';
 
 export const token: InjectionKey<SiteService> = Symbol('siteService');
 @singleton()
@@ -12,6 +13,7 @@ export class SiteService {
   readonly site: Ref<Site | null> = ref(null);
   readonly themes: Ref<Theme[]> = ref([]);
   private readonly articleService = container.resolve(ArticleService);
+  private readonly exceptionService = container.resolve(ExceptionService);
   constructor() {
     this.init();
   }
@@ -47,13 +49,15 @@ export class SiteService {
       return;
     }
 
-    const theme = await this.pluginDataRepository.getTheme(site.themeName);
-
-    if (theme) {
+    try {
+      const theme = await this.pluginDataRepository.getTheme(site.themeName);
       site.themeConfig = theme;
-    } else {
+    } catch (error) {
       site.themeName = oldThemeName || DEFAULT_THEME_NAME;
       site.themeConfig = defaultTheme;
+      this.exceptionService.throwError(
+        `${error.message}\n\nTheme of this site has been reset to Default Theme`,
+      );
     }
   }
 

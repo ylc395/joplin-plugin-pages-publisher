@@ -49,13 +49,15 @@ export async function loadTheme(themeName: string) {
     const res = await readJson(`${pluginDir}/themes/${themeName}/config.json`);
 
     if (!themeValidate(res)) {
-      const errMsg = themeValidate.errors?.map(({ message }) => message).join('\n');
-      throw new Error(errMsg);
+      const errMsg = themeValidate.errors
+        ?.map(({ message, instancePath }) => `${instancePath}: ${message}`)
+        .join('\n');
+      throw new Error(`Invalid config.json: ${errMsg}`);
     }
     return res;
   } catch (err) {
     console.warn(err);
-    return null;
+    return err.message;
   }
 }
 
