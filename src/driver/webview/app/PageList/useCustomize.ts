@@ -26,7 +26,7 @@ export function useCustomize() {
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               isValidUrl(value, page.value!.name)
                 ? Promise.resolve()
-                : Promise.reject('duplicated url'),
+                : Promise.reject('Invalid url'),
           },
         ];
       }

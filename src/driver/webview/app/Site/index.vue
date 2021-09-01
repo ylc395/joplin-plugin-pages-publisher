@@ -1,6 +1,6 @@
 <script lang="ts">
 import { computed, defineComponent, inject, provide } from 'vue';
-import { Form, Input, Select, Button, InputNumber } from 'ant-design-vue';
+import { Form, Select, Button, InputNumber } from 'ant-design-vue';
 import { token as siteToken } from '../../../../domain/service/SiteService';
 import { useDraftForm } from '../../composable/useDraftForm';
 import FieldForm from '../../components/Form/index.vue';
@@ -10,7 +10,6 @@ export default defineComponent({
   components: {
     Form,
     FormItem: Form.Item,
-    Input,
     Select,
     SelectOption: Select.Option,
     Button,
@@ -54,6 +53,7 @@ export default defineComponent({
     };
 
     const canSave = computed(() => canSaveSite.value || canSaveFieldValues.value);
+    const hasThemeFields = computed(() => Boolean(themeConfig.value?.siteFields?.length));
 
     provide(formToken, {
       model: fieldValues,
@@ -69,6 +69,7 @@ export default defineComponent({
       modelRef,
       save,
       canSave,
+      hasThemeFields,
     };
   },
 });
@@ -76,9 +77,6 @@ export default defineComponent({
 <template>
   <div class="px-6">
     <Form :labelCol="{ span: 4 }">
-      <FormItem label="Site Name" v-bind="validateInfos.name">
-        <Input v-model:value="modelRef.name" />
-      </FormItem>
       <FormItem label="Theme" v-bind="validateInfos.themeName">
         <Select v-model:value="modelRef.themeName" @change="loadTheme">
           <SelectOption v-for="{ name } of themes" :key="name">{{ name }}</SelectOption>
@@ -87,7 +85,7 @@ export default defineComponent({
       <FormItem label="RSS">
         <Select v-model:value="modelRef.RSSMode">
           <SelectOption value="none"> No RSS </SelectOption>
-          <SelectOption value="abstract"> Only Digest </SelectOption>
+          <SelectOption value="digest"> Only Digest </SelectOption>
           <SelectOption value="full"> Full Content </SelectOption>
         </Select>
       </FormItem>
@@ -95,7 +93,7 @@ export default defineComponent({
         <InputNumber v-model:value="modelRef.RSSLength" :min="1" />
       </FormItem>
     </Form>
-    <FieldForm />
+    <FieldForm v-if="hasThemeFields" class="mt-10" />
     <div class="text-right">
       <Button type="primary" :disabled="!canSave" @click="save">Save</Button>
     </div>
