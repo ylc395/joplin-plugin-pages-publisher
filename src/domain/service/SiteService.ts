@@ -1,6 +1,6 @@
 import { container, singleton } from 'tsyringe';
-import { Ref, ref, watchEffect, InjectionKey } from 'vue';
-import { Theme, DEFAULT_THEME_NAME, defaultTheme } from '../model/Theme';
+import { Ref, ref, shallowRef, InjectionKey, computed } from 'vue';
+import { Theme, defaultTheme } from '../model/Theme';
 import { Site, defaultSite } from '../model/Site';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { ExceptionService } from './ExceptionService';
@@ -9,48 +9,60 @@ export const token: InjectionKey<SiteService> = Symbol('siteService');
 @singleton()
 export class SiteService {
   private readonly pluginDataRepository = new PluginDataRepository();
-  readonly site: Ref<Site | null> = ref(null);
-  readonly themes: Ref<Theme[]> = ref([]);
   private readonly exceptionService = container.resolve(ExceptionService);
+  readonly site: Ref<Site | null> = ref(null);
+  readonly themes: Ref<Theme[]> = shallowRef([]);
+  readonly themeConfig: Ref<Theme | null> = shallowRef(null);
+  readonly siteFieldValues: Ref<Record<string, unknown>> = ref({});
   constructor() {
     this.init();
   }
+
   private async init() {
+    this.themes.value = await this.pluginDataRepository.getThemes();
     this.site.value = {
       ...defaultSite,
       ...(await this.pluginDataRepository.getSite()),
     };
-    watchEffect(this.loadTheme.bind(this));
-    this.themes.value = await this.pluginDataRepository.getThemes();
+
+    const { themeName } = this.site.value;
+    this.loadTheme(themeName);
   }
 
-  private async loadTheme() {
-    const site = this.site.value;
-
-    if (!site) {
-      throw new Error('site is not initialized');
-    }
-
-    const oldThemeName = site.themeConfig?.name;
-
-    if (site.themeName === oldThemeName) {
-      return;
-    }
-
+  async loadTheme(themeName: string) {
     try {
-      const theme = await this.pluginDataRepository.getTheme(site.themeName);
-      site.themeConfig = theme;
+      this.themeConfig.value = await this.pluginDataRepository.getTheme(themeName);
+      this.siteFieldValues.value =
+        (await this.pluginDataRepository.getSiteValuesOfTheme(themeName)) || {};
     } catch (error) {
-      site.themeName = oldThemeName || DEFAULT_THEME_NAME;
-      site.themeConfig = defaultTheme;
-      await this.saveSite(site);
-      this.exceptionService.throwError(
-        `${error.message}\n\nTheme of this site has been reset to Default Theme.`,
-      );
+      this.themeConfig.value = this.themeConfig.value || defaultTheme;
+      this.siteFieldValues.value = this.siteFieldValues.value || {};
+      this.exceptionService.throwError(error.message);
     }
   }
 
   async saveSite(site: Partial<Site>) {
     await this.pluginDataRepository.saveSite(Object.assign(this.site.value, site));
   }
+
+  async saveSiteValues(values: Record<string, unknown>) {
+    if (!this.site.value) {
+      throw new Error('no site');
+    }
+
+    await this.pluginDataRepository.saveSiteFieldValues(
+      this.site.value.themeName,
+      Object.assign(this.siteFieldValues.value, values),
+    );
+  }
+
+  siteFieldRules = computed(() => {
+    return (this.themeConfig.value?.siteFields ?? []).reduce((result, field) => {
+      if (field.rules) {
+        result[field.name] = field.rules;
+      }
+
+      return result;
+    }, {} as Record<string, unknown>);
+  });
 }

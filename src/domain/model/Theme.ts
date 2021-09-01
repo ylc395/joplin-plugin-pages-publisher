@@ -9,6 +9,8 @@ export interface Theme {
   readonly author?: string;
   readonly version: string;
   readonly pages: Readonly<Record<PageName, Field[] | undefined>>;
+  readonly siteFields?: Readonly<Field[]>;
+  readonly articleFields?: Readonly<Field[]>;
 }
 
 export const defaultTheme: Theme = {

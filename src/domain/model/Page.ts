@@ -1,6 +1,6 @@
 import { compact } from 'lodash';
-import { computed, reactive } from 'vue';
-import type { Site } from './Site';
+import { computed, reactive, Ref } from 'vue';
+import type { Theme } from './Theme';
 
 export interface Field {
   readonly name: string;
@@ -35,7 +35,7 @@ export class Page {
   constructor(
     readonly name: string,
     fieldVars: Vars, // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
-    private readonly site: Site,
+    private readonly themeConfig: Ref<Theme | null>,
   ) {
     this.fieldVars = reactive(fieldVars);
   }
@@ -53,10 +53,8 @@ export class Page {
   });
 
   fields = computed<Field[]>(() => {
-    const { themeConfig } = this.site;
-
-    if (!themeConfig) {
-      throw new Error('site is not ready when create page');
+    if (!this.themeConfig.value) {
+      return [];
     }
 
     return compact([
@@ -67,7 +65,7 @@ export class Page {
             defaultValue: this.name,
             placeholder: 'If url is empty, page name will be used as url.',
           },
-      ...(themeConfig.pages[this.name] ?? []),
+      ...(this.themeConfig.value.pages[this.name] ?? []),
     ]);
   });
 }

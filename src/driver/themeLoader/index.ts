@@ -43,7 +43,8 @@ const THEME_SCHEMA = {
       additionalProperties: { type: 'array', items: FIELD_SCHEMA },
       propertyNames: { pattern: '^[^_]' },
     },
-    site: { type: 'array', items: FIELD_SCHEMA },
+    siteFields: { type: 'array', items: FIELD_SCHEMA },
+    articleFields: { type: 'array', items: FIELD_SCHEMA },
   },
   required: ['name', 'version', 'pages'],
 } as const;

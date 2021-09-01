@@ -17,18 +17,18 @@ export class PageService {
   }
 
   private async initPages() {
-    const { site } = this.siteService;
+    const { site, themeConfig } = this.siteService;
 
-    if (!site.value?.themeConfig) {
+    if (!site.value || !themeConfig.value || site.value.themeName !== themeConfig.value.name) {
       return;
     }
 
-    const pagesVars =
-      (await this.pluginDataRepository.getFieldVarsOfTheme(site.value.themeName)) || {};
+    const themeName = site.value.themeName;
+    const pagesVars = (await this.pluginDataRepository.getFieldVarsOfTheme(themeName)) || {};
 
-    this.pages.value = Object.keys(site.value.themeConfig.pages).map(
+    this.pages.value = Object.keys(themeConfig.value.pages).map(
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      (pageName) => new Page(pageName, pagesVars[pageName] || {}, site.value!),
+      (pageName) => new Page(pageName, pagesVars[pageName] || {}, themeConfig),
     );
   }
 
