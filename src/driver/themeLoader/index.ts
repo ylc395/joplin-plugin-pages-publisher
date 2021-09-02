@@ -2,6 +2,7 @@ import joplin from 'api';
 import Ajv from 'ajv';
 import type { readJSON as IReadJSON, readdir as IReaddir } from 'fs-extra';
 import type { Theme } from '../../domain/model/Theme';
+import { DEFAULT_THEME_NAME } from '../../domain/model/Theme';
 
 const { readJson, readdir } = joplin.require('fs-extra') as {
   readJson: typeof IReadJSON;
@@ -51,7 +52,16 @@ const THEME_SCHEMA = {
 
 const themeValidate = new Ajv().compile<Theme>(THEME_SCHEMA);
 
+async function loadDefault(): Promise<Theme> {
+  const installDir = await joplin.plugins.installationDir();
+  return readJson(`${installDir}/assets/defaultTheme/config.json`);
+}
+
 export async function loadTheme(themeName: string) {
+  if (themeName === DEFAULT_THEME_NAME) {
+    return loadDefault();
+  }
+
   const pluginDir = await joplin.plugins.dataDir();
   try {
     const res = await readJson(`${pluginDir}/themes/${themeName}/config.json`);
@@ -79,7 +89,7 @@ export async function loadThemes() {
       subDirectories.map((name) => readJson(`${pluginDir}/themes/${name}/config.json`)),
     );
 
-    const themes = [];
+    const themes = [await loadDefault()];
     for (const [i, result] of results.entries()) {
       if (result.status === 'fulfilled') {
         result.value.name = result.value.name || subDirectories[i];

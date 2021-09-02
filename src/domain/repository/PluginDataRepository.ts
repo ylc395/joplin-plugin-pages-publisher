@@ -3,7 +3,7 @@ import { container, InjectionToken } from 'tsyringe';
 import type { Article } from '../model/Article';
 import type { Vars } from '../model/Page';
 import { Site } from '../model/Site';
-import { defaultTheme, Theme } from '../model/Theme';
+import type { Theme } from '../model/Theme';
 import type { PagesFieldVars } from '../service/PageService';
 
 export interface PluginDataDb {
@@ -52,10 +52,6 @@ export class PluginDataRepository {
   }
 
   async getTheme(themeName: string) {
-    if (themeName === defaultTheme.name) {
-      return defaultTheme;
-    }
-
     try {
       const theme = await this.themeLoader.fetch(themeName);
       return theme;
@@ -66,7 +62,6 @@ export class PluginDataRepository {
 
   async getThemes() {
     const themes = await this.themeLoader.fetchAll();
-
-    return [defaultTheme, ...themes];
+    return themes;
   }
 }

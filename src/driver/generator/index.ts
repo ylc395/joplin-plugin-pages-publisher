@@ -6,9 +6,9 @@ import type { readFileSync as IReadFileSync, outputFile as IOutputFile } from 'f
 import type { Site } from '../../domain/model/Site';
 import type { Article } from '../../domain/model/Article';
 import { ARTICLE_PAGE_NAME, INDEX_PAGE_NAME } from '../../domain/model/Page';
-import { defaultTheme, DEFAULT_THEME_NAME } from '../../domain/model/Theme';
 import { Db } from '../db';
 import { loadTheme } from '../themeLoader';
+import { DEFAULT_THEME_NAME } from '../../domain/model/Theme';
 
 const { readFileSync, outputFile } = joplin.require('fs-extra') as {
   readFileSync: typeof IReadFileSync;
@@ -35,7 +35,7 @@ async function getSite() {
 }
 
 async function getThemeData(themeName: string) {
-  const themeConfig = themeName === DEFAULT_THEME_NAME ? defaultTheme : await loadTheme(themeName);
+  const themeConfig = await loadTheme(themeName);
 
   if (!themeConfig) {
     throw new Error(`fail to load theme config: ${themeName}`);
@@ -53,14 +53,15 @@ async function getThemeData(themeName: string) {
   return { pagesFieldVars, pages: themeConfig.pages, defaultFieldVars };
 }
 
-async function outputPage(
-  pageName: string,
-  pluginDir: string,
-  values: Record<string, unknown>,
-  site: Required<Site>,
-) {
-  const templatePath = `${pluginDir}/themes/${site.themeName}/templates/${pageName}.ejs`;
-  const siteData = { ...pick(site, ['generateAt', 'articles']), ...site.custom[site.themeName] };
+async function outputPage(pageName: string, values: Record<string, unknown>, site: Required<Site>) {
+  const { themeName } = site;
+  const dataDir = await joplin.plugins.dataDir();
+  const themeDir =
+    themeName === DEFAULT_THEME_NAME
+      ? `${await joplin.plugins.installationDir()}/assets/defaultTheme`
+      : `${dataDir}/themes/${themeName}`;
+  const templatePath = `${themeDir}/templates/${pageName}.ejs`;
+  const siteData = { ...pick(site, ['generateAt', 'articles']), ...site.custom[themeName] };
 
   if (pageName === ARTICLE_PAGE_NAME) {
     for (const article of site.articles) {
@@ -70,7 +71,7 @@ async function outputPage(
         { async: true },
       );
       await outputFile(
-        `${pluginDir}/output/${values.url || pageName}/${article.url}.html`,
+        `${dataDir}/output/${values.url || pageName}/${article.url}.html`,
         htmlString,
       );
     }
@@ -81,7 +82,7 @@ async function outputPage(
       { async: true },
     );
     await outputFile(
-      `${pluginDir}/output/${pageName === INDEX_PAGE_NAME ? 'index' : values.url || pageName}.html`,
+      `${dataDir}/output/${pageName === INDEX_PAGE_NAME ? 'index' : values.url || pageName}.html`,
       htmlString,
     );
   }
@@ -91,11 +92,10 @@ export default async function () {
   try {
     const site = await getSite();
     const { pages, pagesFieldVars, defaultFieldVars } = await getThemeData(site.themeName);
-    const pluginDir = await joplin.plugins.dataDir();
 
     for (const pageName of Object.keys(pages)) {
       const fieldValues = { ...defaultFieldVars[pageName], ...pagesFieldVars[pageName] };
-      await outputPage(pageName, pluginDir, fieldValues, site);
+      await outputPage(pageName, fieldValues, site);
     }
   } catch (error) {
     console.warn(error);

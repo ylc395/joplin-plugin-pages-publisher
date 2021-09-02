@@ -1,0 +1,11 @@
+{
+  "name": "Default",
+  "author": "ylc395",
+  "version": "0.0.1",
+  "pages": {
+    "index": [{ "name": "slogan" }],
+    "article": [],
+    "archives": [],
+    "about": [{ "name": "content", "inputType": "textarea", "rules": [{ "required": true }] }]
+  }
+}

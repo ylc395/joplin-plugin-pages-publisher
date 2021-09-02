@@ -1,6 +1,6 @@
 import { container, singleton } from 'tsyringe';
 import { Ref, shallowRef, InjectionKey, computed, toRaw } from 'vue';
-import { Theme, defaultTheme } from '../model/Theme';
+import { Theme, DEFAULT_THEME_NAME } from '../model/Theme';
 import { Site, defaultSite } from '../model/Site';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { ExceptionService } from './ExceptionService';
@@ -47,7 +47,8 @@ export class SiteService {
     try {
       this.themeConfig.value = await this.pluginDataRepository.getTheme(themeName);
     } catch (error) {
-      this.themeConfig.value = this.themeConfig.value || defaultTheme;
+      this.themeConfig.value =
+        this.themeConfig.value || (await this.pluginDataRepository.getTheme(DEFAULT_THEME_NAME));
       this.exceptionService.throwError(error.message);
     }
   }
