@@ -1,5 +1,5 @@
 import { container, singleton } from 'tsyringe';
-import { Ref, ref, shallowRef, InjectionKey, computed, toRaw } from 'vue';
+import { Ref, shallowRef, InjectionKey, computed, toRaw } from 'vue';
 import { Theme, defaultTheme } from '../model/Theme';
 import { Site, defaultSite } from '../model/Site';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
@@ -10,10 +10,24 @@ export const token: InjectionKey<SiteService> = Symbol('siteService');
 export class SiteService {
   private readonly pluginDataRepository = new PluginDataRepository();
   private readonly exceptionService = container.resolve(ExceptionService);
-  readonly site: Ref<Site | null> = ref(null);
+  readonly site: Ref<Site | null> = shallowRef(null);
   readonly themes: Ref<Theme[]> = shallowRef([]);
   readonly themeConfig: Ref<Theme | null> = shallowRef(null);
-  readonly siteFieldValues: Ref<Record<string, unknown>> = ref({});
+  readonly customFieldRules = computed(() => {
+    const themeName = this.themeConfig.value?.name;
+
+    if (!themeName) {
+      return {};
+    }
+
+    return (this.themeConfig.value?.siteFields ?? []).reduce((result, field) => {
+      if (field.rules) {
+        result[`custom.${themeName}.${field.name}`] = field.rules;
+      }
+
+      return result;
+    }, {} as Record<string, unknown>);
+  });
   constructor() {
     this.init();
   }
@@ -32,37 +46,14 @@ export class SiteService {
   async loadTheme(themeName: string) {
     try {
       this.themeConfig.value = await this.pluginDataRepository.getTheme(themeName);
-      this.siteFieldValues.value =
-        (await this.pluginDataRepository.getSiteValuesOfTheme(themeName)) || {};
     } catch (error) {
       this.themeConfig.value = this.themeConfig.value || defaultTheme;
-      this.siteFieldValues.value = this.siteFieldValues.value || {};
       this.exceptionService.throwError(error.message);
     }
   }
 
-  async saveSite(site: Partial<Site>) {
-    await this.pluginDataRepository.saveSite(toRaw(Object.assign(this.site.value, site)));
+  async saveSite(site?: Partial<Site>) {
+    const siteData = Object.assign(this.site.value, toRaw(site));
+    await this.pluginDataRepository.saveSite(siteData);
   }
-
-  async saveSiteValues(values: Record<string, unknown>) {
-    if (!this.site.value) {
-      throw new Error('no site');
-    }
-
-    await this.pluginDataRepository.saveSiteFieldValues(
-      this.site.value.themeName,
-      toRaw(Object.assign(this.siteFieldValues.value, values)),
-    );
-  }
-
-  siteFieldRules = computed(() => {
-    return (this.themeConfig.value?.siteFields ?? []).reduce((result, field) => {
-      if (field.rules) {
-        result[field.name] = field.rules;
-      }
-
-      return result;
-    }, {} as Record<string, unknown>);
-  });
 }

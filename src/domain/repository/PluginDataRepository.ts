@@ -28,10 +28,6 @@ export class PluginDataRepository {
     return this.pluginDataLoader.fetch<PagesFieldVars>(['pagesFieldVars', themeName]);
   }
 
-  getSiteValuesOfTheme(themeName: string) {
-    return this.pluginDataLoader.fetch<PagesFieldVars>(['pagesFieldVars', themeName, '_site']);
-  }
-
   saveFieldVars(themeName: string, pageName: string, vars: Vars) {
     return this.pluginDataLoader.save(['pagesFieldVars', themeName, pageName], vars);
   }
@@ -53,10 +49,6 @@ export class PluginDataRepository {
 
   async saveSite(site: Site) {
     await this.pluginDataLoader.save(['site'], site);
-  }
-
-  async saveSiteFieldValues(themeName: string, siteFieldValues: Record<string, unknown>) {
-    await this.pluginDataLoader.save(['pagesFieldVars', themeName, '_site'], siteFieldValues);
   }
 
   async getTheme(themeName: string) {

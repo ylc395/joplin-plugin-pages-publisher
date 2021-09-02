@@ -7,6 +7,7 @@ export interface Site {
   RSSLength: number;
   generatedAt?: number;
   articles?: Article[];
+  custom?: Record<string, Record<string, unknown> | undefined>;
 }
 
 export const defaultSite: Site = {

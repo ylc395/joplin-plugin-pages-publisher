@@ -17,54 +17,27 @@ export default defineComponent({
     FieldForm,
   },
   setup() {
-    const {
-      site,
-      themes,
-      saveSite,
-      loadTheme,
-      themeConfig,
-      siteFieldValues,
-      siteFieldRules,
-      saveSiteValues,
-    } =
+    const { site, themes, saveSite, loadTheme, themeConfig, customFieldRules } =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(siteToken)!;
-    const {
-      modelRef,
-      validateInfos,
-      save: _saveSite,
-      canSave: canSaveSite,
-    } = useDraftForm(site, saveSite, (data) => ({
+    const { modelRef, validateInfos, save, canSave } = useDraftForm(site, saveSite, (data) => ({
       name: [{ required: true }],
       themeName: [{ required: true }],
       RSSLength: [{ required: data.RSSMode !== 'none' }],
+      ...customFieldRules.value,
     }));
 
-    const {
-      modelRef: fieldValues,
-      validateInfos: fieldValidateInfos,
-      save: _saveSiteValues,
-      canSave: canSaveFieldValues,
-    } = useDraftForm(siteFieldValues, saveSiteValues, siteFieldRules);
-
-    const save = async () => {
-      await _saveSite();
-      await _saveSiteValues();
-    };
-
-    const canSave = computed(() => canSaveSite.value || canSaveFieldValues.value);
     const hasThemeFields = computed(() => Boolean(themeConfig.value?.siteFields?.length));
 
     provide(formToken, {
-      model: fieldValues,
-      validateInfos: fieldValidateInfos,
+      model: computed(() => modelRef.value.custom?.[themeConfig.value?.name || ''] ?? {}),
+      validateInfos,
       fields: computed(() => themeConfig.value?.siteFields ?? []),
     });
 
     return {
       themes,
       loadTheme,
-      canSaveFieldValues,
       validateInfos,
       modelRef,
       save,
