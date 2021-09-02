@@ -1,5 +1,5 @@
 import { container, singleton } from 'tsyringe';
-import { Ref, shallowRef, watchEffect, InjectionKey } from 'vue';
+import { Ref, shallowRef, watchEffect, InjectionKey, toRaw } from 'vue';
 import { Page, Vars } from '../model/Page';
 import { SiteService } from './SiteService';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
@@ -40,7 +40,7 @@ export class PageService {
     }
 
     Object.assign(page.fieldVars, vars);
-    return this.pluginDataRepository.saveFieldVars(themeName, page.name, vars);
+    return this.pluginDataRepository.saveFieldVars(themeName, page.name, toRaw(vars));
   }
 
   isValidUrl(url: string, pageName: string) {

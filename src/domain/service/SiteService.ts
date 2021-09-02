@@ -1,5 +1,5 @@
 import { container, singleton } from 'tsyringe';
-import { Ref, ref, shallowRef, InjectionKey, computed } from 'vue';
+import { Ref, ref, shallowRef, InjectionKey, computed, toRaw } from 'vue';
 import { Theme, defaultTheme } from '../model/Theme';
 import { Site, defaultSite } from '../model/Site';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
@@ -42,7 +42,7 @@ export class SiteService {
   }
 
   async saveSite(site: Partial<Site>) {
-    await this.pluginDataRepository.saveSite(Object.assign(this.site.value, site));
+    await this.pluginDataRepository.saveSite(toRaw(Object.assign(this.site.value, site)));
   }
 
   async saveSiteValues(values: Record<string, unknown>) {
@@ -52,7 +52,7 @@ export class SiteService {
 
     await this.pluginDataRepository.saveSiteFieldValues(
       this.site.value.themeName,
-      Object.assign(this.siteFieldValues.value, values),
+      toRaw(Object.assign(this.siteFieldValues.value, values)),
     );
   }
 

@@ -1,5 +1,5 @@
-import { ref, computed, InjectionKey, reactive } from 'vue';
-import { filter, pull, negate, map, uniq, findIndex } from 'lodash';
+import { ref, computed, InjectionKey, reactive, toRaw } from 'vue';
+import { filter, pull, negate, uniq, findIndex } from 'lodash';
 import { singleton } from 'tsyringe';
 import type { File } from '../model/JoplinData';
 import type { Article } from '../model/Article';
@@ -42,7 +42,7 @@ export class ArticleService {
   }
 
   saveArticles() {
-    return this.pluginDataRepository.saveArticles(this.articles);
+    return this.pluginDataRepository.saveArticles(toRaw(this.articles));
   }
 
   async loadArticle(article: Article) {

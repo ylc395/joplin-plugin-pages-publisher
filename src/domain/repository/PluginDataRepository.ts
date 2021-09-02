@@ -1,6 +1,5 @@
 import { omit } from 'lodash';
 import { container, InjectionToken } from 'tsyringe';
-import { toRaw } from 'vue';
 import type { Article } from '../model/Article';
 import type { Vars } from '../model/Page';
 import { Site } from '../model/Site';
@@ -34,7 +33,7 @@ export class PluginDataRepository {
   }
 
   saveFieldVars(themeName: string, pageName: string, vars: Vars) {
-    return this.pluginDataLoader.save(['pagesFieldVars', themeName, pageName], toRaw(vars));
+    return this.pluginDataLoader.save(['pagesFieldVars', themeName, pageName], vars);
   }
 
   getArticles() {
@@ -44,7 +43,7 @@ export class PluginDataRepository {
   saveArticles(articles: Article[]) {
     return this.pluginDataLoader.save(
       ['articles'],
-      toRaw(articles).map((article) => omit(article, ['images', 'attachments', 'noteContent'])),
+      articles.map((article) => omit(article, ['images', 'attachments', 'noteContent'])),
     );
   }
 
@@ -53,14 +52,11 @@ export class PluginDataRepository {
   }
 
   async saveSite(site: Site) {
-    await this.pluginDataLoader.save(['site'], toRaw(site));
+    await this.pluginDataLoader.save(['site'], site);
   }
 
   async saveSiteFieldValues(themeName: string, siteFieldValues: Record<string, unknown>) {
-    await this.pluginDataLoader.save(
-      ['pagesFieldVars', themeName, '_site'],
-      toRaw(siteFieldValues),
-    );
+    await this.pluginDataLoader.save(['pagesFieldVars', themeName, '_site'], siteFieldValues);
   }
 
   async getTheme(themeName: string) {
