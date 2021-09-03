@@ -1,4 +1,5 @@
 <script lang="ts">
+/* eslint-disable vue/no-v-html */
 import { defineComponent } from 'vue';
 import {
   Form,

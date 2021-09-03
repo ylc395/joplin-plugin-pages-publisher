@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <%- include('./_blocks/head') %>
+    <title>目录 - <%- $site.siteName %></title>
+  </head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">cyl.moe</a>
+      </nav>
+      <div class="blogs-list-block">
+        <% let years = []; $site.articles.forEach((item) => { const year =
+        item.formattedCreatedAt.substring(0, 4); if (!years.includes(year)) { years.push(year); }
+        }); %> <% years.forEach(function(year) { %>
+        <div class="annual-block">
+          <time class="annual-block-headline" datetime="<%= year %>"><%= year %></time>
+          <ol>
+            <% $site.articles.forEach(function(article) { %> <%if
+            (article.formattedCreatedAt.indexOf(year) !== -1) { %>
+            <li>
+              <time datetime="<%- article.formattedCreatedAt %>" class="annual-block-date">
+                <%= article.formattedCreatedAt.substring(5,10).replace('-', '/') %>
+              </time>
+              <a class="annual-block-title" href="<%= article.fullUrl %>"> <%= article.title %> </a>
+            </li>
+            <% } %> <% }); %>
+          </ol>
+        </div>
+        <% }); %>
+      </div>
+    </div>
+  </body>
+</html>

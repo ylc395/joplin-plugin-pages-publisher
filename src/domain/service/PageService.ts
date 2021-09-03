@@ -44,6 +44,10 @@ export class PageService {
   }
 
   isValidUrl(url: string, pageName: string) {
+    if (url.startsWith('_assets')) {
+      return false;
+    }
+
     return this.pages.value.every((page) => {
       const path = page.url.value.split('/')[1];
       return page.name === pageName || path !== url;

@@ -30,6 +30,18 @@ export type Vars = Record<string, any>;
 export const INDEX_PAGE_NAME = 'index';
 export const ARTICLE_PAGE_NAME = 'article';
 
+export const PREDEFINED_FIELDS: Record<string, Field[] | undefined> = {
+  [ARTICLE_PAGE_NAME]: [
+    {
+      name: 'dateFormat',
+      label: 'Date Format',
+      defaultValue: 'YYYY-MM-DD HH:mm',
+      placeholder: 'Default value is YYYY-MM-DD HH:mm.',
+      tip: 'See <a target="_blank" href="https://momentjs.com/docs/#/displaying/">moment.js document.</a>',
+    },
+  ],
+};
+
 export class Page {
   readonly fieldVars: Vars; // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
   constructor(
@@ -62,18 +74,11 @@ export class Page {
         ? null
         : {
             name: 'url',
+            label: 'Url',
             defaultValue: this.name,
             placeholder: 'Default value is the name of this page.',
           },
-      this.name === ARTICLE_PAGE_NAME
-        ? {
-            name: 'dateFormat',
-            label: 'Date Format',
-            defaultValue: 'YYYY-mm-dd',
-            placeholder: 'Default value is YYYY-mm-dd.',
-            tip: 'See <a target="_blank" href="https://momentjs.com/docs/#/displaying/">moment.js document.</a>',
-          }
-        : null,
+      ...(PREDEFINED_FIELDS[this.name] || []),
       ...(this.themeConfig.value.pages[this.name] ?? []),
     ]);
   });

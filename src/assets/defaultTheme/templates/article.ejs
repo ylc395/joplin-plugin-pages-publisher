@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <%- include('./_blocks/head') %>
+    <title><%= $article.title %> - <%- $site.siteName %></title>
+</head>
+</head>
+<body>
+    <div class="main">
+        <nav class="navigation">
+            <a href="/">cyl.moe</a>
+        </nav>
+        <article>
+            <header>
+                <h1 class="article-title"><%- $article.title %></h1>
+                <div class="article-info">
+                    <span>创建于：<time datetime="<%- $article.formattedCreatedAt %>"><%- $article.formattedCreatedAt %></time></span>
+                </div>
+            </header>
+            <div class="article-content markdown-body">
+                <%- $article.content %>
+            </div>
+        </article>
+    </div>
+</body>
+</html>
