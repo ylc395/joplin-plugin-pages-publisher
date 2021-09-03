@@ -3,8 +3,8 @@ import { defineComponent, inject, provide } from 'vue';
 import { Button } from 'ant-design-vue';
 import { token as customizeToken } from './useCustomize';
 import { useDraftForm } from '../../composable/useDraftForm';
-import Form from '../../components/Form/index.vue';
-import { token } from '../../components/Form/useForm';
+import Form from '../../components/FieldForm/index.vue';
+import { token } from '../../components/FieldForm/useFieldForm';
 
 export default defineComponent({
   components: {

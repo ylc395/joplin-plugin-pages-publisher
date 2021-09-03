@@ -3,8 +3,8 @@ import { computed, defineComponent, inject, provide } from 'vue';
 import { Form, Select, Button, InputNumber } from 'ant-design-vue';
 import { token as siteToken } from '../../../../domain/service/SiteService';
 import { useDraftForm } from '../../composable/useDraftForm';
-import FieldForm from '../../components/Form/index.vue';
-import { token as formToken } from '../../components/Form/useForm';
+import FieldForm from '../../components/FieldForm/index.vue';
+import { token as formToken } from '../../components/FieldForm/useFieldForm';
 
 export default defineComponent({
   components: {

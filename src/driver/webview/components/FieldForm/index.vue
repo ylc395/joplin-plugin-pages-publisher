@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, inject } from 'vue';
+import { defineComponent } from 'vue';
 import {
   Form,
   Select,
@@ -10,7 +10,7 @@ import {
   DatePicker,
   Input,
 } from 'ant-design-vue';
-import { token } from './useForm';
+import { useFieldForm } from './useFieldForm';
 
 export default defineComponent({
   components: {
@@ -26,8 +26,7 @@ export default defineComponent({
     Input,
   },
   setup() {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return inject(token)!;
+    return useFieldForm();
   },
 });
 </script>

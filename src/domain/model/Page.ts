@@ -62,9 +62,16 @@ export class Page {
         ? null
         : {
             name: 'url',
+            required: true,
             defaultValue: this.name,
-            placeholder: 'If url is empty, page name will be used as url.',
           },
+      this.name === ARTICLE_PAGE_NAME
+        ? {
+            name: 'dateFormat',
+            label: 'Date Format',
+            defaultValue: 'YYYY-mm-dd',
+          }
+        : null,
       ...(this.themeConfig.value.pages[this.name] ?? []),
     ]);
   });
