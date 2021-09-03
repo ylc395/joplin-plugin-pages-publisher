@@ -10,6 +10,7 @@ import {
   DatePicker,
   Input,
 } from 'ant-design-vue';
+import sanitizeHtml from 'sanitize-html';
 import { useFieldForm } from './useFieldForm';
 
 export default defineComponent({
@@ -26,7 +27,10 @@ export default defineComponent({
     Input,
   },
   setup() {
-    return useFieldForm();
+    return {
+      ...useFieldForm(),
+      sanitizeHtml,
+    };
   },
 });
 </script>
@@ -39,6 +43,9 @@ export default defineComponent({
       :label="field.label || field.name"
       v-bind="validateInfos[field.name]"
     >
+      <template v-if="field.tip" #extra>
+        <span v-html="sanitizeHtml(field.tip)"></span>
+      </template>
       <Select
         v-if="['select', 'multiple-select'].includes(field.inputType || '')"
         v-model:value="model[field.name]"

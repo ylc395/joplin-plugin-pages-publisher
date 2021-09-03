@@ -24,7 +24,7 @@ export function useCustomize() {
           {
             validator: (rule: unknown, value: string) =>
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              isValidUrl(value, page.value!.name)
+              !value || isValidUrl(value, page.value!.name)
                 ? Promise.resolve()
                 : Promise.reject('Invalid url'),
           },

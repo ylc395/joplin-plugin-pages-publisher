@@ -62,14 +62,16 @@ export class Page {
         ? null
         : {
             name: 'url',
-            required: true,
             defaultValue: this.name,
+            placeholder: 'Default value is the name of this page.',
           },
       this.name === ARTICLE_PAGE_NAME
         ? {
             name: 'dateFormat',
             label: 'Date Format',
             defaultValue: 'YYYY-mm-dd',
+            placeholder: 'Default value is YYYY-mm-dd.',
+            tip: 'See <a target="_blank" href="https://momentjs.com/docs/#/displaying/">moment.js document.</a>',
           }
         : null,
       ...(this.themeConfig.value.pages[this.name] ?? []),
