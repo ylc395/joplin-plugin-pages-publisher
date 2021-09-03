@@ -77,6 +77,13 @@ async function outputPage(pageName: string, values: Record<string, unknown>, sit
   const templatePath = `${themeDir}/templates/${pageName}.ejs`;
   const siteData = { ...pick(site, ['generateAt', 'articles']), ...site.custom[themeName] };
 
+  const env = {
+    $page: values,
+    $site: siteData,
+    _,
+    _moment: moment,
+  };
+
   if (pageName === ARTICLE_PAGE_NAME) {
     for (const article of site.articles) {
       if (!isString(values.dateFormat)) {
@@ -87,19 +94,14 @@ async function outputPage(pageName: string, values: Record<string, unknown>, sit
       article.formattedUpdatedAt = moment(article.updatedAt).format(values.dateFormat);
       article.fullUrl = `/${values.url}/${article.url}`;
 
-      const htmlString = await ejs.renderFile(templatePath, {
-        $page: values,
-        $article: article,
-        $site: siteData,
-        _,
-      });
+      const htmlString = await ejs.renderFile(templatePath, { ...env, article });
       await outputFile(
         `${dataDir}/output/${values.url || pageName}/${article.url}.html`,
         htmlString,
       );
     }
   } else {
-    const htmlString = await ejs.renderFile(templatePath, { $page: values, $site: siteData, _ });
+    const htmlString = await ejs.renderFile(templatePath, env);
     await outputFile(
       `${dataDir}/output/${pageName === INDEX_PAGE_NAME ? 'index' : values.url || pageName}.html`,
       htmlString,

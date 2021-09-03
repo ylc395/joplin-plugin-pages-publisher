@@ -12,7 +12,7 @@ const { readJson, readdir } = joplin.require('fs-extra') as {
 const FIELD_SCHEMA = {
   type: 'object',
   properties: {
-    name: { type: 'string' },
+    name: { type: 'string', pattern: '^[^_]' },
     label: { type: 'string' },
     tip: { type: 'string' },
     required: { type: 'boolean' },
