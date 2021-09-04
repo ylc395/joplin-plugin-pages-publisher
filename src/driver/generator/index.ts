@@ -14,6 +14,7 @@ import { ARTICLE_PAGE_NAME, INDEX_PAGE_NAME, PREDEFINED_FIELDS } from '../../dom
 import { Db } from '../db';
 import { loadTheme } from '../themeLoader';
 import { DEFAULT_THEME_NAME } from '../../domain/model/Theme';
+import { renderMarkdown, getJoplinMarkdownSetting } from './markdown';
 
 const { readFileSync, outputFile, copy } = joplin.require('fs-extra') as {
   readFileSync: typeof IReadFileSync;
@@ -70,7 +71,12 @@ async function getThemeDir(themeName: string) {
   return themeDir;
 }
 
-async function outputPage(pageName: string, values: Record<string, unknown>, site: Required<Site>) {
+async function outputPage(
+  pageName: string,
+  values: Record<string, unknown>,
+  site: Required<Site>,
+  mdPlugins: Record<string, unknown>,
+) {
   const { themeName } = site;
   const dataDir = await joplin.plugins.dataDir();
   const themeDir = await getThemeDir(themeName);
@@ -85,16 +91,17 @@ async function outputPage(pageName: string, values: Record<string, unknown>, sit
   };
 
   if (pageName === ARTICLE_PAGE_NAME) {
-    for (const article of site.articles) {
-      if (!isString(values.dateFormat)) {
-        throw new Error('no dateFormat');
-      }
+    if (!isString(values.dateFormat)) {
+      throw new Error('no dateFormat');
+    }
 
+    for (const article of site.articles) {
       article.formattedCreatedAt = moment(article.createdAt).format(values.dateFormat);
       article.formattedUpdatedAt = moment(article.updatedAt).format(values.dateFormat);
       article.fullUrl = `/${values.url}/${article.url}`;
+      article.htmlContent = (await renderMarkdown(article.content, mdPlugins)).html;
 
-      const htmlString = await ejs.renderFile(templatePath, { ...env, article });
+      const htmlString = await ejs.renderFile(templatePath, { ...env, $article: article });
       await outputFile(
         `${dataDir}/output/${values.url || pageName}/${article.url}.html`,
         htmlString,
@@ -121,9 +128,10 @@ export default async function () {
   try {
     const site = await getSite();
     const { pages, fieldValues } = await getThemeData(site.themeName);
+    const mdPlugins = await getJoplinMarkdownSetting();
 
     for (const pageName of Object.keys(pages)) {
-      await outputPage(pageName, fieldValues[pageName], site);
+      await outputPage(pageName, fieldValues[pageName], site, mdPlugins);
     }
     await copyAssets(site.themeName);
   } catch (error) {

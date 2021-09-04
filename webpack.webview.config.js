@@ -1,5 +1,4 @@
 /* eslint-env node */
-const path = require('path');
 const { VueLoaderPlugin } = require('vue-loader');
 
 module.exports = {

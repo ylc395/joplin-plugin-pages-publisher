@@ -6,6 +6,7 @@ export interface Article {
   url: string;
   fullUrl?: string;
   content: string;
+  htmlContent?: string;
   noteContent?: string;
   title: string;
   createdAt: number | Moment;
