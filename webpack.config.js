@@ -140,8 +140,7 @@ const pluginConfig = Object.assign({}, baseConfig, {
 		},
 		// JSON files can also be required from scripts so we include this.
 		// https://github.com/joplin/plugin-bibtex/pull/2
-		extensions: ['.tsx', '.ts', '.js', '.json'],
-		mainFields: ['main', 'module']
+		extensions: ['.js', '.tsx', '.ts', '.json'],
 	},
 	output: {
 		filename: 'index.js',

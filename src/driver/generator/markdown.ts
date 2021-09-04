@@ -1,4 +1,4 @@
-import { MarkupToHtml } from 'joplin-renderer';
+import { MarkupToHtml } from '@joplin/renderer';
 
 const markupToHtml = new MarkupToHtml();
 
