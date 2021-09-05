@@ -1,5 +1,5 @@
 import { ref, computed, InjectionKey, reactive, toRaw } from 'vue';
-import { filter, pull, negate, uniq, findIndex } from 'lodash';
+import { filter, pull, negate, uniq, findIndex, find } from 'lodash';
 import { singleton } from 'tsyringe';
 import type { File } from '../model/JoplinData';
 import type { Article } from '../model/Article';
@@ -23,6 +23,7 @@ export class ArticleService {
   });
   constructor() {
     this.init();
+    this.listenNoteChange();
   }
 
   private async init() {
@@ -39,6 +40,15 @@ export class ArticleService {
     }
 
     this.articles.push(...(articles ?? []));
+  }
+
+  private listenNoteChange() {
+    window.appEventBus.on('noteChange', async (noteId) => {
+      const article = find(this.articles, { noteId });
+      if (article) {
+        article.noteContent = await this.joplinDataRepository.getNoteContentOf(noteId);
+      }
+    });
   }
 
   saveArticles() {
