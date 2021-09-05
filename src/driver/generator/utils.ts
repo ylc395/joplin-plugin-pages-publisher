@@ -5,6 +5,7 @@ import type { copy as ICopy, outputFile as IOutputFile } from 'fs-extra';
 import { filter, mapValues, merge } from 'lodash';
 import { Db } from '../db';
 import { loadTheme } from '../themeLoader';
+import { fetchData, fetchAllData } from '../joplinApi';
 import type { Article } from '../../domain/model/Article';
 import type { Site } from '../../domain/model/Site';
 import type { File, Resource } from '../../domain/model/JoplinData';
@@ -126,7 +127,7 @@ export async function outputResources(resourceIds: string[], allResource: Resour
         extension,
       } = result;
       try {
-        const file: File = await joplin.data.get(['resources', id, 'file']);
+        const file = await fetchData<File>(['resources', id, 'file']);
         await outputFile(`${outputDir}/_resources/${id}.${extension}`, file.body);
       } catch (error) {
         console.warn(`Fail to load File ${id}: ${error}`);
@@ -144,7 +145,7 @@ interface ResourceInfo {
 }
 export type ResourceMap = Record<string, ResourceInfo>;
 export async function getAllResources() {
-  const { items: resources }: { items: Resource[] } = await joplin.data.get(['resources'], {
+  const resources = await fetchAllData<Resource>(['resources'], {
     fields: 'id,mime,file_extension,encryption_applied,encryption_blob_encrypted',
   });
 

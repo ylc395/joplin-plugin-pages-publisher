@@ -1,6 +1,6 @@
 import 'core-js/proposals/reflect-metadata';
 import joplin from 'api';
-import webviewHandler from './webviewHandler';
+import webviewHandler from './driver/webview/webviewHandler';
 
 const OPEN_PAGES_PUBLISHER_COMMAND = 'openPagesPublisher';
 const panels = joplin.views.panels;

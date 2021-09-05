@@ -1,15 +1,13 @@
 import { container } from 'tsyringe';
 import joplin from 'api';
-import { Db } from './driver/db';
-import type { DbReadRequest, DbWriteRequest } from './driver/db/webviewApi';
-import type { JoplinDataRequest } from './driver/joplinApi';
-import type { AppRequest } from './driver/webview/utils/webviewApi';
-import type {
-  ThemeConfigLoadRequest,
-  ThemeConfigsLoadRequest,
-} from './driver/themeLoader/webviewApi';
-import { loadTheme, loadThemes } from './driver/themeLoader';
-import generateSite from './driver/generator';
+import { Db } from '../db';
+import type { DbReadRequest, DbWriteRequest } from '../db/webviewApi';
+import type { JoplinDataRequest } from '../joplinApi/webviewApi';
+import type { AppRequest } from './utils/webviewApi';
+import type { ThemeConfigLoadRequest, ThemeConfigsLoadRequest } from '../themeLoader/webviewApi';
+import { loadTheme, loadThemes } from '../themeLoader';
+import generateSite from '../generator';
+import { fetchData, fetchAllData } from '../joplinApi';
 
 export default (panelId: string) => {
   const db = container.resolve(Db);
@@ -29,7 +27,9 @@ export default (panelId: string) => {
       case 'dbSave':
         return db.save(...request.args);
       case 'getJoplinData':
-        return joplin.data.get(...request.args);
+        return fetchData(...request.args);
+      case 'getJoplinDataAll':
+        return fetchAllData(...request.args);
       case 'loadThemeConfig':
         return loadTheme(request.themeName);
       case 'loadThemeConfigs':

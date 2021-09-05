@@ -1,31 +1,16 @@
-import { container } from 'tsyringe';
-import {
-  token as JoplinFetcherToken,
-  JoplinGetParams,
-} from '../../domain/repository/JoplinDataRepository';
+import joplin from 'api';
+import { JoplinGetParams } from '../../domain/repository/JoplinDataRepository';
 
-export interface JoplinDataRequest {
-  event: 'getJoplinData';
-  args: JoplinGetParams;
-}
-export interface JoplinResponse<T> {
+interface JoplinResponse<T> {
   items: T[];
   has_more: boolean;
 }
 
-declare const webviewApi: {
-  // warning: even if this method returns promise, it is still a sync method
-  postMessage: <T>(payload: JoplinDataRequest) => Promise<T>;
-};
-
-function fetchData<T>(...args: JoplinGetParams) {
-  return webviewApi.postMessage<T>({
-    event: 'getJoplinData',
-    args,
-  });
+export function fetchData<T>(...args: JoplinGetParams) {
+  return joplin.data.get(...args) as Promise<T>;
 }
 
-async function fetchAllData<T>(...[path, query]: JoplinGetParams) {
+export async function fetchAllData<T>(...[path, query]: JoplinGetParams) {
   let result: T[] = [];
   let page = 1;
   let hasMore = true;
@@ -42,5 +27,3 @@ async function fetchAllData<T>(...[path, query]: JoplinGetParams) {
 
   return result;
 }
-
-container.registerInstance(JoplinFetcherToken, { fetchData, fetchAllData });
