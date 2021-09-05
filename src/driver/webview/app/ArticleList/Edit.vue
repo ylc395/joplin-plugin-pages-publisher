@@ -93,10 +93,10 @@ export default defineComponent({
           </Select>
         </FormItem> -->
       </Form>
+      <div class="text-right">
+        <Button type="primary" class="mr-2" :disabled="!canSave" @click="save">Save</Button>
+        <Button @click="stopEditing">Cancel</Button>
+      </div>
     </Spin>
-    <div class="text-right">
-      <Button type="primary" class="mr-2" :disabled="!canSave" @click="save">Save</Button>
-      <Button @click="stopEditing">Cancel</Button>
-    </div>
   </div>
 </template>

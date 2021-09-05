@@ -1,9 +1,15 @@
 import { Form } from 'ant-design-vue';
-import { cloneDeep, every, isEqual, isEmpty } from 'lodash';
+import { every, isEqual, isEmpty, cloneDeepWith, isTypedArray } from 'lodash';
 import { Ref, computed, reactive, watchEffect, shallowRef } from 'vue';
 
 type Data = Record<string, unknown>;
 type Rules = Record<string, unknown>;
+
+const customClone = (value: unknown) => {
+  if (isTypedArray(value)) {
+    return null;
+  }
+};
 
 export function useDraftForm<T = Data>(
   model: Ref<T | null>,
@@ -17,7 +23,7 @@ export function useDraftForm<T = Data>(
   });
 
   const modelRef = computed(() => {
-    return (model.value ? reactive(cloneDeep(model.value as any)) : {}) as T;
+    return (model.value ? reactive(cloneDeepWith(model.value as any, customClone)) : {}) as T;
   });
 
   const { validateInfos, validate } = Form.useForm(
@@ -28,7 +34,7 @@ export function useDraftForm<T = Data>(
   const save = async () => {
     await validate();
     const result = await saveFunc(modelRef.value);
-    origin.value = cloneDeep(result || model.value);
+    origin.value = cloneDeepWith(result || model.value, customClone);
   };
 
   const canSave = computed(() => {
