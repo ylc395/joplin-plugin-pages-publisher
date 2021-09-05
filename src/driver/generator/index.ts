@@ -6,7 +6,17 @@ import type { readFileSync as IReadFileSync, outputFile as IOutputFile } from 'f
 import type { Site } from '../../domain/model/Site';
 import { ARTICLE_PAGE_NAME, INDEX_PAGE_NAME } from '../../domain/model/Page';
 import { renderMarkdown } from './markdown';
-import { getThemeDir, getSite, getThemeData, copyAssets, getJoplinMarkdownSetting } from './utils';
+import {
+  getThemeDir,
+  getSite,
+  getThemeData,
+  copyAssets,
+  outputResources,
+  getJoplinMarkdownSetting,
+  getOutputDir,
+  getAllResources,
+  ResourceMap,
+} from './utils';
 
 const { readFileSync, outputFile } = joplin.require('fs-extra') as {
   readFileSync: typeof IReadFileSync;
@@ -20,7 +30,8 @@ async function outputPage(
   values: Record<string, unknown>,
   site: Required<Site>,
   mdPlugins: Record<string, unknown>,
-  { dataDir, themeDir }: { dataDir: string; themeDir: string },
+  themeDir: string,
+  allResource: ResourceMap,
 ) {
   const { themeName } = site;
   const templatePath = `${themeDir}/templates/${pageName}.ejs`;
@@ -42,18 +53,28 @@ async function outputPage(
       article.formattedCreatedAt = moment(article.createdAt).format(values.dateFormat);
       article.formattedUpdatedAt = moment(article.updatedAt).format(values.dateFormat);
       article.fullUrl = `/${values.url}/${article.url}`;
-      article.htmlContent = (await renderMarkdown(article.content, mdPlugins)).html;
+      const { html, resourceIds } = await renderMarkdown(
+        article.content,
+        String(values.url),
+        mdPlugins,
+        allResource,
+        site.articles,
+      );
+      article.htmlContent = html;
 
       const htmlString = await ejs.renderFile(templatePath, { ...env, $article: article });
       await outputFile(
-        `${dataDir}/output/${values.url || pageName}/${article.url}.html`,
+        `${await getOutputDir()}/${values.url || pageName}/${article.url}.html`,
         htmlString,
       );
+      await outputResources(resourceIds, allResource);
     }
   } else {
     const htmlString = await ejs.renderFile(templatePath, env);
     await outputFile(
-      `${dataDir}/output/${pageName === INDEX_PAGE_NAME ? 'index' : values.url || pageName}.html`,
+      `${await getOutputDir()}/${
+        pageName === INDEX_PAGE_NAME ? 'index' : values.url || pageName
+      }.html`,
       htmlString,
     );
   }
@@ -64,11 +85,11 @@ export default async function () {
     const site = await getSite();
     const { pages, fieldValues } = await getThemeData(site.themeName);
     const mdPlugins = await getJoplinMarkdownSetting();
-    const dataDir = await joplin.plugins.dataDir();
     const themeDir = await getThemeDir(site.themeName);
+    const allResource = await getAllResources();
 
     for (const pageName of Object.keys(pages)) {
-      await outputPage(pageName, fieldValues[pageName], site, mdPlugins, { dataDir, themeDir });
+      await outputPage(pageName, fieldValues[pageName], site, mdPlugins, themeDir, allResource);
     }
     await copyAssets(site.themeName);
   } catch (error) {

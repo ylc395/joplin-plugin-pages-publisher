@@ -20,6 +20,9 @@ export interface Tag {
 export interface Resource {
   id: string;
   mime: string;
+  file_extension: string;
+  encryption_blob_encrypted: number;
+  encryption_applied: number;
 }
 
 export interface File {

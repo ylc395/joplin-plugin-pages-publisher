@@ -1,16 +1,20 @@
 import { DEFAULT_THEME_NAME } from '../../domain/model/Theme';
 import joplin from 'api';
 import { container } from 'tsyringe';
-import type { copy as ICopy } from 'fs-extra';
+import type { copy as ICopy, outputFile as IOutputFile } from 'fs-extra';
+import { filter, mapValues, merge } from 'lodash';
 import { Db } from '../db';
 import { loadTheme } from '../themeLoader';
 import type { Article } from '../../domain/model/Article';
 import type { Site } from '../../domain/model/Site';
-import { filter, mapValues, merge } from 'lodash';
+import type { File, Resource } from '../../domain/model/JoplinData';
 import { PREDEFINED_FIELDS } from '../../domain/model/Page';
 
 const db = container.resolve(Db);
-const { copy } = joplin.require('fs-extra') as { copy: typeof ICopy };
+const { copy, outputFile } = joplin.require('fs-extra') as {
+  copy: typeof ICopy;
+  outputFile: typeof IOutputFile;
+};
 
 export async function getThemeDir(themeName: string) {
   const themeDir =
@@ -59,14 +63,10 @@ export async function getThemeData(themeName: string) {
   return { fieldValues: merge(defaultFieldVars, pagesFieldVars), pages: themeConfig.pages };
 }
 
-export async function copyAssets(themeName: string) {
-  const themeDir = await getThemeDir(themeName);
-  const dataDir = await joplin.plugins.dataDir();
-  const assetsPath = `${themeDir}/_assets`;
-
-  await copy(assetsPath, `${dataDir}/output/_assets`);
-}
-
+export const PLUGIN_SETTING_PREFIX = 'markdown.plugin.';
+export const AUDIO_PLAYER_PLUGIN = 'audioPlayer';
+export const VIDEO_PLAYER_PLUGIN = 'videoPlayer';
+export const PDF_VIEWER_PLUGIN = 'pdfViewer';
 export async function getJoplinMarkdownSetting() {
   // @see https://github.com/laurent22/joplin/blob/1bc674a1f9a1f5021142d040459ef127db71ee62/packages/lib/models/Setting.ts#L873
   const pluginNames = [
@@ -76,6 +76,9 @@ export async function getJoplinMarkdownSetting() {
     'katex',
     'fountain',
     'mermaid',
+    AUDIO_PLAYER_PLUGIN,
+    VIDEO_PLAYER_PLUGIN,
+    PDF_VIEWER_PLUGIN,
     'mark',
     'footnote',
     'toc',
@@ -89,7 +92,7 @@ export async function getJoplinMarkdownSetting() {
   ];
 
   const values = await Promise.all<boolean>(
-    pluginNames.map((name) => joplin.settings.globalValue(`markdown.plugin.${name}`)),
+    pluginNames.map((name) => joplin.settings.globalValue(`${PLUGIN_SETTING_PREFIX}${name}`)),
   );
 
   return values.reduce((result, value, i) => {
@@ -99,4 +102,63 @@ export async function getJoplinMarkdownSetting() {
 
     return result;
   }, {} as Record<string, unknown>);
+}
+export async function getOutputDir() {
+  const dataDir = await joplin.plugins.dataDir();
+  return `${dataDir}/output`;
+}
+
+export async function copyAssets(themeName: string) {
+  const themeDir = await getThemeDir(themeName);
+  const assetsPath = `${themeDir}/_assets`;
+
+  await copy(assetsPath, `${await getOutputDir()}/_assets`);
+}
+
+export async function outputResources(resourceIds: string[], allResource: ResourceMap) {
+  const resourceResult = resourceIds.map((id) => allResource[id]);
+  const outputDir = await getOutputDir();
+
+  for (const [i, result] of resourceResult.entries()) {
+    if (result) {
+      const {
+        item: { id },
+        extension,
+      } = result;
+      try {
+        const file: File = await joplin.data.get(['resources', id, 'file']);
+        await outputFile(`${outputDir}/_resources/${id}.${extension}`, file.body);
+      } catch (error) {
+        console.warn(`Fail to load File ${id}: ${error}`);
+      }
+    } else {
+      console.warn(`Fail to load resource: ${resourceIds[i]}`);
+    }
+  }
+}
+
+interface ResourceInfo {
+  localState: { fetch_status: number };
+  extension: string;
+  item: { mime: string; id: string; encryption_blob_encrypted: number; encryption_applied: number };
+}
+export type ResourceMap = Record<string, ResourceInfo>;
+export async function getAllResources() {
+  const { items: resources }: { items: Resource[] } = await joplin.data.get(['resources'], {
+    fields: 'id,mime,file_extension,encryption_applied,encryption_blob_encrypted',
+  });
+
+  return resources.reduce((result, resource) => {
+    result[resource.id] = {
+      extension: resource.file_extension,
+      item: {
+        mime: resource.mime,
+        id: resource.id,
+        encryption_blob_encrypted: resource.encryption_blob_encrypted,
+        encryption_applied: resource.encryption_applied,
+      },
+      localState: { fetch_status: 2 },
+    };
+    return result;
+  }, {} as ResourceMap);
 }
