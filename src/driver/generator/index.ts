@@ -1,8 +1,6 @@
 import ejs from 'ejs';
 import moment from 'moment';
 import _, { isString, pick } from 'lodash';
-import joplin from 'api';
-import type { readFileSync as IReadFileSync, outputFile as IOutputFile } from 'fs-extra';
 import type { Site } from '../../domain/model/Site';
 import { ARTICLE_PAGE_NAME, INDEX_PAGE_NAME } from '../../domain/model/Page';
 import { renderMarkdown } from './markdown';
@@ -18,11 +16,7 @@ import {
   copyMarkdownPluginAssets,
 } from './utils';
 import type { ResourceMap } from './type';
-
-const { readFileSync, outputFile } = joplin.require('fs-extra') as {
-  readFileSync: typeof IReadFileSync;
-  outputFile: typeof IOutputFile;
-};
+import { readFileSync, outputFile } from './fs';
 
 ejs.fileLoader = readFileSync;
 

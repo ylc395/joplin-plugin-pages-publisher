@@ -1,7 +1,6 @@
 import { DEFAULT_THEME_NAME } from '../../domain/model/Theme';
 import joplin from 'api';
 import { container } from 'tsyringe';
-import type { copy as ICopy, outputFile as IOutputFile } from 'fs-extra';
 import { filter, mapValues, merge } from 'lodash';
 import { Db } from '../db';
 import { loadTheme } from '../themeLoader';
@@ -11,12 +10,9 @@ import type { Site } from '../../domain/model/Site';
 import type { File, Resource } from '../../domain/model/JoplinData';
 import { PREDEFINED_FIELDS } from '../../domain/model/Page';
 import type { RenderResultPluginAsset, ResourceMap } from './type';
+import { copy, outputFile } from './fs';
 
 const db = container.resolve(Db);
-const { copy, outputFile } = joplin.require('fs-extra') as {
-  copy: typeof ICopy;
-  outputFile: typeof IOutputFile;
-};
 
 export async function getThemeDir(themeName: string) {
   const themeDir =
