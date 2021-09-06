@@ -1,11 +1,5 @@
-import joplin from 'api';
 import type { Adapter } from 'lowdb';
-import type { readFile as IReadFile, writeFile as IWriteFile } from 'fs-extra';
-
-const { readFile, writeFile } = joplin.require('fs-extra') as {
-  readFile: typeof IReadFile;
-  writeFile: typeof IWriteFile;
-};
+import { readFile, writeFile } from '../fs';
 
 export class JSONFile<T> implements Adapter<T> {
   constructor(private readonly filename: string) {}
