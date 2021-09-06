@@ -37,9 +37,11 @@ export class PluginDataRepository {
   }
 
   saveArticles(articles: Article[]) {
+    const toOmit = ['images', 'attachments', 'noteContent', 'htmlContent'];
+
     return this.pluginDataLoader.save(
       ['articles'],
-      articles.map((article) => omit(article, ['images', 'attachments', 'noteContent'])),
+      articles.map((article) => omit(article, toOmit)),
     );
   }
 
