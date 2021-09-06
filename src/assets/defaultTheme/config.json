@@ -3,7 +3,7 @@
   "author": "ylc395",
   "version": "0.0.1",
   "pages": {
-    "index": [{ "name": "slogan", "label": "Slogan" }],
+    "index": [],
     "article": [],
     "archives": [],
     "about": [

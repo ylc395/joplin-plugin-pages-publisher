@@ -37,7 +37,7 @@ export const PREDEFINED_FIELDS: Record<string, Field[] | undefined> = {
       label: 'Date Format',
       defaultValue: 'YYYY-MM-DD HH:mm',
       placeholder: 'Default value is YYYY-MM-DD HH:mm.',
-      tip: 'See <a target="_blank" href="https://momentjs.com/docs/#/displaying/">moment.js document.</a>',
+      tip: 'See <a href="https://momentjs.com/docs/#/displaying/">moment.js document.</a>',
     },
   ],
 };

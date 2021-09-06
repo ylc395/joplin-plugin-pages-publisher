@@ -11,8 +11,39 @@ import {
   DatePicker,
   Input,
 } from 'ant-design-vue';
-import sanitizeHtml from 'sanitize-html';
+import _sanitizeHtml from 'sanitize-html';
 import { useFieldForm } from './useFieldForm';
+
+const sanitizeHtml = (html: string) =>
+  _sanitizeHtml(html, {
+    allowedTags: [
+      'span',
+      'a',
+      'strong',
+      'em',
+      'b',
+      'small',
+      'abbr',
+      'code',
+      'time',
+      'samp',
+      'kdb',
+      'ruby',
+      'rt',
+      'rp',
+      'ins',
+      'del',
+    ],
+    allowedAttributes: {
+      '*': ['style', 'title'],
+      a: ['href', 'target'],
+    },
+    allowedSchemes: ['http', 'https'],
+    disallowedTagsMode: 'escape',
+    transformTags: {
+      a: _sanitizeHtml.simpleTransform('a', { target: '_blank' }),
+    },
+  });
 
 export default defineComponent({
   components: {
