@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 
 @singleton()
 export class ExceptionService extends EventEmitter {
-  throwError(message: string) {
-    this.emit('error', message);
+  report(e: Error) {
+    this.emit('error', e.message);
   }
 }

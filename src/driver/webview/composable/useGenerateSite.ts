@@ -13,7 +13,12 @@ export function useGenerateSite() {
     _generateSite()
       .then(
         () => Modal.success({ title: 'Site generated successfully' }),
-        (content) => Modal.error({ content, title: 'Oops!', style: { whiteSpace: 'pre-wrap' } }),
+        (content) =>
+          Modal.error({
+            content,
+            title: 'Fail to generate site',
+            style: { whiteSpace: 'pre-wrap' },
+          }),
       )
       .then(() => (isGenerating.value = false));
   };

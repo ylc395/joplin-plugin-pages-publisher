@@ -49,7 +49,7 @@ export class SiteService {
     } catch (error) {
       this.themeConfig.value =
         this.themeConfig.value || (await this.pluginDataRepository.getTheme(DEFAULT_THEME_NAME));
-      this.exceptionService.throwError(error.message);
+      this.exceptionService.report(error);
     }
   }
 
