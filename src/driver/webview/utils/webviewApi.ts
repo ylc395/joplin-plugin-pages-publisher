@@ -4,7 +4,8 @@ import { container } from 'tsyringe';
 const exceptionService = container.resolve(ExceptionService);
 
 export interface AppRequest {
-  event: 'quitApp' | 'generateSite';
+  event: 'quitApp' | 'generateSite' | 'openNote';
+  payload?: any;
 }
 
 declare const webviewApi: {
@@ -19,4 +20,8 @@ export function generateSite() {
   webviewApi
     .postMessage({ event: 'generateSite' })
     .catch((e) => exceptionService.throwError(e.message));
+}
+
+export function openNote(noteId: string) {
+  webviewApi.postMessage({ event: 'openNote', payload: noteId });
 }

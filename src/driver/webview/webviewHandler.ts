@@ -39,6 +39,8 @@ export default (panelId: string) => {
         return;
       case 'generateSite':
         return generateSite();
+      case 'openNote':
+        return joplin.commands.execute('openNote', request.payload);
       default:
         break;
     }

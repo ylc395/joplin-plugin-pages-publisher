@@ -13,6 +13,7 @@ import { token as articleToken } from '../../../../domain/service/ArticleService
 import { Article } from '../../../../domain/model/Article';
 import { token as editToken } from './useEdit';
 import { token as diffToken } from './useDiff';
+import { openNote } from '../../utils/webviewApi';
 
 export default defineComponent({
   components: {
@@ -53,6 +54,7 @@ export default defineComponent({
       edit,
       updateArticleContent,
       viewDiff,
+      openNote,
     };
   },
 });
@@ -67,7 +69,9 @@ export default defineComponent({
       <Checkbox :checked="isChecked(article).value" @change="toggleArticleSelected(article)" />
     </div>
     <div class="py-4 flex-grow">
-      <h2 class="font-normal text-base">{{ article.title }}</h2>
+      <h2 class="font-normal text-base cursor-pointer" @click="openNote(article.noteId)">
+        {{ article.title }}
+      </h2>
       <div class="flex flex-col flex-wrap">
         <div class="info">
           <CalendarOutlined class="mr-2" />{{
