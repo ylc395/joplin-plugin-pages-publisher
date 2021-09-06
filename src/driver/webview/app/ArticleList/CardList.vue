@@ -13,7 +13,7 @@ import { token as articleToken } from '../../../../domain/service/ArticleService
 import { Article } from '../../../../domain/model/Article';
 import { token as editToken } from './useEdit';
 import { token as diffToken } from './useDiff';
-import { openNote } from '../../utils/webviewApi';
+import { openNote } from '../../utils';
 
 export default defineComponent({
   components: {
