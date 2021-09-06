@@ -37,6 +37,7 @@ async function outputPage(
   const { themeName } = site;
   const templatePath = `${themeDir}/templates/${pageName}.ejs`;
   const siteData = { ...pick(site, ['generateAt', 'articles']), ...site.custom[themeName] };
+  const outputDir = await getOutputDir();
 
   const env = {
     $page: values,
@@ -71,19 +72,14 @@ async function outputPage(
       article.htmlContent = html;
 
       const htmlString = await ejs.renderFile(templatePath, { ...env, $article: article });
-      await outputFile(
-        `${await getOutputDir()}/${values.url || pageName}/${article.url}.html`,
-        htmlString,
-      );
+      await outputFile(`${outputDir}/${values.url || pageName}/${article.url}.html`, htmlString);
       await outputResources(resourceIds, allResource);
       await copyMarkdownPluginAssets(pluginAssets);
     }
   } else {
     const htmlString = await ejs.renderFile(templatePath, env);
     await outputFile(
-      `${await getOutputDir()}/${
-        pageName === INDEX_PAGE_NAME ? 'index' : values.url || pageName
-      }.html`,
+      `${outputDir}/${pageName === INDEX_PAGE_NAME ? 'index' : values.url || pageName}.html`,
       htmlString,
     );
   }
