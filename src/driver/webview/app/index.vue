@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, provide } from 'vue';
-import { Tabs, Button, Modal } from 'ant-design-vue';
+import { Tabs, Button } from 'ant-design-vue';
 import { CloseOutlined, RocketOutlined } from '@ant-design/icons-vue';
 import { container } from 'tsyringe';
 import ArticleList from './ArticleList/index.vue';
@@ -10,8 +10,8 @@ import { ArticleService, token as articleToken } from '../../../domain/service/A
 import { SiteService, token as siteToken } from '../../../domain/service/SiteService';
 import { PageService, token as pageToken } from '../../../domain/service/PageService';
 import { NoteService, token as noteToken } from '../../../domain/service/NoteService';
-import { ExceptionService } from '../../../domain/service/ExceptionService';
-import { selfish, quitApp, generateSite } from '../utils';
+import { selfish, quitApp } from '../utils';
+import { useGenerateSite } from '../composable/useGenerateSite';
 
 export default defineComponent({
   components: {
@@ -30,11 +30,8 @@ export default defineComponent({
     provide(siteToken, selfish(container.resolve(SiteService)));
     provide(pageToken, selfish(container.resolve(PageService)));
 
-    container.resolve(ExceptionService).on('error', (msg) => {
-      Modal.error({ content: msg, title: 'Oops!', style: { whiteSpace: 'pre-wrap' } });
-    });
-
-    return { quitApp, generateSite };
+    const { isGenerating, generateSite } = useGenerateSite();
+    return { quitApp, generateSite, isGenerating };
   },
 });
 </script>
@@ -44,7 +41,7 @@ export default defineComponent({
     <TabPane key="Pages" tab="Pages" class="panel"><PageList /></TabPane>
     <TabPane key="Articles" tab="Articles" class="panel"><ArticleList /></TabPane>
     <template #tabBarExtraContent>
-      <Button @click="generateSite">
+      <Button :loading="isGenerating" @click="generateSite">
         <template #icon><RocketOutlined /></template>
         Generate
       </Button>

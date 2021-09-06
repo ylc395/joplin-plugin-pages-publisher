@@ -1,8 +1,3 @@
-import { ExceptionService } from '../../../domain/service/ExceptionService';
-import { container } from 'tsyringe';
-
-const exceptionService = container.resolve(ExceptionService);
-
 export interface AppRequest {
   event: 'quitApp' | 'generateSite' | 'openNote';
   payload?: any;
@@ -17,9 +12,7 @@ export function quitApp() {
 }
 
 export function generateSite() {
-  webviewApi
-    .postMessage({ event: 'generateSite' })
-    .catch((e) => exceptionService.throwError(e.message));
+  return webviewApi.postMessage({ event: 'generateSite' });
 }
 
 export function openNote(noteId: string) {
