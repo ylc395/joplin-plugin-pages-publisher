@@ -15,8 +15,9 @@ import {
   getJoplinMarkdownSetting,
   getOutputDir,
   getAllResources,
-  ResourceMap,
+  copyMarkdownPluginAssets,
 } from './utils';
+import type { ResourceMap } from './type';
 
 const { readFileSync, outputFile } = joplin.require('fs-extra') as {
   readFileSync: typeof IReadFileSync;
@@ -53,13 +54,20 @@ async function outputPage(
       article.formattedCreatedAt = moment(article.createdAt).format(values.dateFormat);
       article.formattedUpdatedAt = moment(article.updatedAt).format(values.dateFormat);
       article.fullUrl = `/${values.url}/${article.url}`;
-      const { html, resourceIds } = await renderMarkdown(
+      const { html, resourceIds, pluginAssets } = await renderMarkdown(
         article.content,
         String(values.url),
         mdPlugins,
         allResource,
         site.articles,
       );
+
+      /* 
+        todo: process html
+       1. remove joplin-* class name
+       2. remove joplin icon
+       3. add markdown plugin assets(script/css)
+       */
       article.htmlContent = html;
 
       const htmlString = await ejs.renderFile(templatePath, { ...env, $article: article });
@@ -68,6 +76,7 @@ async function outputPage(
         htmlString,
       );
       await outputResources(resourceIds, allResource);
+      await copyMarkdownPluginAssets(pluginAssets);
     }
   } else {
     const htmlString = await ejs.renderFile(templatePath, env);

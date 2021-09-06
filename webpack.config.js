@@ -164,6 +164,10 @@ const pluginConfig = Object.assign({}, baseConfig, {
 						],
 					},
 				},
+				{
+					from: 'node_modules/@joplin/renderer/assets',
+					to: path.resolve(__dirname, 'dist/assets/markdownPluginAssets'),
+				}
 			],
 		}),
 	],

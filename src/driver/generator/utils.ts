@@ -10,6 +10,7 @@ import type { Article } from '../../domain/model/Article';
 import type { Site } from '../../domain/model/Site';
 import type { File, Resource } from '../../domain/model/JoplinData';
 import { PREDEFINED_FIELDS } from '../../domain/model/Page';
+import type { RenderResultPluginAsset, ResourceMap } from './type';
 
 const db = container.resolve(Db);
 const { copy, outputFile } = joplin.require('fs-extra') as {
@@ -138,12 +139,6 @@ export async function outputResources(resourceIds: string[], allResource: Resour
   }
 }
 
-interface ResourceInfo {
-  localState: { fetch_status: number };
-  extension: string;
-  item: { mime: string; id: string; encryption_blob_encrypted: number; encryption_applied: number };
-}
-export type ResourceMap = Record<string, ResourceInfo>;
 export async function getAllResources() {
   const resources = await fetchAllData<Resource>(['resources'], {
     fields: 'id,mime,file_extension,encryption_applied,encryption_blob_encrypted',
@@ -162,4 +157,14 @@ export async function getAllResources() {
     };
     return result;
   }, {} as ResourceMap);
+}
+
+export async function copyMarkdownPluginAssets(pluginAssets: RenderResultPluginAsset[]) {
+  // todo: do not copy more than once
+  const pluginAssetPath = `${await joplin.plugins.installationDir()}/assets/markdownPluginAssets`;
+  const outputDir = await getOutputDir();
+
+  for (const { name } of pluginAssets) {
+    await copy(`${pluginAssetPath}/${name}`, `${outputDir}/_markdownPluginAssets/${name}`);
+  }
 }

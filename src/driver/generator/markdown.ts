@@ -2,12 +2,12 @@ import { MarkupToHtml } from '@joplin/renderer';
 import { find, trimStart } from 'lodash';
 import type { Article } from '../../domain/model/Article';
 import {
-  ResourceMap,
   PLUGIN_SETTING_PREFIX,
   AUDIO_PLAYER_PLUGIN,
   VIDEO_PLAYER_PLUGIN,
   PDF_VIEWER_PLUGIN,
 } from './utils';
+import { ResourceMap } from './type';
 
 export async function renderMarkdown(
   rawText: string,
@@ -25,7 +25,7 @@ export async function renderMarkdown(
   };
   const markupToHtml = new MarkupToHtml({ ResourceModel });
 
-  const { html } = await markupToHtml.render(1, rawText, null, {
+  const { html, pluginAssets } = await markupToHtml.render(1, rawText, null, {
     pluginOptions,
     bodyOnly: true,
     resources: allResources,
@@ -44,5 +44,5 @@ export async function renderMarkdown(
     },
   });
 
-  return { resourceIds, html };
+  return { resourceIds, html, pluginAssets };
 }
