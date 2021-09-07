@@ -1,6 +1,7 @@
-import { trimStart, find } from 'lodash';
+import { trimStart, find, omitBy } from 'lodash';
 import { MarkupToHtml } from '@joplin/renderer';
 import joplin from 'api';
+import _sanitizeHtml, { Attributes } from 'sanitize-html';
 import type { Article } from '../../domain/model/Article';
 import type { Resource } from '../../domain/model/JoplinData';
 import { outputFile, copy } from '../fs';
@@ -126,7 +127,7 @@ export class MarkdownRenderer {
       },
     });
 
-    return { resourceIds, html, pluginAssets };
+    return { resourceIds, html: sanitizeHtml(html), pluginAssets };
   }
 
   async outputResources(resourceIds: string[]) {
@@ -179,4 +180,47 @@ export class MarkdownRenderer {
       this.fileIdPool.add(fileId);
     }
   }
+}
+
+function sanitizeHtml(html: string) {
+  return _sanitizeHtml(html, {
+    allowedTags: false,
+    allowedAttributes: false,
+    exclusiveFilter({ attribs }) {
+      const blackListClass = ['resource-icon', 'joplin-source'];
+      return (
+        blackListClass.some((blackCls) => attribs['class']?.includes(blackCls)) ||
+        attribs.href === ''
+      );
+    },
+    transformTags: {
+      '*'(tagName, attribs) {
+        return {
+          tagName,
+          attribs: removeInvalidClass(omitBy(attribs, attrFilter)),
+        };
+      },
+    },
+  });
+}
+
+function attrFilter(value: unknown, attrName: string) {
+  const blackList = ['data-from-md', 'onclick', 'data-resource-id'];
+  return blackList.includes(attrName) || attrName.startsWith('data-joplin') || value === '';
+}
+
+function removeInvalidClass(attrs: Attributes) {
+  if (!attrs['class']) {
+    return attrs;
+  }
+
+  const blackList = ['inline-code', 'joplin-editable'];
+  const classes = attrs['class'].split(' ');
+  attrs['class'] = classes.filter((cls) => !blackList.includes(cls)).join(' ');
+
+  if (!attrs['class']) {
+    delete attrs['class'];
+  }
+
+  return attrs;
 }
