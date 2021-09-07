@@ -6,7 +6,8 @@ export interface Site {
   feedEnabled: boolean;
   feedLength: number;
   generatedAt?: number;
-  articles?: Article[];
+  articles?: Article[]; // sorted by createdAt
+  url: string;
   custom: Record<string, Record<string, unknown> | undefined>;
 }
 
@@ -15,4 +16,5 @@ export const DEFAULT_SITE: Readonly<Site> = {
   feedEnabled: true,
   feedLength: 10,
   custom: {},
+  url: '',
 };

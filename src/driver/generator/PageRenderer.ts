@@ -1,7 +1,8 @@
-import _, { pick, isString, mapValues, merge, filter } from 'lodash';
+import _, { pick, isString, mapValues, merge, filter, sortBy } from 'lodash';
 import ejs from 'ejs';
 import moment from 'moment';
 import { container } from 'tsyringe';
+import { Feed } from 'feed';
 import { Site, DEFAULT_SITE } from '../../domain/model/Site';
 import type { Article } from '../../domain/model/Article';
 import type { Theme } from '../../domain/model/Theme';
@@ -49,13 +50,13 @@ export class PageRenderer {
 
   private async getSite() {
     const site = await db.fetch<Site>(['site']);
-    const articles = filter((await db.fetch<Article[]>(['articles'])) || [], { published: true });
+    const articles = (await db.fetch<Article[]>(['articles'])) || [];
 
     if (!site) {
       throw new Error('no site info in db.json');
     }
 
-    site.articles = articles;
+    site.articles = sortBy(filter(articles, { published: true }), ['createdAt']).reverse();
     site.generatedAt = Date.now();
     this.site = { ...DEFAULT_SITE, ...site } as Required<Site>;
   }
@@ -131,6 +132,7 @@ export class PageRenderer {
     }
 
     const templatePath = `${this.themeDir}/templates/${ARTICLE_PAGE_NAME}.ejs`;
+    const recentArticles: Article[] = [];
 
     for (const article of this.site.articles) {
       const { html, resourceIds, pluginAssets, cssStrings } = await this.markdownRenderer.render(
@@ -151,7 +153,43 @@ export class PageRenderer {
       );
       await this.markdownRenderer.outputResources(resourceIds);
       await this.markdownRenderer.copyMarkdownPluginAssets(pluginAssets);
+
+      if (recentArticles.length < this.site.feedLength) {
+        recentArticles.push(article);
+      }
     }
+
+    if (this.site.feedEnabled) {
+      await this.outputFeed(recentArticles);
+    }
+  }
+
+  private async outputFeed(articles: Article[]) {
+    if (!this.outputDir) {
+      throw new Error('no site when rendering');
+    }
+
+    const feed = new Feed({
+      title: '',
+      id: '',
+      copyright: '',
+      updated: moment(this.site?.generatedAt).toDate(),
+      generator: 'Joplin Page Publisher',
+    });
+
+    for (const article of articles) {
+      feed.addItem({
+        title: article.title,
+        id: article.noteId,
+        link: '',
+        date: moment(article.createdAt).toDate(),
+        content: article.htmlContent,
+      });
+    }
+
+    await outputFile(`${this.outputDir}/rss.xml`, feed.rss2());
+    await outputFile(`${this.outputDir}/atom.xml`, feed.atom1());
+    await outputFile(`${this.outputDir}/feed.json`, feed.json1());
   }
 
   async outputPages() {

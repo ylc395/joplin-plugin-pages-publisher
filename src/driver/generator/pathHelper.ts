@@ -11,8 +11,7 @@ export async function getThemeDir(themeName: string) {
 }
 
 export async function getOutputDir() {
-  const dataDir = await joplin.plugins.dataDir();
-  return `${dataDir}/output`;
+  return `${await joplin.plugins.dataDir()}/output`;
 }
 
 export async function getMarkdownPluginAssetsDir() {

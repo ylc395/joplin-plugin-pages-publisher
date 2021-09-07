@@ -1,5 +1,5 @@
 import { ref, computed, InjectionKey, reactive, toRaw } from 'vue';
-import { filter, pull, negate, uniq, findIndex, find } from 'lodash';
+import { filter, pull, negate, uniq, findIndex, find, sortBy } from 'lodash';
 import { singleton } from 'tsyringe';
 import type { File } from '../model/JoplinData';
 import type { Article } from '../model/Article';
@@ -27,7 +27,7 @@ export class ArticleService {
   }
 
   private async init() {
-    const articles = await this.pluginDataRepository.getArticles();
+    const articles = sortBy(await this.pluginDataRepository.getArticles(), ['createdAt']).reverse();
 
     if (articles) {
       const contents = await Promise.all(
