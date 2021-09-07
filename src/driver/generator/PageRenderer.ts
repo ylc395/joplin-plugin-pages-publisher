@@ -13,7 +13,7 @@ import {
   getThemeAssetsDir,
   getThemeDir,
 } from './pathHelper';
-import { outputFile, readFileSync, copy } from '../fs';
+import { outputFile, readFileSync, copy, rename, remove } from '../fs';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { loadTheme } from '../themeLoader';
 import { Db } from '../db';
@@ -193,15 +193,23 @@ export class PageRenderer {
   }
 
   async outputPages() {
-    if (!this.pages || !this.site) {
+    if (!this.pages || !this.site || !this.outputDir) {
       throw new Error('pageRenderer is not initialized');
     }
 
-    for (const pageName of Object.keys(this.pages)) {
-      await this.outputPage(pageName);
-    }
+    const backupDir = `${this.outputDir}_backup`;
+    try {
+      await rename(this.outputDir, backupDir);
+      for (const pageName of Object.keys(this.pages)) {
+        await this.outputPage(pageName);
+      }
 
-    await this.copyAssets();
+      await this.copyAssets();
+      await remove(backupDir);
+    } catch (error) {
+      await rename(backupDir, this.outputDir);
+      throw error;
+    }
   }
 
   private async copyAssets() {
