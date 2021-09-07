@@ -50,7 +50,7 @@ export class PageService {
 
     return this.pages.value.every((page) => {
       const path = page.url.value.split('/')[1];
-      return page.name === pageName || page.name === ARTICLE_PAGE_NAME || path !== url;
+      return page.name === pageName || path !== url;
     });
   }
 }
