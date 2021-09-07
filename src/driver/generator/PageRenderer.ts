@@ -11,6 +11,7 @@ import { outputFile, readFileSync, copy } from '../fs';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { loadTheme } from '../themeLoader';
 import { Db } from '../db';
+import { addScriptLinkStyleTags } from './htmlProcess';
 
 ejs.fileLoader = readFileSync;
 
@@ -111,27 +112,26 @@ export class PageRenderer {
         throw new Error('no dateFormat');
       }
 
+      if (!isString(values.url)) {
+        throw new Error('No url when generate article page.');
+      }
+
       for (const article of this.site.articles) {
+        const { html, resourceIds, pluginAssets, cssStrings } = await this.markdownRenderer.render(
+          article.content,
+          values.url,
+        );
+
+        article.htmlContent = html;
         article.formattedCreatedAt = moment(article.createdAt).format(values.dateFormat);
         article.formattedUpdatedAt = moment(article.updatedAt).format(values.dateFormat);
         article.fullUrl = `/${values.url}/${article.url}`;
-        const { html, resourceIds, pluginAssets } = await this.markdownRenderer.render(
-          article.content,
-          String(values.url),
-        );
-
-        /* 
-        todo: process html
-       1. remove joplin-* class name
-       2. remove joplin icon
-       3. add markdown plugin assets(script/css)
-       */
-        article.htmlContent = html;
 
         const htmlString = await ejs.renderFile(templatePath, { ...env, $article: article });
+
         await outputFile(
           `${this.outputDir}/${values.url || pageName}/${article.url}.html`,
-          htmlString,
+          addScriptLinkStyleTags(htmlString, pluginAssets, cssStrings),
         );
         await this.markdownRenderer.outputResources(resourceIds);
         await this.markdownRenderer.copyMarkdownPluginAssets(pluginAssets);

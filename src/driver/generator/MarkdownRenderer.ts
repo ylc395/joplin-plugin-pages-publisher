@@ -1,7 +1,6 @@
-import { trimStart, find, omitBy } from 'lodash';
+import { trimStart, find } from 'lodash';
 import { MarkupToHtml } from '@joplin/renderer';
 import joplin from 'api';
-import _sanitizeHtml, { Attributes } from 'sanitize-html';
 import type { Article } from '../../domain/model/Article';
 import type { Resource } from '../../domain/model/JoplinData';
 import { outputFile, copy } from '../fs';
@@ -9,6 +8,7 @@ import type { File } from '../../domain/model/JoplinData';
 import { fetchData, fetchAllData } from '../joplinApi';
 import { getMarkdownPluginAssetsDir, getOutputDir } from './pathHelper';
 import type { RenderResultPluginAsset, ResourceMap } from './type';
+import { sanitizeMarkdownHtml } from './htmlProcess';
 
 const PLUGIN_SETTING_PREFIX = 'markdown.plugin.';
 const AUDIO_PLAYER_PLUGIN = 'audioPlayer';
@@ -85,16 +85,13 @@ export class MarkdownRenderer {
       pluginNames.map((name) => joplin.settings.globalValue(`${PLUGIN_SETTING_PREFIX}${name}`)),
     );
 
-    this.mdPluginOptions = values.reduce((result, value, i) => {
-      if (value) {
-        result[pluginNames[i]] = {};
-      }
-
+    this.mdPluginOptions = values.reduce((result, enabled, i) => {
+      result[pluginNames[i]] = { enabled };
       return result;
     }, {} as Record<string, unknown>);
   }
 
-  private resourceModel = {
+  private readonly resourceModel = {
     isResourceUrl: (url: string) => Boolean(this.getResourceInfo(url)),
     urlToId: (url: string) => trimStart(url, ':/'),
     isSupportedImageMimeType: () => true,
@@ -108,7 +105,7 @@ export class MarkdownRenderer {
     const resourceIds: string[] = [];
     const markupToHtml = new MarkupToHtml({ ResourceModel: this.resourceModel });
 
-    const { html, pluginAssets } = await markupToHtml.render(1, rawText, null, {
+    const { html, pluginAssets, cssStrings } = await markupToHtml.render(1, rawText, null, {
       pluginOptions: this.mdPluginOptions,
       bodyOnly: true,
       resources: this.resources,
@@ -127,7 +124,20 @@ export class MarkdownRenderer {
       },
     });
 
-    return { resourceIds, html: sanitizeHtml(html), pluginAssets };
+    const { sanitizedHtml, syntaxes } = sanitizeMarkdownHtml(html);
+
+    return {
+      resourceIds,
+      html: sanitizedHtml,
+      syntaxes,
+      pluginAssets: pluginAssets.filter(({ name }: RenderResultPluginAsset) =>
+        syntaxes.some((syntax) => name.includes(syntax)),
+      ),
+      cssStrings: cssStrings.filter(
+        (cssString: string) =>
+          syntaxes.some((syntax) => cssString.includes(syntax)) && !cssString.includes('joplin'),
+      ),
+    };
   }
 
   async outputResources(resourceIds: string[]) {
@@ -180,47 +190,4 @@ export class MarkdownRenderer {
       this.fileIdPool.add(fileId);
     }
   }
-}
-
-function sanitizeHtml(html: string) {
-  return _sanitizeHtml(html, {
-    allowedTags: false,
-    allowedAttributes: false,
-    exclusiveFilter({ attribs }) {
-      const blackListClass = ['resource-icon', 'joplin-source'];
-      return (
-        blackListClass.some((blackCls) => attribs['class']?.includes(blackCls)) ||
-        attribs.href === ''
-      );
-    },
-    transformTags: {
-      '*'(tagName, attribs) {
-        return {
-          tagName,
-          attribs: removeInvalidClass(omitBy(attribs, attrFilter)),
-        };
-      },
-    },
-  });
-}
-
-function attrFilter(value: unknown, attrName: string) {
-  const blackList = ['data-from-md', 'onclick', 'data-resource-id'];
-  return blackList.includes(attrName) || attrName.startsWith('data-joplin') || value === '';
-}
-
-function removeInvalidClass(attrs: Attributes) {
-  if (!attrs['class']) {
-    return attrs;
-  }
-
-  const blackList = ['inline-code', 'joplin-editable'];
-  const classes = attrs['class'].split(' ');
-  attrs['class'] = classes.filter((cls) => !blackList.includes(cls)).join(' ');
-
-  if (!attrs['class']) {
-    delete attrs['class'];
-  }
-
-  return attrs;
 }
