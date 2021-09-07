@@ -2,7 +2,7 @@ import _, { pick, isString, mapValues, merge, filter } from 'lodash';
 import ejs from 'ejs';
 import moment from 'moment';
 import { container } from 'tsyringe';
-import type { Site } from '../../domain/model/Site';
+import { Site, DEFAULT_SITE } from '../../domain/model/Site';
 import type { Article } from '../../domain/model/Article';
 import type { Theme } from '../../domain/model/Theme';
 import { ARTICLE_PAGE_NAME, INDEX_PAGE_NAME, PREDEFINED_FIELDS } from '../../domain/model/Page';
@@ -56,7 +56,7 @@ export class PageRenderer {
 
     site.articles = articles;
     site.generatedAt = Date.now();
-    this.site = site as Required<Site>;
+    this.site = { ...DEFAULT_SITE, ...site } as Required<Site>;
   }
 
   private async getThemeData() {

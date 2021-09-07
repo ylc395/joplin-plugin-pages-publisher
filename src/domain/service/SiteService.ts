@@ -1,7 +1,7 @@
 import { container, singleton } from 'tsyringe';
 import { Ref, shallowRef, InjectionKey, computed, toRaw } from 'vue';
 import { Theme, DEFAULT_THEME_NAME } from '../model/Theme';
-import { Site, defaultSite } from '../model/Site';
+import { Site, DEFAULT_SITE } from '../model/Site';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { ExceptionService } from './ExceptionService';
 
@@ -35,7 +35,7 @@ export class SiteService {
   private async init() {
     this.themes.value = await this.pluginDataRepository.getThemes();
     this.site.value = {
-      ...defaultSite,
+      ...DEFAULT_SITE,
       ...(await this.pluginDataRepository.getSite()),
     };
 
@@ -44,8 +44,13 @@ export class SiteService {
   }
 
   async loadTheme(themeName: string) {
+    if (!this.site.value) {
+      throw new Error('site is not ready when load theme');
+    }
+
     try {
       this.themeConfig.value = await this.pluginDataRepository.getTheme(themeName);
+      this.site.value.custom[themeName] ??= {};
     } catch (error) {
       this.themeConfig.value =
         this.themeConfig.value || (await this.pluginDataRepository.getTheme(DEFAULT_THEME_NAME));

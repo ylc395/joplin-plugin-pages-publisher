@@ -1,6 +1,6 @@
 <script lang="ts">
 import { computed, defineComponent, inject, provide } from 'vue';
-import { Form, Select, Button, InputNumber } from 'ant-design-vue';
+import { Form, Select, Button, InputNumber, Switch } from 'ant-design-vue';
 import { token as siteToken } from '../../../../domain/service/SiteService';
 import { useDraftForm } from '../../composable/useDraftForm';
 import FieldForm from '../../components/FieldForm/index.vue';
@@ -12,6 +12,7 @@ export default defineComponent({
     FormItem: Form.Item,
     Select,
     SelectOption: Select.Option,
+    Switch,
     Button,
     InputNumber,
     FieldForm,
@@ -23,14 +24,19 @@ export default defineComponent({
     const { modelRef, validateInfos, save, canSave } = useDraftForm(site, saveSite, (data) => ({
       name: [{ required: true }],
       themeName: [{ required: true }],
-      RSSLength: [{ required: data.RSSMode !== 'none' }],
+      feedLength: [{ required: data.feedEnabled }],
       ...customFieldRules.value,
     }));
 
     const hasThemeFields = computed(() => Boolean(themeConfig.value?.siteFields?.length));
-
     provide(formToken, {
-      model: computed(() => modelRef.value.custom?.[themeConfig.value?.name || ''] ?? {}),
+      model: computed(() => {
+        const themeName = themeConfig.value?.name;
+        if (!themeName) {
+          return {};
+        }
+        return modelRef.value.custom[themeName] ?? {};
+      }),
       validateInfos,
       fields: computed(() => themeConfig.value?.siteFields ?? []),
     });
@@ -55,15 +61,11 @@ export default defineComponent({
           <SelectOption v-for="{ name } of themes" :key="name">{{ name }}</SelectOption>
         </Select>
       </FormItem>
-      <FormItem label="RSS">
-        <Select v-model:value="modelRef.RSSMode">
-          <SelectOption value="none"> No RSS </SelectOption>
-          <SelectOption value="digest"> Only Digest </SelectOption>
-          <SelectOption value="full"> Full Content </SelectOption>
-        </Select>
+      <FormItem label="Feed">
+        <Switch v-model:checked="modelRef.feedEnabled" />
       </FormItem>
-      <FormItem v-if="modelRef.RSSMode !== 'none'" label="RSS Length">
-        <InputNumber v-model:value="modelRef.RSSLength" :min="1" />
+      <FormItem v-if="modelRef.feedEnabled" label="Feed Length">
+        <InputNumber v-model:value="modelRef.feedLength" :min="1" />
       </FormItem>
     </Form>
     <FieldForm v-if="hasThemeFields" class="mt-10" />
