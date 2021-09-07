@@ -1,6 +1,6 @@
 import { container, singleton } from 'tsyringe';
 import { Ref, shallowRef, watchEffect, InjectionKey, toRaw } from 'vue';
-import { ARTICLE_PAGE_NAME, Page, Vars } from '../model/Page';
+import { Page, Vars } from '../model/Page';
 import { SiteService } from './SiteService';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 

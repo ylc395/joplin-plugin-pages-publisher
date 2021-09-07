@@ -6,7 +6,12 @@ import type { Site } from '../../domain/model/Site';
 import type { Article } from '../../domain/model/Article';
 import type { Theme } from '../../domain/model/Theme';
 import { ARTICLE_PAGE_NAME, INDEX_PAGE_NAME, PREDEFINED_FIELDS } from '../../domain/model/Page';
-import { getOutputDir, getThemeDir } from './pathHelper';
+import {
+  getOutputDir,
+  getOutputThemeAssetsDir,
+  getThemeAssetsDir,
+  getThemeDir,
+} from './pathHelper';
 import { outputFile, readFileSync, copy } from '../fs';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { loadTheme } from '../themeLoader';
@@ -162,7 +167,6 @@ export class PageRenderer {
       throw new Error('pageRenderer is not initialized');
     }
 
-    const assetsPath = `${this.themeDir}/_assets`;
-    await copy(assetsPath, `${this.outputDir}/_assets`);
+    await copy(getThemeAssetsDir(this.themeDir), getOutputThemeAssetsDir(this.outputDir));
   }
 }

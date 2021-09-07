@@ -18,3 +18,11 @@ export async function getOutputDir() {
 export async function getMarkdownPluginAssetsDir() {
   return `${await joplin.plugins.installationDir()}/assets/markdownPluginAssets`;
 }
+
+export function getThemeAssetsDir(themeDir: string) {
+  return `${themeDir}/_assets`;
+}
+
+export function getOutputThemeAssetsDir(outputDir: string) {
+  return `${outputDir}/_assets`;
+}
