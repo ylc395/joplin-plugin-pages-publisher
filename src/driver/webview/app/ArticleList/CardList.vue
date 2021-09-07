@@ -93,7 +93,7 @@ export default defineComponent({
         <template #icon><EditOutlined /></template>
         Edit
       </Button>
-      <template v-if="article.noteContent !== article.content">
+      <template v-if="article.note && article.note.body !== article.content">
         <Tooltip title="View diff between article's content and Joplin note's content">
           <Button type="text" @click="viewDiff(article)">
             <template #icon><DiffOutlined /></template>

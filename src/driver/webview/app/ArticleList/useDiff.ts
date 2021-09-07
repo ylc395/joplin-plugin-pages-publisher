@@ -9,7 +9,7 @@ export function useDiff() {
 
   const viewDiff = (article: Article) => {
     isViewing.value = true;
-    diffInfo.value = diffChars(article.noteContent || '', article.content);
+    diffInfo.value = diffChars(article.note?.body || '', article.content);
   };
 
   const stopDiff = () => {

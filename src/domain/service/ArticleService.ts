@@ -1,5 +1,5 @@
 import { ref, computed, InjectionKey, reactive, toRaw } from 'vue';
-import { filter, pull, negate, uniq, findIndex, find, sortBy } from 'lodash';
+import { filter, pull, negate, uniq, findIndex, sortBy, compact } from 'lodash';
 import { singleton } from 'tsyringe';
 import type { File } from '../model/JoplinData';
 import type { Article } from '../model/Article';
@@ -23,32 +23,22 @@ export class ArticleService {
   });
   constructor() {
     this.init();
-    this.listenNoteChange();
   }
 
   private async init() {
     const articles = sortBy(await this.pluginDataRepository.getArticles(), ['createdAt']).reverse();
 
     if (articles) {
-      const contents = await Promise.all(
-        articles.map(({ noteId }) => this.joplinDataRepository.getNoteContentOf(noteId)),
+      const notes = await Promise.all(
+        articles.map(({ noteId }) => this.joplinDataRepository.getNote(noteId)),
       );
 
-      for (let i = 0; i < contents.length; i++) {
-        articles[i].noteContent = contents[i];
+      for (let i = 0; i < notes.length; i++) {
+        articles[i].note = notes[i];
       }
     }
 
     this.articles.push(...(articles ?? []));
-  }
-
-  private listenNoteChange() {
-    window.appEventBus.on('noteChange', async (noteId) => {
-      const article = find(this.articles, { noteId });
-      if (article) {
-        article.noteContent = await this.joplinDataRepository.getNoteContentOf(noteId);
-      }
-    });
   }
 
   saveArticles() {
@@ -56,7 +46,7 @@ export class ArticleService {
   }
 
   async loadArticle(article: Article) {
-    const files = await this.joplinDataRepository.getFilesOf(article.noteId);
+    const files = compact(await this.joplinDataRepository.getFilesOf(article.noteId));
 
     const isImage = ({ contentType }: File) => {
       return contentType.startsWith('image');
@@ -119,12 +109,12 @@ export class ArticleService {
   }
 
   updateArticleContent(article: Article) {
-    if (article.noteContent === undefined) {
+    if (article.note?.body === undefined) {
       throw new Error('no noteContent when updating');
     }
 
-    article.content = article.noteContent;
-    article.updatedAt = Date.now();
+    article.content = article.note.body;
+    article.updatedAt = article.note.user_updated_time;
     this.saveArticle(article);
   }
 

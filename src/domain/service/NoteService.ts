@@ -49,21 +49,25 @@ export class NoteService {
   }
 
   private async noteToArticle(note: Note): Promise<Article> {
-    const [tags, noteContent] = await Promise.all([
+    const [tags, fullNote] = await Promise.all([
       this.joplinDataRepository.getTagsOf(note.id),
-      this.joplinDataRepository.getNoteContentOf(note.id),
+      this.joplinDataRepository.getNote(note.id),
     ]);
+
+    if (!fullNote) {
+      throw new Error(`Cannot fetch note: ${note.id}`);
+    }
 
     return {
       published: false,
       noteId: note.id,
       title: note.title,
-      createdAt: note.user_created_time,
-      updatedAt: note.user_updated_time,
+      createdAt: fullNote.user_created_time,
+      updatedAt: fullNote.user_updated_time,
       tags: map(tags, 'title'),
-      noteContent,
-      content: noteContent,
-      url: slugify(note.title, { lower: true }) || 'untitled',
+      note: fullNote,
+      content: fullNote.body,
+      url: slugify(fullNote.title, { lower: true }) || 'untitled',
       coverImg: null,
     };
   }

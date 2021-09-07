@@ -5,7 +5,7 @@ import type { Note, Tag, Resource, File } from '../model/JoplinData';
 export type JoplinGetParams = Parameters<typeof joplin['data']['get']>;
 
 interface JoplinFetcher {
-  fetchData: <T>(...args: JoplinGetParams) => Promise<T>;
+  fetchData: <T>(...args: JoplinGetParams) => Promise<T | null>;
   fetchAllData: <T>(...args: JoplinGetParams) => Promise<T[]>;
 }
 
@@ -13,7 +13,7 @@ export const token: InjectionToken<JoplinFetcher> = Symbol('joplinData');
 export class JoplinDataRepository {
   private joplinFetcher = container.resolve(token);
   searchNotes(query: string) {
-    const fields = 'id,title,user_created_time,user_updated_time';
+    const fields = 'id,title';
     return this.joplinFetcher.fetchAllData<Note>(['search'], { query, fields });
   }
 
@@ -38,11 +38,11 @@ export class JoplinDataRepository {
     return files;
   }
 
-  async getNoteContentOf(noteId: string) {
-    const { body } = await this.joplinFetcher.fetchData<{ body: string }>(['notes', noteId], {
-      fields: 'body',
+  async getNote(noteId: string) {
+    const note = await this.joplinFetcher.fetchData<Required<Note>>(['notes', noteId], {
+      fields: 'id,title,user_created_time,user_updated_time,body',
     });
 
-    return body;
+    return note;
   }
 }

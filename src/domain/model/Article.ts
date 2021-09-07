@@ -1,5 +1,5 @@
 import type { Moment } from 'moment';
-import { Tag, File } from './JoplinData';
+import type { Tag, File, Note } from './JoplinData';
 
 export interface Article {
   readonly noteId: string;
@@ -7,7 +7,7 @@ export interface Article {
   fullUrl?: string;
   content: string;
   htmlContent?: string;
-  noteContent?: string;
+  note?: Required<Note> | null;
   title: string;
   createdAt: number | Moment;
   formattedCreatedAt?: string;

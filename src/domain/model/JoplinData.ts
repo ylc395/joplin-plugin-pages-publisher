@@ -5,8 +5,8 @@
 export interface Note {
   id: string;
   title: string;
-  user_created_time: number;
-  user_updated_time: number;
+  user_created_time?: number;
+  user_updated_time?: number;
   body?: string;
 }
 
