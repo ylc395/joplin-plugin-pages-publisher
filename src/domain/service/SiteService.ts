@@ -50,7 +50,9 @@ export class SiteService {
 
     try {
       this.themeConfig.value = await this.pluginDataRepository.getTheme(themeName);
-      this.site.value.custom[themeName] ??= {};
+      if (!this.site.value.custom[themeName]) {
+        this.site.value.custom[themeName] = {};
+      }
     } catch (error) {
       this.themeConfig.value =
         this.themeConfig.value || (await this.pluginDataRepository.getTheme(DEFAULT_THEME_NAME));

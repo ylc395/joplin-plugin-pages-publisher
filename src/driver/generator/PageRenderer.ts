@@ -17,6 +17,7 @@ import { MarkdownRenderer } from './MarkdownRenderer';
 import { loadTheme } from '../themeLoader';
 import { Db } from '../db';
 import { addScriptLinkStyleTags } from './htmlProcess';
+import type { RenderEnv } from './type';
 
 ejs.fileLoader = readFileSync;
 
@@ -101,52 +102,55 @@ export class PageRenderer {
     const { themeName } = this.site;
     const templatePath = `${this.themeDir}/templates/${pageName}.ejs`;
     const siteData = {
-      ...pick(this.site, ['generateAt', 'articles']),
+      ...pick(this.site, ['generatedAt', 'articles']),
       ...this.site.custom[themeName],
     };
 
-    const env = {
-      $page: values,
-      $site: siteData,
-      _,
-      _moment: moment,
-    };
-
+    const env: RenderEnv = { $page: values, $site: siteData, _, _moment: moment };
     if (pageName === ARTICLE_PAGE_NAME) {
-      if (!isString(values.dateFormat)) {
-        throw new Error('no dateFormat');
-      }
-
-      if (!isString(values.url)) {
-        throw new Error('No url when generate article page.');
-      }
-
-      for (const article of this.site.articles) {
-        const { html, resourceIds, pluginAssets, cssStrings } = await this.markdownRenderer.render(
-          article.content,
-          values.url,
-        );
-
-        article.htmlContent = html;
-        article.formattedCreatedAt = moment(article.createdAt).format(values.dateFormat);
-        article.formattedUpdatedAt = moment(article.updatedAt).format(values.dateFormat);
-        article.fullUrl = `/${values.url}/${article.url}`;
-
-        const htmlString = await ejs.renderFile(templatePath, { ...env, $article: article });
-
-        await outputFile(
-          `${this.outputDir}/${values.url || pageName}/${article.url}.html`,
-          addScriptLinkStyleTags(htmlString, pluginAssets, cssStrings),
-        );
-        await this.markdownRenderer.outputResources(resourceIds);
-        await this.markdownRenderer.copyMarkdownPluginAssets(pluginAssets);
-      }
+      await this.outputArticles(env);
     } else {
       const htmlString = await ejs.renderFile(templatePath, env);
       await outputFile(
         `${this.outputDir}/${pageName === INDEX_PAGE_NAME ? 'index' : values.url || pageName}.html`,
         htmlString,
       );
+    }
+  }
+
+  private async outputArticles(env: RenderEnv) {
+    if (!this.site || !this.markdownRenderer) {
+      throw new Error('no site when rendering');
+    }
+    if (!isString(env.$page.dateFormat)) {
+      throw new Error('no dateFormat');
+    }
+
+    if (!isString(env.$page.url)) {
+      throw new Error('No url when generate article page.');
+    }
+
+    const templatePath = `${this.themeDir}/templates/${ARTICLE_PAGE_NAME}.ejs`;
+
+    for (const article of this.site.articles) {
+      const { html, resourceIds, pluginAssets, cssStrings } = await this.markdownRenderer.render(
+        article.content,
+        env.$page.url,
+      );
+
+      article.htmlContent = html;
+      article.formattedCreatedAt = moment(article.createdAt).format(env.$page.dateFormat);
+      article.formattedUpdatedAt = moment(article.updatedAt).format(env.$page.dateFormat);
+      article.fullUrl = `/${env.$page.url}/${article.url}`;
+
+      const htmlString = await ejs.renderFile(templatePath, { ...env, $article: article });
+
+      await outputFile(
+        `${this.outputDir}/${env.$page.url || ARTICLE_PAGE_NAME}/${article.url}.html`,
+        addScriptLinkStyleTags(htmlString, pluginAssets, cssStrings),
+      );
+      await this.markdownRenderer.outputResources(resourceIds);
+      await this.markdownRenderer.copyMarkdownPluginAssets(pluginAssets);
     }
   }
 
