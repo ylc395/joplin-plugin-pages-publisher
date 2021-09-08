@@ -3,7 +3,7 @@ import { MarkupToHtml } from '@joplin/renderer';
 import joplin from 'api';
 import type { Article } from '../../domain/model/Article';
 import type { Resource } from '../../domain/model/JoplinData';
-import { outputFile, copy } from '../fs';
+import { outputFile, copy } from '../fs/joplinPlugin';
 import type { File } from '../../domain/model/JoplinData';
 import { fetchData, fetchAllData } from '../joplinData/joplinPlugin';
 import { getMarkdownPluginAssetsDir, getOutputDir } from './pathHelper';

@@ -1,5 +1,5 @@
 import type { Adapter } from 'lowdb';
-import { readFile, writeFile } from '../fs';
+import { readFile, writeFile } from '../fs/joplinPlugin';
 
 export class JSONFile<T> implements Adapter<T> {
   constructor(private readonly filename: string) {}

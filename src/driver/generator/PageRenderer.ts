@@ -13,7 +13,7 @@ import {
   getThemeAssetsDir,
   getThemeDir,
 } from './pathHelper';
-import { outputFile, readFileSync, copy, rename, remove } from '../fs';
+import { outputFile, readFileSync, copy, rename, remove } from '../fs/joplinPlugin';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { loadTheme } from '../themeLoader/joplinPlugin';
 import { Db } from '../db/joplinPlugin';
