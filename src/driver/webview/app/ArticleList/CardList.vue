@@ -116,7 +116,7 @@ export default defineComponent({
         </div>
       </div>
     </div>
-    <div class="flex items-start justify-center flex-col w-40">
+    <div class="flex items-start justify-center flex-col w-32">
       <Button type="text" @click="edit(article)">
         <template #icon><EditOutlined /></template>
         Edit
@@ -125,7 +125,7 @@ export default defineComponent({
         <Tooltip title="Overwrite article's content with Joplin note's current content">
           <Button type="text" @click="syncArticleContent(article)">
             <template #icon><FileSyncOutlined /></template>
-            Sync with Joplin
+            Sync
           </Button>
         </Tooltip>
       </template>

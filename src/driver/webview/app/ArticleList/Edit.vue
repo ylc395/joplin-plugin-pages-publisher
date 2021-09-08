@@ -1,8 +1,10 @@
 <script lang="ts">
-import { defineComponent, inject } from 'vue';
+import { defineComponent, inject, computed } from 'vue';
 import { Form, Select, Input, DatePicker, Button, Alert, Image, Spin } from 'ant-design-vue';
 import { token as editToken } from './useEdit';
 import { useDraftForm } from '../../composable/useDraftForm';
+import { token as pageToken } from '../../../../domain/service/PageService';
+import { find } from 'lodash';
 
 export default defineComponent({
   components: {
@@ -22,6 +24,8 @@ export default defineComponent({
     const { article, stopEditing, saveArticle, isValidUrl, images } =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(editToken)!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const { articlePage } = inject(pageToken)!;
     const { modelRef, canSave, save, validateInfos } = useDraftForm(
       article,
       saveArticle,
@@ -39,6 +43,9 @@ export default defineComponent({
         updatedAt: [{ required: true }],
       }),
     );
+    const articleUrl = computed(() => {
+      return articlePage.value ? `${articlePage.value.url.value}/${modelRef.value.url}` : '';
+    });
 
     return {
       modelRef,
@@ -48,6 +55,7 @@ export default defineComponent({
       save,
       stopEditing,
       canSave,
+      articleUrl,
     };
   },
 });
@@ -62,7 +70,11 @@ export default defineComponent({
     />
     <Spin :spinning="!article" tip="Loading article and its resources...">
       <Form v-if="modelRef" :labelCol="{ span: 6 }">
-        <FormItem label="Url" v-bind="validateInfos.url">
+        <FormItem
+          label="Url"
+          v-bind="validateInfos.url"
+          :help="validateInfos.url.help || articleUrl"
+        >
           <Input v-model:value="modelRef.url" />
         </FormItem>
         <FormItem label="Title" v-bind="validateInfos.title">

@@ -1,17 +1,19 @@
 <script lang="ts">
 import { computed, defineComponent, ref, inject } from 'vue';
 import { filter } from 'lodash';
-import { Button, Collapse, Modal } from 'ant-design-vue';
+import { Button, Collapse, Modal, Alert } from 'ant-design-vue';
 import CardList from './CardList.vue';
 import Edit from './Edit.vue';
 import DiffView from './DiffView.vue';
 import Search from './Search.vue';
 import { token as articleToken } from '../../../../domain/service/ArticleService';
+import { token as pageToken } from '../../../../domain/service/PageService';
 import { useEdit } from './useEdit';
 import { useDiff } from './useDiff';
 
 export default defineComponent({
   components: {
+    Alert,
     Button,
     CardList,
     Collapse,
@@ -31,7 +33,10 @@ export default defineComponent({
       selectedArticles,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(articleToken)!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const { articlePage } = inject(pageToken)!;
     const { isEditing } = useEdit();
+
     const activePanels = ref(['published', 'unpublished']);
     const handleSubmit = () => {
       if (!activePanels.value.includes('unpublished')) {
@@ -59,11 +64,17 @@ export default defineComponent({
       ),
       isViewingDiff,
       stopViewingDiff,
+      articlePage,
     };
   },
 });
 </script>
 <template>
+  <Alert
+    v-if="!articlePage"
+    banner
+    message="There is no article page in this theme, so no article will be published"
+  />
   <Search class="flex mb-2" @submit="handleSubmit" />
   <Button
     class="mb-2"

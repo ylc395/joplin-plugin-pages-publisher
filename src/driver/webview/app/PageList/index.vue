@@ -33,7 +33,9 @@ export default defineComponent({
     >
       <div>
         <h2 class="font-normal text-base mb-2">{{ startCase(page.name) }} Page</h2>
-        <div class="text-gray-500">{{ page.url.value }}</div>
+        <div class="text-gray-500">
+          {{ `${page.url.value}${page.isArticlePage ? '/:articleUrl' : ''}` }}
+        </div>
       </div>
       <div class="flex items-center">
         <Button v-if="page.fields.value.length > 0" type="text" @click="customize(page)">

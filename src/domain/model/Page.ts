@@ -52,11 +52,9 @@ export class Page {
     this.fieldVars = reactive(fieldVars);
   }
 
-  url = computed(() => {
-    if (this.name === ARTICLE_PAGE_NAME) {
-      return `/${this.fieldVars.url || this.name}/:articleUrl`;
-    }
+  readonly isArticlePage = this.name === ARTICLE_PAGE_NAME;
 
+  readonly url = computed(() => {
     if (this.name === INDEX_PAGE_NAME) {
       return '/';
     }
@@ -64,7 +62,7 @@ export class Page {
     return `/${this.fieldVars.url || this.name}`;
   });
 
-  fields = computed<Field[]>(() => {
+  readonly fields = computed<Field[]>(() => {
     if (!this.themeConfig.value) {
       return [];
     }

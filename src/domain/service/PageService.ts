@@ -1,5 +1,6 @@
 import { container, singleton } from 'tsyringe';
-import { Ref, shallowRef, watchEffect, InjectionKey, toRaw } from 'vue';
+import { Ref, shallowRef, watchEffect, InjectionKey, toRaw, computed } from 'vue';
+import { find } from 'lodash';
 import { Page, Vars } from '../model/Page';
 import { SiteService } from './SiteService';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
@@ -15,6 +16,10 @@ export class PageService {
   constructor() {
     watchEffect(this.initPages.bind(this));
   }
+
+  readonly articlePage = computed(() => {
+    return find(this.pages.value, { isArticlePage: true });
+  });
 
   private async initPages() {
     const { site, themeConfig } = this.siteService;
