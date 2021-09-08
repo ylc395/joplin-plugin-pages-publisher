@@ -56,7 +56,7 @@ export class SiteService {
     } catch (error) {
       this.themeConfig.value =
         this.themeConfig.value || (await this.pluginDataRepository.getTheme(DEFAULT_THEME_NAME));
-      this.exceptionService.reportError(error, { title: 'Fail to load theme' });
+      this.exceptionService.reportError(error as Error, { title: 'Fail to load theme' });
     }
   }
 
