@@ -4,7 +4,7 @@ import { createApp } from 'vue';
 import { container } from 'tsyringe';
 import '../db/webviewApi';
 import '../themeLoader/webviewApi';
-import '../joplinApi/webviewApi';
+import '../joplinData/webviewApi';
 import App from './app/index.vue';
 import { ExceptionService } from '../../domain/service/ExceptionService';
 

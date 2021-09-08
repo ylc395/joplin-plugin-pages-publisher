@@ -1,13 +1,13 @@
 import { container } from 'tsyringe';
 import joplin from 'api';
-import { Db } from '../db';
-import type { DbReadRequest, DbWriteRequest } from '../db/webviewApi';
-import type { JoplinDataRequest } from '../joplinApi/webviewApi';
-import type { AppRequest } from './utils/webviewApi';
-import type { ThemeConfigLoadRequest, ThemeConfigsLoadRequest } from '../themeLoader/webviewApi';
-import { loadTheme, loadThemes } from '../themeLoader';
-import generateSite from '../generator';
-import { fetchData, fetchAllData } from '../joplinApi';
+import { Db } from './db/joplinPlugin';
+import type { DbReadRequest, DbWriteRequest } from './db/webviewApi';
+import type { JoplinDataRequest } from './joplinData/webviewApi';
+import type { AppRequest } from './webview/utils/webviewApi';
+import type { ThemeConfigLoadRequest, ThemeConfigsLoadRequest } from './themeLoader/webviewApi';
+import { loadTheme, loadThemes } from './themeLoader/joplinPlugin';
+import generateSite from './generator';
+import { fetchData, fetchAllData } from './joplinData/joplinPlugin';
 
 export default (panelId: string) => {
   const db = container.resolve(Db);

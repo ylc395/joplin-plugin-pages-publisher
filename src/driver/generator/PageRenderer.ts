@@ -15,8 +15,8 @@ import {
 } from './pathHelper';
 import { outputFile, readFileSync, copy, rename, remove } from '../fs';
 import { MarkdownRenderer } from './MarkdownRenderer';
-import { loadTheme } from '../themeLoader';
-import { Db } from '../db';
+import { loadTheme } from '../themeLoader/joplinPlugin';
+import { Db } from '../db/joplinPlugin';
 import { addScriptLinkStyleTags } from './htmlProcess';
 import type { RenderEnv } from './type';
 

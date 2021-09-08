@@ -5,7 +5,7 @@ import type { Article } from '../../domain/model/Article';
 import type { Resource } from '../../domain/model/JoplinData';
 import { outputFile, copy } from '../fs';
 import type { File } from '../../domain/model/JoplinData';
-import { fetchData, fetchAllData } from '../joplinApi';
+import { fetchData, fetchAllData } from '../joplinData/joplinPlugin';
 import { getMarkdownPluginAssetsDir, getOutputDir } from './pathHelper';
 import type { RenderResultPluginAsset, ResourceMap } from './type';
 import { sanitizeMarkdownHtml } from './htmlProcess';

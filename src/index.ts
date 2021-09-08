@@ -1,6 +1,6 @@
 import 'core-js/proposals/reflect-metadata';
 import joplin from 'api';
-import webviewHandler from './driver/webview/webviewHandler';
+import webviewBridge from './driver/webviewBridge';
 
 const OPEN_PAGES_PUBLISHER_COMMAND = 'openPagesPublisher';
 const panels = joplin.views.panels;
@@ -14,7 +14,7 @@ joplin.plugins.register({
       async execute() {
         if (!mainWindow) {
           mainWindow = await panels.create('mainWindow');
-          panels.onMessage(mainWindow, webviewHandler(mainWindow));
+          panels.onMessage(mainWindow, webviewBridge(mainWindow));
           await panels.addScript(mainWindow, './driver/webview/module-polyfill.js');
           await panels.addScript(mainWindow, './driver/webview/index.js');
         }
