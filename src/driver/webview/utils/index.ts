@@ -13,5 +13,3 @@ export function selfish<T>(target: T) {
     },
   }) as T;
 }
-
-export { quitApp, generateSite, openNote } from './webviewApi';

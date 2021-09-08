@@ -13,7 +13,7 @@ import {
   getThemeAssetsDir,
   getThemeDir,
 } from './pathHelper';
-import { outputFile, readFileSync, copy, rename, remove } from '../fs/joplinPlugin';
+import { outputFile, readFileSync, copy, rename, remove, getAllFiles } from '../fs/joplinPlugin';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { loadTheme } from '../themeLoader/joplinPlugin';
 import { Db } from '../db/joplinPlugin';
@@ -206,6 +206,7 @@ export class PageRenderer {
 
       await this.copyAssets();
       await remove(backupDir);
+      return await getAllFiles(this.outputDir);
     } catch (error) {
       await rename(backupDir, this.outputDir);
       throw error;

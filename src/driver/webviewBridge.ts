@@ -3,7 +3,7 @@ import joplin from 'api';
 import { Db } from './db/joplinPlugin';
 import type { DbReadRequest, DbWriteRequest } from './db/webviewApi';
 import type { JoplinDataRequest } from './joplinData/webviewApi';
-import type { AppRequest } from './webview/utils/webviewApi';
+import type { AppRequest } from './joplinApi/webviewApi';
 import type { ThemeConfigLoadRequest, ThemeConfigsLoadRequest } from './themeLoader/webviewApi';
 import { loadTheme, loadThemes } from './themeLoader/joplinPlugin';
 import generateSite from './generator';
@@ -41,6 +41,8 @@ export default (panelId: string) => {
         return generateSite();
       case 'openNote':
         return joplin.commands.execute('openNote', request.payload);
+      case 'getDataDir':
+        return joplin.plugins.dataDir();
       default:
         break;
     }

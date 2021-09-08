@@ -5,7 +5,7 @@ export default async function () {
     const pageRenderer = new PageRenderer();
 
     await pageRenderer.init();
-    await pageRenderer.outputPages();
+    return await pageRenderer.outputPages();
   } catch (error) {
     console.warn(error);
     throw error;
