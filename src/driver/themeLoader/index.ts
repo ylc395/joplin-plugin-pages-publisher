@@ -1,56 +1,19 @@
 import joplin from 'api';
 import Ajv from 'ajv';
+import isValidFilename from 'valid-filename';
 import type { readJSON as IReadJSON, readdir as IReaddir } from 'fs-extra';
 import type { Theme } from '../../domain/model/Theme';
 import { DEFAULT_THEME_NAME } from '../../domain/model/Theme';
+import { THEME_SCHEMA } from './schema';
 
 const { readJson, readdir } = joplin.require('fs-extra') as {
   readJson: typeof IReadJSON;
   readdir: typeof IReaddir;
 };
 
-const FIELD_SCHEMA = {
-  type: 'object',
-  properties: {
-    name: { type: 'string', pattern: '^[^_]' },
-    label: { type: 'string' },
-    tip: { type: 'string' },
-    required: { type: 'boolean' },
-    inputType: {
-      enum: [
-        'input',
-        'select',
-        'multiple-select',
-        'textarea',
-        'radio',
-        'switch',
-        'image-picker',
-        'number',
-        'checkbox',
-        'date',
-      ],
-    },
-  },
-  required: ['name'],
-} as const;
-
-const THEME_SCHEMA = {
-  type: 'object',
-  properties: {
-    name: { type: 'string' },
-    version: { type: 'string' },
-    pages: {
-      type: 'object',
-      additionalProperties: { type: 'array', items: FIELD_SCHEMA },
-      propertyNames: { pattern: '^[^_]' },
-    },
-    siteFields: { type: 'array', items: FIELD_SCHEMA },
-    articleFields: { type: 'array', items: FIELD_SCHEMA },
-  },
-  required: ['name', 'version', 'pages'],
-} as const;
-
-const themeValidate = new Ajv().compile<Theme>(THEME_SCHEMA);
+const themeValidate = new Ajv()
+  .addFormat('validPageUrl', (str) => isValidFilename(str) && !str.startsWith('_'))
+  .compile<Theme>(THEME_SCHEMA);
 
 async function loadDefault(): Promise<Theme> {
   const installDir = await joplin.plugins.installationDir();

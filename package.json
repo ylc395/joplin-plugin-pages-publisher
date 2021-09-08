@@ -70,6 +70,7 @@
     "sanitize-html": "^2.4.0",
     "slugify": "^1.5.3",
     "tsyringe": "^4.5.0",
+    "valid-filename": "^4.0.0",
     "vue": "^3.1.2"
   }
 }

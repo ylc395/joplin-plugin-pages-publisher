@@ -1,6 +1,7 @@
 import { ref, computed, InjectionKey, reactive, toRaw } from 'vue';
 import { filter, pull, negate, uniq, findIndex, sortBy, compact } from 'lodash';
 import { singleton } from 'tsyringe';
+import isValidFilename from 'valid-filename';
 import type { File } from '../model/JoplinData';
 import { Article, getSyncStatus } from '../model/Article';
 import { JoplinDataRepository } from '../repository/JoplinDataRepository';
@@ -103,6 +104,10 @@ export class ArticleService {
   }
 
   isValidUrl(newUrl: string, noteId?: unknown) {
+    if (!isValidFilename(newUrl)) {
+      return false;
+    }
+
     for (const article of this.articles) {
       if (article.noteId !== noteId && article.url === newUrl) {
         return false;
@@ -124,7 +129,7 @@ export class ArticleService {
   }
 
   getValidUrl(baseUrl: string) {
-    let url = baseUrl;
+    let url = isValidFilename(baseUrl) ? baseUrl : 'untitled';
     let index = 1;
 
     while (!this.isValidUrl(url)) {

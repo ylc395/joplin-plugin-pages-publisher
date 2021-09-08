@@ -34,7 +34,7 @@ export default defineComponent({
           { required: true },
           {
             validator: (rule: unknown, value: string) =>
-              isValidUrl(value, data.noteId) ? Promise.resolve() : Promise.reject('duplicated url'),
+              isValidUrl(value, data.noteId) ? Promise.resolve() : Promise.reject('Invalid url'),
           },
         ],
         title: [{ required: true }],

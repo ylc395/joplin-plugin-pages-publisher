@@ -1,6 +1,7 @@
 import { container, singleton } from 'tsyringe';
 import { Ref, shallowRef, watchEffect, InjectionKey, toRaw, computed } from 'vue';
 import { find } from 'lodash';
+import isValidFilename from 'valid-filename';
 import { Page, Vars } from '../model/Page';
 import { SiteService } from './SiteService';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
@@ -49,7 +50,7 @@ export class PageService {
   }
 
   isValidUrl(url: string, pageName: string) {
-    if (url.startsWith('_assets')) {
+    if (!isValidFilename(url) || url.startsWith('_assets')) {
       return false;
     }
 
