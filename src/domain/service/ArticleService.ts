@@ -2,7 +2,7 @@ import { ref, computed, InjectionKey, reactive, toRaw } from 'vue';
 import { filter, pull, negate, uniq, findIndex, sortBy, compact } from 'lodash';
 import { singleton } from 'tsyringe';
 import type { File } from '../model/JoplinData';
-import type { Article } from '../model/Article';
+import { Article, getSyncStatus } from '../model/Article';
 import { JoplinDataRepository } from '../repository/JoplinDataRepository';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 
@@ -34,7 +34,11 @@ export class ArticleService {
       );
 
       for (let i = 0; i < notes.length; i++) {
-        articles[i].note = notes[i];
+        const note = notes[i];
+        const article = articles[i];
+
+        article.note = note;
+        article.syncStatus = getSyncStatus(article, note);
       }
     }
 
@@ -108,13 +112,14 @@ export class ArticleService {
     return true;
   }
 
-  updateArticleContent(article: Article) {
+  syncArticleContent(article: Article) {
     if (article.note?.body === undefined) {
       throw new Error('no noteContent when updating');
     }
 
     article.content = article.note.body;
     article.updatedAt = article.note.user_updated_time;
+    article.syncStatus = 'synced';
     this.saveArticle(article);
   }
 

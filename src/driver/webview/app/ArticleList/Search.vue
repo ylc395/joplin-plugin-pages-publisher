@@ -1,10 +1,8 @@
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, inject, ref } from 'vue';
 import { debounce } from 'lodash';
 import { Select, Button, Tag } from 'ant-design-vue';
-import { NoteService } from '../../../../domain/service/NoteService';
-import { container } from 'tsyringe';
-import { selfish } from '../../utils';
+import { token } from '../../../../domain/service/NoteService';
 
 export default defineComponent({
   components: {
@@ -15,10 +13,8 @@ export default defineComponent({
   },
   emits: ['submit'],
   setup(_, { emit }) {
-    const { searchedNotes, searchNotes, addNote, removeNote, submitAsArticles } = selfish(
-      container.resolve(NoteService),
-    );
-
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const { searchedNotes, searchNotes, addNote, removeNote, submitAsArticles } = inject(token)!;
     const selectedNoteIds = ref<string[]>([]);
     const submit = async () => {
       await submitAsArticles();

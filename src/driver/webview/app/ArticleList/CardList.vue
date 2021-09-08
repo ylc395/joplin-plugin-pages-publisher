@@ -1,15 +1,17 @@
 <script lang="ts">
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Checkbox, Tag, Button, Tooltip } from 'ant-design-vue';
-import { computed, defineComponent, inject, PropType } from 'vue';
+import { computed, defineComponent, inject, onUnmounted, PropType } from 'vue';
 import moment from 'moment';
 import {
   CalendarOutlined,
   TagOutlined,
   EditOutlined,
   FileSyncOutlined,
-  DiffOutlined,
 } from '@ant-design/icons-vue';
+import { capitalize } from 'lodash';
 import { token as articleToken } from '../../../../domain/service/ArticleService';
+import { token as noteToken } from '../../../../domain/service/NoteService';
 import { Article } from '../../../../domain/model/Article';
 import { token as editToken } from './useEdit';
 import { token as diffToken } from './useDiff';
@@ -25,7 +27,6 @@ export default defineComponent({
     Button,
     EditOutlined,
     FileSyncOutlined,
-    DiffOutlined,
   },
   props: { type: { required: true, type: String as PropType<'published' | 'unpublished'> } },
   setup(props) {
@@ -34,27 +35,39 @@ export default defineComponent({
       unpublishedArticles,
       toggleArticleSelected,
       selectedArticles,
-      updateArticleContent,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      syncArticleContent,
     } = inject(articleToken)!;
-
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const { syncNotes } = inject(noteToken)!;
     const { edit } = inject(editToken)!;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { viewDiff } = inject(diffToken)!;
+
+    window.addEventListener('focus', syncNotes);
+    onUnmounted(() => window.removeEventListener('focus', syncNotes));
+
     const articles = props.type === 'published' ? publishedArticles : unpublishedArticles;
 
     return {
       articles,
       toggleArticleSelected,
+      moment,
+      edit,
+      syncArticleContent,
+      viewDiff,
+      openNote,
+      capitalize,
+      tagColors: {
+        synced: 'green',
+        diff: 'orange',
+        deleted: 'red',
+      },
+      tagTips: {
+        synced: "Article's content is same to note's",
+        diff: "There are diffs between article's content and Joplin note's content. Click to view.",
+        deleted: 'Origin note has been deleted.',
+      },
       isChecked(article: Article) {
         return computed(() => selectedArticles.value.includes(article));
       },
-      moment,
-      edit,
-      updateArticleContent,
-      viewDiff,
-      openNote,
     };
   },
 });
@@ -69,8 +82,23 @@ export default defineComponent({
       <Checkbox :checked="isChecked(article).value" @change="toggleArticleSelected(article)" />
     </div>
     <div class="py-4 flex-grow">
-      <h2 class="font-normal text-base cursor-pointer" @click="openNote(article.noteId)">
+      <h2
+        class="font-normal text-base"
+        :class="{ 'cursor-pointer': article.note }"
+        @click="article.note && openNote(article.noteId)"
+      >
         {{ article.title }}
+        <template v-if="article.syncStatus">
+          <Tooltip :title="tagTips[article.syncStatus]">
+            <Tag
+              :color="tagColors[article.syncStatus]"
+              :class="{ 'cursor-default': article.syncStatus !== 'diff' }"
+              @click.stop="article.syncStatus === 'diff' && viewDiff(article)"
+            >
+              {{ capitalize(article.syncStatus) }}
+            </Tag>
+          </Tooltip>
+        </template>
       </h2>
       <div class="flex flex-col flex-wrap">
         <div class="info">
@@ -94,14 +122,8 @@ export default defineComponent({
         Edit
       </Button>
       <template v-if="article.note && article.note.body !== article.content">
-        <Tooltip title="View diff between article's content and Joplin note's content">
-          <Button type="text" @click="viewDiff(article)">
-            <template #icon><DiffOutlined /></template>
-            View Diff
-          </Button>
-        </Tooltip>
         <Tooltip title="Overwrite article's content with Joplin note's current content">
-          <Button type="text" @click="updateArticleContent(article)">
+          <Button type="text" @click="syncArticleContent(article)">
             <template #icon><FileSyncOutlined /></template>
             Sync with Joplin
           </Button>

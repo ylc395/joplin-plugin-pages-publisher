@@ -4,7 +4,7 @@ import { container, singleton } from 'tsyringe';
 import { find, map, remove } from 'lodash';
 import { JoplinDataRepository } from '../repository/JoplinDataRepository';
 import type { Note } from '../model/JoplinData';
-import type { Article } from '../model/Article';
+import { Article, getSyncStatus } from '../model/Article';
 import { ArticleService } from './ArticleService';
 
 export const token: InjectionKey<NoteService> = Symbol();
@@ -101,5 +101,31 @@ export class NoteService {
 
     this.notesToBeAdded.value = [];
     await this.articleService.saveArticles();
+  }
+
+  async syncNotes() {
+    const noteIds = map(this.articleService.articles, 'noteId');
+    const notes = await Promise.all(noteIds.map((id) => this.joplinDataRepository.getNote(id)));
+    const notesMap = notes.reduce((result, note, i) => {
+      if (note) {
+        result[note.id] = note;
+      } else {
+        result[noteIds[i]] = null;
+      }
+      return result;
+    }, {} as Record<string, Required<Note> | null>);
+
+    for (const article of this.articleService.articles) {
+      const { noteId } = article;
+      if (noteId in notesMap) {
+        const note = notesMap[noteId];
+
+        article.note = note;
+        article.syncStatus = getSyncStatus(article, note);
+      } else {
+        this.syncNotes();
+        return;
+      }
+    }
   }
 }

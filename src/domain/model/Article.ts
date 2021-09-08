@@ -18,4 +18,16 @@ export interface Article {
   attachments?: File[];
   published: boolean;
   coverImg: string | null;
+  syncStatus?: 'synced' | 'deleted' | 'diff';
+}
+
+export function getSyncStatus(
+  article: Article,
+  note: Note | null,
+): Required<Article>['syncStatus'] {
+  if (!note) {
+    return 'deleted';
+  }
+
+  return article.content === note.body ? 'synced' : 'diff';
 }

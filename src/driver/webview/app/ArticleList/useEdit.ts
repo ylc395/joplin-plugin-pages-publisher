@@ -8,7 +8,7 @@ import { token as articleToken } from '../../../../domain/service/ArticleService
 export const token: InjectionKey<ReturnType<typeof useEdit>> = Symbol();
 export function useEdit() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { loadArticle, saveArticle, isValidUrl, updateArticleContent } = inject(articleToken)!;
+  const { loadArticle, saveArticle, isValidUrl, syncArticleContent } = inject(articleToken)!;
   const isEditing = ref(false);
   const article = ref<Article | null>(null);
   const edit = async (_article: Article) => {
@@ -53,7 +53,7 @@ export function useEdit() {
     stopEditing,
     saveArticle: save,
     isValidUrl,
-    updateArticleContent,
+    syncArticleContent,
     images,
   };
 
