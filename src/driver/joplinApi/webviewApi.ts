@@ -14,17 +14,21 @@ declare const webviewApi: {
 };
 
 function fetchData<T>(...args: JoplinGetParams) {
-  return webviewApi.postMessage<T>({
-    event: 'getJoplinData',
-    args,
-  });
+  return webviewApi
+    .postMessage<T>({
+      event: 'getJoplinData',
+      args,
+    })
+    .catch(() => null);
 }
 
 async function fetchAllData<T>(...args: JoplinGetParams) {
-  return webviewApi.postMessage<T>({
-    event: 'getJoplinDataAll',
-    args,
-  });
+  return webviewApi
+    .postMessage<T[]>({
+      event: 'getJoplinDataAll',
+      args,
+    })
+    .catch(() => [] as T[]);
 }
 
 container.registerInstance(JoplinFetcherToken, { fetchData, fetchAllData });
