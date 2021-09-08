@@ -8,8 +8,8 @@ import '../joplinApi/webviewApi';
 import App from './app/index.vue';
 import { ExceptionService } from '../../domain/service/ExceptionService';
 
-const app = createApp(App);
 const exceptionService = container.resolve(ExceptionService);
+const app = createApp(App);
 app.config.errorHandler = (err: unknown) => {
   exceptionService.reportError(err as Error);
 };

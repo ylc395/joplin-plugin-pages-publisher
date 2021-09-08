@@ -9,6 +9,7 @@ interface ErrorDesc {
 export class ExceptionService {
   constructor() {
     window.addEventListener('error', (e) => this.reportError(e.error));
+    window.addEventListener('unhandledrejection', (e) => this.reportError(Error(e.reason)));
   }
 
   reportError(err: Error, desc?: ErrorDesc) {
