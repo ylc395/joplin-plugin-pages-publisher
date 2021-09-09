@@ -5,6 +5,7 @@ import { token as siteToken } from '../../../../domain/service/SiteService';
 import { useDraftForm } from '../../composable/useDraftForm';
 import FieldForm from '../../components/FieldForm/index.vue';
 import { token as formToken } from '../../components/FieldForm/useFieldForm';
+import { useSiteEdit, useCustomFieldModel, useCustomFieldValidateInfo } from './useSiteEdit';
 
 export default defineComponent({
   components: {
@@ -18,19 +19,12 @@ export default defineComponent({
     FieldForm,
   },
   setup() {
-    const {
-      site,
-      themes,
-      saveSite,
-      loadTheme,
-      hasThemeFields,
-      customFieldRules,
-      customFields,
-      getCustomFieldModel,
-      getCustomFieldValidateInfo,
-    } =
+    const { site, themes, saveSite, loadTheme } =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(siteToken)!;
+
+    const { hasThemeFields, customFieldRules, customFields } = useSiteEdit();
+
     const { modelRef, validateInfos, save, canSave } = useDraftForm(site, saveSite, (data) => ({
       name: [{ required: true }],
       themeName: [{ required: true }],
@@ -39,8 +33,8 @@ export default defineComponent({
     }));
 
     provide(formToken, {
-      model: getCustomFieldModel(modelRef),
-      validateInfos: getCustomFieldValidateInfo(validateInfos),
+      model: useCustomFieldModel(modelRef),
+      validateInfos: useCustomFieldValidateInfo(customFieldRules, validateInfos),
       fields: customFields,
     });
 

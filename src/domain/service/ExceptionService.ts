@@ -15,6 +15,7 @@ export class ExceptionService {
 
   reportError(err: Error, desc?: ErrorDesc) {
     console.error(err);
+    // todo: move Modal to AppService impl
     // hack: when https://github.com/vueComponent/ant-design-vue/pull/4632 is merged, `constant` is no need
     Modal.error({
       title: constant(desc?.title || err.name),
