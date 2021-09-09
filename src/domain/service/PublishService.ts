@@ -11,13 +11,14 @@ export const token: InjectionKey<PublishService> = Symbol();
 export class PublishService {
   private readonly app = container.resolve(appToken);
   private readonly git = container.resolve(gitClientToken);
-  readonly isGenerating = ref(false);
   private files: string[] = [];
+  readonly isGenerating = ref(false);
+  readonly isPushing = ref(false);
   readonly github: Github = {
     username: 'ylc395',
     email: 'cyl@cyl.moe',
     repositoryName: 'joplin-pages',
-    token: '',
+    token: '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',
   };
 
   async generateSite() {
@@ -37,7 +38,13 @@ export class PublishService {
     this.isGenerating.value = false;
   }
 
-  gitPush() {
-    return this.git.push(this.files, this.github);
+  async gitPush() {
+    if (this.isPushing.value) {
+      return;
+    }
+
+    this.isPushing.value = true;
+    await this.git.push(this.files, this.github);
+    this.isPushing.value = false;
   }
 }

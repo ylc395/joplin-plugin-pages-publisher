@@ -25,6 +25,16 @@ class Git {
       message: 'test',
       author: { name: githubInfo.username, email: githubInfo.email },
     });
+
+    // todo: handle non-simple-fast-forward push
+    await push({
+      fs,
+      http,
+      gitdir,
+      remoteRef: githubInfo.branch,
+      url: `https://github.com/${githubInfo.username}/${githubInfo.repositoryName}.git`,
+      onAuth: () => ({ username: githubInfo.username, password: githubInfo.token }),
+    });
   }
 }
 

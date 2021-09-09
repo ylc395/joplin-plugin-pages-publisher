@@ -11,7 +11,7 @@ import type {
   readdir as IReaddir,
   stat as IStat,
 } from 'fs-extra';
-import { functionsIn, isObjectLike, isBuffer } from 'lodash';
+import { functionsIn, isObjectLike, isBuffer, toPlainObject } from 'lodash';
 import type { MockNodeFsCallResult } from './type';
 
 const fs = joplin.require('fs-extra');
@@ -62,7 +62,6 @@ export async function mockNodeFsCall(
   funcName: string,
   ...args: unknown[]
 ): Promise<MockNodeFsCallResult> {
-  let isError = false;
   try {
     const result = await fs[funcName](...args);
     const methodsResult =
@@ -73,11 +72,10 @@ export async function mockNodeFsCall(
           }, {} as MockNodeFsCallResult['methodsResult'])
         : {};
 
-    return { isError, result, methodsResult };
+    return { isError: false, result, methodsResult };
   } catch (error) {
-    isError = true;
     // joplin webview will modify our error object, this behavior break the isomorphic-git
     // so we transform error to promise resolve value
-    return { isError, result: error, methodsResult: {} };
+    return { isError: true, result: toPlainObject(error), methodsResult: {} };
   }
 }
