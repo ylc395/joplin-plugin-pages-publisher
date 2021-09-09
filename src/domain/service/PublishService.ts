@@ -3,14 +3,14 @@ import { ref, InjectionKey } from 'vue';
 import type { Github, Git } from '../model/Github';
 import { token as appToken } from './AppService';
 
-export const gitToken: InjectionToken<Git> = Symbol();
+export const gitClientToken: InjectionToken<Git> = Symbol();
 
-export const token: InjectionKey<GitService> = Symbol();
+export const token: InjectionKey<PublishService> = Symbol();
 
 @singleton()
-export class GitService {
+export class PublishService {
   private readonly app = container.resolve(appToken);
-  private readonly git = container.resolve(gitToken);
+  private readonly git = container.resolve(gitClientToken);
   readonly isGenerating = ref(false);
   private files: string[] = [];
   readonly github: Github = {
@@ -38,6 +38,6 @@ export class GitService {
   }
 
   gitPush() {
-    return this.git.push(this.github);
+    return this.git.push(this.files, this.github);
   }
 }

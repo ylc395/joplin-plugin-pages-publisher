@@ -63,12 +63,12 @@ export function addScriptLinkStyleTags(
 ) {
   const linkTags = pluginAssets
     .filter(({ name }) => name.endsWith('.css'))
-    .map(({ name }) => `<link rel="stylesheet" href="/_markdownPluginAssets/${name}" />`)
+    .map(({ name }) => `<link rel="stylesheet" href="/_markdown_plugin_assets/${name}" />`)
     .join('\n');
 
   const scriptTags = pluginAssets
     .filter(({ name }) => name.endsWith('.js'))
-    .map(({ name }) => `<script src="/_markdownPluginAssets/${name}"></script>`)
+    .map(({ name }) => `<script src="/_markdown_plugin_assets/${name}"></script>`)
     .join('\n');
 
   const styleTag = cssStrings.length > 0 ? `<style>${cssStrings.join('\n')}</style>` : '';

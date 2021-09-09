@@ -13,6 +13,7 @@ export class ExceptionService {
   }
 
   reportError(err: Error, desc?: ErrorDesc) {
+    console.error(err);
     Modal.error({ title: desc?.title ?? err.name, content: desc?.message ?? err.message });
   }
 }

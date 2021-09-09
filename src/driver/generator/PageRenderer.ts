@@ -13,7 +13,15 @@ import {
   getThemeAssetsDir,
   getThemeDir,
 } from './pathHelper';
-import { outputFile, readFileSync, copy, rename, remove, getAllFiles } from '../fs/joplinPlugin';
+import {
+  outputFile,
+  readFileSync,
+  copy,
+  move,
+  remove,
+  getAllFiles,
+  pathExists,
+} from '../fs/joplinPlugin';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { loadTheme } from '../themeLoader/joplinPlugin';
 import { Db } from '../db/joplinPlugin';
@@ -199,7 +207,10 @@ export class PageRenderer {
 
     const backupDir = `${this.outputDir}_backup`;
     try {
-      await rename(this.outputDir, backupDir);
+      if (await pathExists(this.outputDir)) {
+        await move(this.outputDir, backupDir, { overwrite: true });
+      }
+
       for (const pageName of Object.keys(this.pages)) {
         await this.outputPage(pageName);
       }
@@ -208,7 +219,9 @@ export class PageRenderer {
       await remove(backupDir);
       return await getAllFiles(this.outputDir);
     } catch (error) {
-      await rename(backupDir, this.outputDir);
+      if (await pathExists(backupDir)) {
+        await move(backupDir, this.outputDir);
+      }
       throw error;
     }
   }

@@ -185,7 +185,7 @@ export class MarkdownRenderer {
       }
       await copy(
         `${this.pluginAssetDir}/${name}`,
-        `${this.outputDir}/_markdownPluginAssets/${name}`,
+        `${this.outputDir}/_markdown_plugin_assets/${name}`,
       );
       this.fileIdPool.add(fileId);
     }

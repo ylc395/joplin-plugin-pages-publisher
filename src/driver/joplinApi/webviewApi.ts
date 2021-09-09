@@ -2,7 +2,7 @@ import { token } from '../../domain/service/AppService';
 import { container } from 'tsyringe';
 
 export interface AppRequest {
-  event: 'quitApp' | 'generateSite' | 'openNote' | 'getDataDir';
+  event: 'quitApp' | 'generateSite' | 'openNote' | 'getOutputDir' | 'getGitRepositoryDir';
   payload?: any;
 }
 
@@ -23,7 +23,11 @@ container.registerInstance(token, {
     return webviewApi.postMessage({ event: 'openNote', payload: noteId });
   },
 
-  getDataDir() {
-    return webviewApi.postMessage<string>({ event: 'getDataDir' });
+  getOutputDir() {
+    return webviewApi.postMessage<string>({ event: 'getOutputDir' });
+  },
+
+  getGitRepositoryDir() {
+    return webviewApi.postMessage<string>({ event: 'getGitRepositoryDir' });
   },
 });

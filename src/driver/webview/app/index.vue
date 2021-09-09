@@ -10,7 +10,7 @@ import { ArticleService, token as articleToken } from '../../../domain/service/A
 import { SiteService, token as siteToken } from '../../../domain/service/SiteService';
 import { PageService, token as pageToken } from '../../../domain/service/PageService';
 import { NoteService, token as noteToken } from '../../../domain/service/NoteService';
-import { GitService, token as gitToken } from '../../../domain/service/GitService';
+import { PublishService, token as publishToken } from '../../../domain/service/PublishService';
 import { token as appToken } from '../../../domain/service/AppService';
 import { selfish } from '../utils';
 
@@ -26,17 +26,17 @@ export default defineComponent({
     PageList,
   },
   setup() {
-    const gitService = selfish(container.resolve(GitService));
+    const publishService = selfish(container.resolve(PublishService));
     const { quit: quitApp } = container.resolve(appToken);
 
     provide(articleToken, selfish(container.resolve(ArticleService)));
     provide(noteToken, selfish(container.resolve(NoteService)));
     provide(siteToken, selfish(container.resolve(SiteService)));
     provide(pageToken, selfish(container.resolve(PageService)));
-    provide(gitToken, gitService);
+    provide(publishToken, publishService);
 
-    const { isGenerating, generateSite } = gitService;
-    return { quitApp, generateSite, isGenerating };
+    const { isGenerating, generateSite, gitPush } = publishService;
+    return { quitApp, generateSite, isGenerating, gitPush };
   },
 });
 </script>
@@ -50,6 +50,7 @@ export default defineComponent({
         <template #icon><RocketOutlined /></template>
         Generate
       </Button>
+      <Button @click="gitPush"> Push </Button>
       <Button class="border-0 mr-4" @click="quitApp">
         <template #icon><CloseOutlined /></template>
       </Button>

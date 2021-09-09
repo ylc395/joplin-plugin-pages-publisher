@@ -5,6 +5,7 @@ import type { readJSON as IReadJSON, readdir as IReaddir } from 'fs-extra';
 import type { Theme } from '../../domain/model/Theme';
 import { DEFAULT_THEME_NAME } from '../../domain/model/Theme';
 import { THEME_SCHEMA } from './schema';
+import { getThemeDir } from '../generator/pathHelper';
 
 const { readJson, readdir } = joplin.require('fs-extra') as {
   readJson: typeof IReadJSON;
@@ -16,8 +17,7 @@ const themeValidate = new Ajv()
   .compile<Theme>(THEME_SCHEMA);
 
 async function loadDefault(): Promise<Theme> {
-  const installDir = await joplin.plugins.installationDir();
-  return readJson(`${installDir}/assets/defaultTheme/config.json`);
+  return readJson(`${await getThemeDir(DEFAULT_THEME_NAME)}/config.json`);
 }
 
 export async function loadTheme(themeName: string) {
