@@ -1,4 +1,4 @@
-import { trimStart, find } from 'lodash';
+import { find } from 'lodash';
 import { MarkupToHtml } from '@joplin/renderer';
 import joplin from 'api';
 import type { Article } from '../../domain/model/Article';
@@ -54,7 +54,7 @@ export class MarkdownRenderer {
       throw new Error('markdownRenderer is not initialized');
     }
 
-    return this.resources[trimStart(url, ':/')];
+    return this.resources[url.replace(':/', '')];
   }
 
   private async getJoplinMarkdownSetting() {
@@ -93,7 +93,7 @@ export class MarkdownRenderer {
 
   private readonly resourceModel = {
     isResourceUrl: (url: string) => Boolean(this.getResourceInfo(url)),
-    urlToId: (url: string) => trimStart(url, ':/'),
+    urlToId: (url: string) => url.replace(':/', ''),
     isSupportedImageMimeType: () => true,
   };
 
