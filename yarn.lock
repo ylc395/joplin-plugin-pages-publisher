@@ -1513,10 +1513,10 @@ ansi-styles@^4.0.0, ansi-styles@^4.1.0:
   dependencies:
     color-convert "^2.0.1"
 
-ant-design-vue@^2.2.6:
-  version "2.2.6"
-  resolved "https://registry.npmjs.org/ant-design-vue/-/ant-design-vue-2.2.6.tgz#2acf45ea8bb2bb8a0e48a83fa9c6a827fef5236f"
-  integrity sha512-WgZow4FtrsAZON01wv+ObuXWL1Elaq/fhPRdmOEfFx5f8azTDBYL75A8dVl59TNBKW8FdSGBTl9PZYzW5eO6Gw==
+ant-design-vue@^2.2.7:
+  version "2.2.7"
+  resolved "https://registry.npmjs.org/ant-design-vue/-/ant-design-vue-2.2.7.tgz#d306d478003862f1a4cec3d52edb99c19064730a"
+  integrity sha512-aUk9HO2/LpUrZ1Sf2lVx561VrNkZz/aRJ1CInyxyuIy4xksMywZLt6OOUazODWZyNn6LbPtRMoqiFrecXb+ceg==
   dependencies:
     "@ant-design/icons-vue" "^6.0.0"
     "@babel/runtime" "^7.10.5"

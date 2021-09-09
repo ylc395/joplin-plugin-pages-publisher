@@ -1,5 +1,5 @@
 <script lang="ts">
-import { computed, defineComponent, inject, provide } from 'vue';
+import { defineComponent, inject, provide } from 'vue';
 import { Form, Select, Button, InputNumber, Switch } from 'ant-design-vue';
 import { token as siteToken } from '../../../../domain/service/SiteService';
 import { useDraftForm } from '../../composable/useDraftForm';
@@ -18,7 +18,17 @@ export default defineComponent({
     FieldForm,
   },
   setup() {
-    const { site, themes, saveSite, loadTheme, themeConfig, customFieldRules } =
+    const {
+      site,
+      themes,
+      saveSite,
+      loadTheme,
+      hasThemeFields,
+      customFieldRules,
+      customFields,
+      getCustomFieldModel,
+      getCustomFieldValidateInfo,
+    } =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(siteToken)!;
     const { modelRef, validateInfos, save, canSave } = useDraftForm(site, saveSite, (data) => ({
@@ -28,17 +38,10 @@ export default defineComponent({
       ...customFieldRules.value,
     }));
 
-    const hasThemeFields = computed(() => Boolean(themeConfig.value?.siteFields?.length));
     provide(formToken, {
-      model: computed(() => {
-        const themeName = themeConfig.value?.name;
-        if (!themeName) {
-          return {};
-        }
-        return modelRef.value.custom[themeName] ?? {};
-      }),
-      validateInfos,
-      fields: computed(() => themeConfig.value?.siteFields ?? []),
+      model: getCustomFieldModel(modelRef),
+      validateInfos: getCustomFieldValidateInfo(validateInfos),
+      fields: customFields,
     });
 
     return {

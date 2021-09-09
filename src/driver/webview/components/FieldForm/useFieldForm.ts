@@ -1,11 +1,11 @@
-import type { Field } from '../../../../domain/model/Page';
-import { inject, InjectionKey, provide, Ref } from 'vue';
+import { inject, InjectionKey, Ref } from 'vue';
 import type { validateInfos } from 'ant-design-vue/lib/form/useForm';
+import type { Field } from '../../../../domain/model/Page';
 
 interface FormData {
   readonly model: Ref<Record<string, unknown>>;
   readonly fields: Ref<Readonly<Field[]>>;
-  readonly validateInfos: validateInfos;
+  readonly validateInfos: Ref<validateInfos>;
 }
 
 export const token: InjectionKey<FormData> = Symbol();

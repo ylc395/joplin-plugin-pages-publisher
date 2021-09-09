@@ -1,6 +1,6 @@
 import { Form } from 'ant-design-vue';
 import { every, isEqual, isEmpty, cloneDeepWith, isTypedArray } from 'lodash';
-import { Ref, computed, reactive, watchEffect, shallowRef } from 'vue';
+import { Ref, computed, reactive, watchEffect, shallowRef, watch } from 'vue';
 
 type Data = Record<string, unknown>;
 type Rules = Record<string, unknown>;
@@ -26,10 +26,21 @@ export function useDraftForm<T = Data>(
     return (model.value ? reactive(cloneDeepWith(model.value as any, customClone)) : {}) as T;
   });
 
-  const { validateInfos, validate } = Form.useForm(
-    modelRef,
-    typeof rules === 'function' ? computed(() => rules(modelRef.value)) : rules,
-  );
+  const rules_ = typeof rules === 'function' ? computed(() => rules(modelRef.value)) : rules;
+  const { validateInfos, validate } = Form.useForm(modelRef, rules_);
+
+  if (rules_) {
+    watch(
+      rules_,
+      async () => {
+        try {
+          await validate();
+          // eslint-disable-next-line no-empty
+        } catch {}
+      },
+      { flush: 'post' },
+    );
+  }
 
   const save = async () => {
     await validate();
