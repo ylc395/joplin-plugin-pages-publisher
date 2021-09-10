@@ -1,5 +1,7 @@
-import { token } from '../../domain/service/AppService';
+import { token } from '../../../domain/service/AppService';
 import { container } from 'tsyringe';
+import { Modal } from 'ant-design-vue';
+import { constant } from 'lodash';
 
 export interface AppRequest {
   event: 'quitApp' | 'generateSite' | 'openNote' | 'getOutputDir' | 'getGitRepositoryDir';
@@ -11,6 +13,14 @@ declare const webviewApi: {
 };
 
 container.registerInstance(token, {
+  openModal(type, { title, content }) {
+    // hack: when https://github.com/vueComponent/ant-design-vue/pull/4632 is merged, `constant` is no need
+    return Modal[type]({
+      title: constant(title),
+      content: content ? constant(content) : undefined,
+    });
+  },
+
   quit() {
     return webviewApi.postMessage({ event: 'quitApp' });
   },

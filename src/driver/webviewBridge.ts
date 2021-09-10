@@ -3,7 +3,7 @@ import joplin from 'api';
 import { Db } from './db/joplinPlugin';
 import type { DbReadRequest, DbWriteRequest } from './db/webviewApi';
 import type { JoplinDataRequest } from './joplinData/webviewApi';
-import type { AppRequest } from './joplinApi/webviewApi';
+import type { AppRequest } from './webview/utils/webviewApi';
 import type { FsRequest } from './fs/webviewApi';
 import type { ThemeConfigLoadRequest, ThemeConfigsLoadRequest } from './themeLoader/webviewApi';
 

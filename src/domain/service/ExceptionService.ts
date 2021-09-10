@@ -1,6 +1,5 @@
-import { singleton } from 'tsyringe';
-import { Modal } from 'ant-design-vue';
-import { constant } from 'lodash';
+import { container, singleton } from 'tsyringe';
+import { token } from './AppService';
 
 interface ErrorDesc {
   title?: string;
@@ -8,6 +7,7 @@ interface ErrorDesc {
 }
 @singleton()
 export class ExceptionService {
+  private readonly appService = container.resolve(token);
   constructor() {
     window.addEventListener('error', (e) => this.reportError(e.error));
     window.addEventListener('unhandledrejection', (e) => this.reportError(Error(e.reason)));
@@ -15,11 +15,9 @@ export class ExceptionService {
 
   reportError(err: Error, desc?: ErrorDesc) {
     console.error(err);
-    // todo: move Modal to AppService impl
-    // hack: when https://github.com/vueComponent/ant-design-vue/pull/4632 is merged, `constant` is no need
-    Modal.error({
-      title: constant(desc?.title || err.name),
-      content: constant(desc?.message ?? err.message),
+    this.appService.openModal('error', {
+      title: desc?.title ?? err.name,
+      content: desc?.message ?? err.message,
     });
   }
 }

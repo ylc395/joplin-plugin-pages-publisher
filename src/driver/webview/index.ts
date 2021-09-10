@@ -5,8 +5,8 @@ import { container } from 'tsyringe';
 import '../db/webviewApi';
 import '../themeLoader/webviewApi';
 import '../joplinData/webviewApi';
-import '../joplinApi/webviewApi';
 import '../git/webviewApi';
+import './utils/webviewApi';
 import App from './app/index.vue';
 import { ExceptionService } from '../../domain/service/ExceptionService';
 
