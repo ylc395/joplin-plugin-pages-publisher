@@ -52,7 +52,6 @@ export function useCustomFieldModel(siteModelRef: Ref<Site>) {
       throw new Error('no site or theme');
     }
 
-    // todo: to figure out why site.custom[themeName] is modified like a draft after saving
     if (oldTheme) {
       siteModelRef.value.custom[theme.name] = cloneDeep(site.value.custom[theme.name]) ?? {};
       siteModelRef.value.custom[oldTheme.name] = cloneDeep(site.value.custom[oldTheme.name]) ?? {};

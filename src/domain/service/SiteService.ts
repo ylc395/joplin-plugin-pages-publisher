@@ -1,16 +1,17 @@
 import { container, singleton } from 'tsyringe';
-import { Ref, shallowRef, InjectionKey, toRaw } from 'vue';
+import { Ref, shallowRef, InjectionKey, ref, toRaw } from 'vue';
 import { Theme, DEFAULT_THEME_NAME } from '../model/Theme';
 import { Site, DEFAULT_SITE } from '../model/Site';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { ExceptionService } from './ExceptionService';
+import { merge } from 'lodash';
 
 export const token: InjectionKey<SiteService> = Symbol('siteService');
 @singleton()
 export class SiteService {
   private readonly pluginDataRepository = new PluginDataRepository();
   private readonly exceptionService = container.resolve(ExceptionService);
-  readonly site: Ref<Site | null> = shallowRef(null);
+  readonly site: Ref<Site | null> = ref(null);
   readonly themes: Ref<Theme[]> = shallowRef([]);
   readonly themeConfig: Ref<Theme | null> = shallowRef(null);
 
@@ -52,7 +53,7 @@ export class SiteService {
   }
 
   async saveSite(site?: Partial<Site>) {
-    const siteData = Object.assign(this.site.value, toRaw(site));
-    await this.pluginDataRepository.saveSite(siteData);
+    const siteData = merge(this.site.value, site);
+    await this.pluginDataRepository.saveSite(toRaw(siteData));
   }
 }
