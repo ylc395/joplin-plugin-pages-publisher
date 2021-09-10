@@ -1,9 +1,9 @@
 import { computed, Ref, watch, inject, watchEffect } from 'vue';
-import { pick, mapKeys, cloneDeep, isEqual } from 'lodash';
+import { pick, mapKeys, cloneDeep, isEqual, every } from 'lodash';
 import { token as siteToken } from '../../../../domain/service/SiteService';
 import { token as appToken } from '../../../../domain/service/AppService';
 import type { Site } from '../../../../domain/model/Site';
-import type { ValidateInfo } from 'ant-design-vue/lib/form/useForm';
+import type { validateInfos } from 'ant-design-vue/lib/form/useForm';
 
 export function useSiteEdit() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -71,7 +71,7 @@ export function useCustomFieldModel(siteModelRef: Ref<Site>) {
 
 export function useCustomFieldValidateInfo(
   rules: Ref<Record<string, unknown>>,
-  validateInfos: ValidateInfo,
+  validateInfos: validateInfos,
 ) {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { themeConfig } = inject(siteToken)!;
@@ -90,13 +90,19 @@ export function useCustomFieldValidateInfo(
   });
 }
 
-export function useBlockApp(siteModelRef: Ref<Site>) {
+export function useBlockApp(siteModelRef: Ref<Site>, validateInfos: validateInfos) {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { isAppBlocked } = inject(appToken)!;
+  const { setBlockFlag } = inject(appToken)!;
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { site } = inject(siteToken)!;
 
   watchEffect(() => {
-    isAppBlocked.value = !isEqual(site.value, siteModelRef.value);
+    const isModified = !isEqual(site.value, siteModelRef.value);
+    const isValid = every(validateInfos, { validateStatus: 'success' });
+    setBlockFlag(
+      'siteConfig',
+      (isModified && 'Site modification has not been saved') ||
+        (!isValid && 'Not all filed is filled correctly'),
+    );
   });
 }

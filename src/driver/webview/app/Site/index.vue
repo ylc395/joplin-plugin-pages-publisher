@@ -31,13 +31,13 @@ export default defineComponent({
     const { hasThemeFields, customFieldRules, customFields } = useSiteEdit();
 
     const { modelRef, validateInfos, save, canSave } = useDraftForm(site, saveSite, (data) => ({
-      name: [{ required: true }],
       themeName: [{ required: true }],
+      feedEnabled: [{ required: true }],
       feedLength: [{ required: data.feedEnabled }],
       ...customFieldRules.value,
     }));
 
-    useBlockApp(modelRef);
+    useBlockApp(modelRef, validateInfos);
 
     provide(formToken, {
       model: useCustomFieldModel(modelRef),

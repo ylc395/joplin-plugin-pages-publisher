@@ -30,16 +30,12 @@ export function useDraftForm<T = Data>(
   const { validateInfos, validate } = Form.useForm(modelRef, rules_);
 
   if (rules_) {
-    watch(
-      rules_,
-      async () => {
-        try {
-          await validate();
-          // eslint-disable-next-line no-empty
-        } catch {}
-      },
-      { flush: 'post' },
-    );
+    watch(rules_, async () => {
+      try {
+        await validate();
+        // eslint-disable-next-line no-empty
+      } catch {}
+    });
   }
 
   const save = async () => {
@@ -51,9 +47,7 @@ export function useDraftForm<T = Data>(
   const canSave = computed(() => {
     return (
       !isEmpty(modelRef.value) &&
-      every(validateInfos, ({ validateStatus }) =>
-        [undefined, 'success'].includes(validateStatus),
-      ) &&
+      every(validateInfos, { validateStatus: 'success' }) &&
       !isEqual(modelRef.value, origin.value)
     );
   });

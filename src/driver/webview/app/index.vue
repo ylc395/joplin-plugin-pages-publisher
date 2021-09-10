@@ -42,6 +42,7 @@ export default defineComponent({
     const {
       app: { quit: quitApp },
       isAppBlocked,
+      appBlockInfo,
     } = appService;
 
     return {
@@ -51,6 +52,7 @@ export default defineComponent({
       gitPush,
       activeKey: useActiveTabPane(appService),
       isAppBlocked,
+      appBlockInfo,
     };
   },
 });
@@ -61,7 +63,7 @@ export default defineComponent({
     <TabPane key="Pages" tab="Pages" class="panel"><PageList /></TabPane>
     <TabPane key="Articles" tab="Articles" class="panel"><ArticleList /></TabPane>
     <template #tabBarExtraContent>
-      <Tooltip :title="isAppBlocked ? 'Please save modification before generating site' : ''">
+      <Tooltip :title="appBlockInfo">
         <Button :loading="isGenerating" :disabled="isAppBlocked" @click="generateSite">
           <template #icon><RocketOutlined /></template>
           Generate

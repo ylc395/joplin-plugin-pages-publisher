@@ -4,7 +4,7 @@ import { Theme, DEFAULT_THEME_NAME } from '../model/Theme';
 import { Site, DEFAULT_SITE } from '../model/Site';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { ExceptionService } from './ExceptionService';
-import { merge } from 'lodash';
+import { merge, defaults, isEmpty, map } from 'lodash';
 
 export const token: InjectionKey<SiteService> = Symbol('siteService');
 @singleton()
@@ -27,11 +27,6 @@ export class SiteService {
     };
 
     const { themeName } = this.site.value;
-
-    if (!this.site.value.custom[themeName]) {
-      this.site.value.custom[themeName] = {};
-    }
-
     await this.loadTheme(themeName);
   }
 
@@ -42,8 +37,19 @@ export class SiteService {
 
     try {
       this.themeConfig.value = await this.pluginDataRepository.getTheme(themeName);
-      if (!this.site.value.custom[themeName]) {
-        this.site.value.custom[themeName] = {};
+
+      const { siteFields } = this.themeConfig.value;
+
+      if (!isEmpty(siteFields)) {
+        const { custom } = this.site.value;
+        custom[themeName] = defaults(
+          custom[themeName],
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          map(siteFields!, 'name').reduce((result, name) => {
+            result[name] = null;
+            return result;
+          }, {} as Record<string, null>),
+        );
       }
     } catch (error) {
       this.themeConfig.value =
