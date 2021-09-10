@@ -1,4 +1,4 @@
-import { token } from '../../../domain/service/AppService';
+import { appToken } from '../../../domain/service/AppService';
 import { container } from 'tsyringe';
 import { Modal } from 'ant-design-vue';
 import { constant } from 'lodash';
@@ -12,7 +12,7 @@ declare const webviewApi: {
   postMessage: <T = void>(payload: AppRequest) => Promise<T>;
 };
 
-container.registerInstance(token, {
+container.registerInstance(appToken, {
   openModal(type, { title, content }) {
     // hack: when https://github.com/vueComponent/ant-design-vue/pull/4632 is merged, `constant` is no need
     return Modal[type]({

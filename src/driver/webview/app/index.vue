@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, provide } from 'vue';
-import { Tabs, Button } from 'ant-design-vue';
+import { Tabs, Button, Tooltip } from 'ant-design-vue';
 import { CloseOutlined, RocketOutlined } from '@ant-design/icons-vue';
 import { container } from 'tsyringe';
 import ArticleList from './ArticleList/index.vue';
@@ -11,11 +11,13 @@ import { SiteService, token as siteToken } from '../../../domain/service/SiteSer
 import { PageService, token as pageToken } from '../../../domain/service/PageService';
 import { NoteService, token as noteToken } from '../../../domain/service/NoteService';
 import { PublishService, token as publishToken } from '../../../domain/service/PublishService';
-import { token as appToken } from '../../../domain/service/AppService';
+import { AppService, token as appToken } from '../../../domain/service/AppService';
 import { selfish } from '../utils';
+import { useActiveTabPane } from './useTabPane';
 
 export default defineComponent({
   components: {
+    Tooltip,
     Tabs,
     TabPane: Tabs.TabPane,
     CloseOutlined,
@@ -27,29 +29,44 @@ export default defineComponent({
   },
   setup() {
     const publishService = selfish(container.resolve(PublishService));
-    const { quit: quitApp } = container.resolve(appToken);
+    const appService = selfish(container.resolve(AppService));
 
     provide(articleToken, selfish(container.resolve(ArticleService)));
     provide(noteToken, selfish(container.resolve(NoteService)));
     provide(siteToken, selfish(container.resolve(SiteService)));
     provide(pageToken, selfish(container.resolve(PageService)));
     provide(publishToken, publishService);
+    provide(appToken, appService);
 
     const { isGenerating, generateSite, gitPush } = publishService;
-    return { quitApp, generateSite, isGenerating, gitPush };
+    const {
+      app: { quit: quitApp },
+      isAppBlocked,
+    } = appService;
+
+    return {
+      quitApp,
+      generateSite,
+      isGenerating,
+      gitPush,
+      activeKey: useActiveTabPane(appService),
+      isAppBlocked,
+    };
   },
 });
 </script>
 <template>
-  <Tabs defaultActiveKey="activeKey" size="large">
+  <Tabs v-model:activeKey="activeKey" size="large">
     <TabPane key="Site" tab="Site" class="panel"><Site /></TabPane>
     <TabPane key="Pages" tab="Pages" class="panel"><PageList /></TabPane>
     <TabPane key="Articles" tab="Articles" class="panel"><ArticleList /></TabPane>
     <template #tabBarExtraContent>
-      <Button :loading="isGenerating" @click="generateSite">
-        <template #icon><RocketOutlined /></template>
-        Generate
-      </Button>
+      <Tooltip :title="isAppBlocked ? 'Please save modification before generating site' : ''">
+        <Button :loading="isGenerating" :disabled="isAppBlocked" @click="generateSite">
+          <template #icon><RocketOutlined /></template>
+          Generate
+        </Button>
+      </Tooltip>
       <Button @click="gitPush"> Push </Button>
       <Button class="border-0 mr-4" @click="quitApp">
         <template #icon><CloseOutlined /></template>

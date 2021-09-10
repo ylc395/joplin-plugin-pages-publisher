@@ -1,6 +1,8 @@
-import type { InjectionToken } from 'tsyringe';
+import { ref, InjectionKey } from 'vue';
+import { singleton, InjectionToken, container } from 'tsyringe';
 
-interface AppService {
+export const appToken: InjectionToken<App> = Symbol();
+interface App {
   openModal: (type: 'error' | 'confirm', args: { title?: string; content?: string }) => void;
   quit: () => Promise<void>;
   openNote: (noteId: string) => Promise<void>;
@@ -9,4 +11,10 @@ interface AppService {
   getGitRepositoryDir: () => Promise<string>;
 }
 
-export const token: InjectionToken<AppService> = Symbol();
+export const token: InjectionKey<AppService> = Symbol();
+
+@singleton()
+export class AppService {
+  readonly app = container.resolve(appToken);
+  readonly isAppBlocked = ref(false);
+}

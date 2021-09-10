@@ -1,12 +1,13 @@
-import { computed, Ref, watch, inject } from 'vue';
-import { pick, mapKeys, cloneDeep } from 'lodash';
-import { token } from '../../../../domain/service/SiteService';
+import { computed, Ref, watch, inject, watchEffect } from 'vue';
+import { pick, mapKeys, cloneDeep, isEqual } from 'lodash';
+import { token as siteToken } from '../../../../domain/service/SiteService';
+import { token as appToken } from '../../../../domain/service/AppService';
 import type { Site } from '../../../../domain/model/Site';
 import type { ValidateInfo } from 'ant-design-vue/lib/form/useForm';
 
 export function useSiteEdit() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { themeConfig } = inject(token)!;
+  const { themeConfig } = inject(siteToken)!;
   const hasThemeFields = computed(() => Boolean(themeConfig.value?.siteFields?.length));
   const customFields = computed(() => {
     const themeName = themeConfig.value?.name;
@@ -46,7 +47,7 @@ export function useSiteEdit() {
 
 export function useCustomFieldModel(siteModelRef: Ref<Site>) {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { site, themeConfig } = inject(token)!;
+  const { site, themeConfig } = inject(siteToken)!;
   watch(themeConfig, (theme, oldTheme) => {
     if (!theme || !site.value) {
       throw new Error('no site or theme');
@@ -73,7 +74,7 @@ export function useCustomFieldValidateInfo(
   validateInfos: ValidateInfo,
 ) {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { themeConfig } = inject(token)!;
+  const { themeConfig } = inject(siteToken)!;
   return computed(() => {
     const themeName = themeConfig.value?.name;
 
@@ -86,5 +87,16 @@ export function useCustomFieldValidateInfo(
     return mapKeys(pick(validateInfos, fieldNames), (_, key) =>
       key.replace(new RegExp(`^custom\\.${themeName}\\.`), ''),
     );
+  });
+}
+
+export function useBlockApp(siteModelRef: Ref<Site>) {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const { isAppBlocked } = inject(appToken)!;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const { site } = inject(siteToken)!;
+
+  watchEffect(() => {
+    isAppBlocked.value = !isEqual(site.value, siteModelRef.value);
   });
 }

@@ -1,5 +1,5 @@
 import { container, singleton } from 'tsyringe';
-import { token } from './AppService';
+import { appToken } from './AppService';
 
 interface ErrorDesc {
   title?: string;
@@ -7,7 +7,7 @@ interface ErrorDesc {
 }
 @singleton()
 export class ExceptionService {
-  private readonly appService = container.resolve(token);
+  private readonly app = container.resolve(appToken);
   constructor() {
     window.addEventListener('error', (e) => this.reportError(e.error));
     window.addEventListener('unhandledrejection', (e) => this.reportError(Error(e.reason)));
@@ -15,7 +15,7 @@ export class ExceptionService {
 
   reportError(err: Error, desc?: ErrorDesc) {
     console.error(err);
-    this.appService.openModal('error', {
+    this.app.openModal('error', {
       title: desc?.title ?? err.name,
       content: desc?.message ?? err.message,
     });

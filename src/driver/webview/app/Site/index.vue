@@ -5,7 +5,12 @@ import { token as siteToken } from '../../../../domain/service/SiteService';
 import { useDraftForm } from '../../composable/useDraftForm';
 import FieldForm from '../../components/FieldForm/index.vue';
 import { token as formToken } from '../../components/FieldForm/useFieldForm';
-import { useSiteEdit, useCustomFieldModel, useCustomFieldValidateInfo } from './useSiteEdit';
+import {
+  useSiteEdit,
+  useCustomFieldModel,
+  useCustomFieldValidateInfo,
+  useBlockApp,
+} from './useSiteEdit';
 
 export default defineComponent({
   components: {
@@ -31,6 +36,8 @@ export default defineComponent({
       feedLength: [{ required: data.feedEnabled }],
       ...customFieldRules.value,
     }));
+
+    useBlockApp(modelRef);
 
     provide(formToken, {
       model: useCustomFieldModel(modelRef),

@@ -3,15 +3,15 @@ import { init, push, add, commit } from 'isomorphic-git';
 import http from 'isomorphic-git/http/web';
 import fs from '../fs/webviewApi';
 import { gitClientToken } from '../../domain/service/PublishService';
-import { token as appToken } from '../../domain/service/AppService';
+import { AppService } from '../../domain/service/AppService';
 import type { Github } from '../../domain/model/Github';
 
 class Git {
-  private readonly app = container.resolve(appToken);
+  private readonly appService = container.resolve(AppService);
 
   async push(files: string[], githubInfo: Github) {
-    const dir = await this.app.getOutputDir();
-    const gitdir = await this.app.getGitRepositoryDir();
+    const dir = await this.appService.app.getOutputDir();
+    const gitdir = await this.appService.app.getGitRepositoryDir();
 
     await init({ fs, gitdir, dir });
 

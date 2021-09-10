@@ -1,7 +1,7 @@
 import { container, InjectionToken, singleton } from 'tsyringe';
 import { ref, InjectionKey } from 'vue';
 import type { Github, Git } from '../model/Github';
-import { token as appToken } from './AppService';
+import { AppService } from './AppService';
 
 export const gitClientToken: InjectionToken<Git> = Symbol();
 
@@ -9,7 +9,7 @@ export const token: InjectionKey<PublishService> = Symbol();
 
 @singleton()
 export class PublishService {
-  private readonly app = container.resolve(appToken);
+  private readonly appService = container.resolve(AppService);
   private readonly git = container.resolve(gitClientToken);
   private files: string[] = [];
   readonly isGenerating = ref(false);
@@ -22,13 +22,13 @@ export class PublishService {
   };
 
   async generateSite() {
-    if (this.isGenerating.value) {
+    if (this.isGenerating.value || this.appService.isAppBlocked.value) {
       return;
     }
     this.isGenerating.value = true;
 
     try {
-      const files = await this.app.generateSite();
+      const files = await this.appService.app.generateSite();
       this.files = files;
     } catch (error) {
       this.isGenerating.value = false;
