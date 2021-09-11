@@ -1,7 +1,14 @@
 <script lang="ts">
 import { defineComponent, provide } from 'vue';
 import { Tabs, Button, Tooltip } from 'ant-design-vue';
-import { CloseOutlined, RocketOutlined } from '@ant-design/icons-vue';
+import {
+  CloseOutlined,
+  RocketOutlined,
+  HomeOutlined,
+  BuildOutlined,
+  ContainerOutlined,
+  GithubOutlined,
+} from '@ant-design/icons-vue';
 import { container } from 'tsyringe';
 import ArticleList from './ArticleList/index.vue';
 import Site from './Site/index.vue';
@@ -22,6 +29,10 @@ export default defineComponent({
     TabPane: Tabs.TabPane,
     CloseOutlined,
     RocketOutlined,
+    HomeOutlined,
+    BuildOutlined,
+    ContainerOutlined,
+    GithubOutlined,
     Button,
     ArticleList,
     Site,
@@ -59,9 +70,21 @@ export default defineComponent({
 </script>
 <template>
   <Tabs v-model:activeKey="activeKey" size="large">
-    <TabPane key="Site" tab="Site" class="panel"><Site /></TabPane>
-    <TabPane key="Pages" tab="Pages" class="panel"><PageList /></TabPane>
-    <TabPane key="Articles" tab="Articles" class="panel"><ArticleList /></TabPane>
+    <TabPane key="Site" class="panel">
+      <template #tab> <HomeOutlined /> Site </template>
+      <Site />
+    </TabPane>
+    <TabPane key="Pages" class="panel">
+      <template #tab> <BuildOutlined /> Pages </template>
+      <PageList />
+    </TabPane>
+    <TabPane key="Articles" class="panel">
+      <template #tab><ContainerOutlined />Articles</template>
+      <ArticleList />
+    </TabPane>
+    <TabPane key="Github" class="panel">
+      <template #tab><GithubOutlined />Github</template>
+    </TabPane>
     <template #tabBarExtraContent>
       <Tooltip :title="appBlockInfo">
         <Button :loading="isGenerating" :disabled="isAppBlocked" @click="generateSite">
