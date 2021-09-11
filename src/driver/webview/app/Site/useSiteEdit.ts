@@ -117,22 +117,28 @@ export function useWatchSelectTheme(siteModelRef: Ref<Partial<Site>>) {
   watch(
     () => siteModelRef.value.themeName,
     (themeName, oldThemeName) => {
-      if (!themeName) {
+      if (!themeName || !oldThemeName) {
         return;
+      }
+
+      if (!site.value?.custom || !siteModelRef.value.custom) {
+        throw new Error('no custom fields');
       }
 
       if (doNotRun) {
         doNotRun = false;
         return;
       }
-      const isModified = !isEqualWith(site.value, siteModelRef.value, (_1, _2, key) =>
-        key === 'themeName' ? true : undefined,
+      const isModified = !isEqualWith(
+        site.value.custom[oldThemeName],
+        siteModelRef.value.custom[oldThemeName],
+        (_1, _2, key) => (key === 'themeName' ? true : undefined),
       );
 
       if (isModified) {
         Modal.confirm({
           content: constant(
-            'Change a theme will drop all your modification that has not been save. Continue to change?',
+            'Change a theme will drop all your modification on theme fields that has not been saved. Continue to change?',
           ),
           onOk: () => loadTheme(themeName),
           onCancel: () => {

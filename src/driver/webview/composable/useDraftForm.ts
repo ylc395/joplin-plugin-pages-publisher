@@ -27,16 +27,10 @@ export function useDraftForm<T = Data>(
   });
 
   const rules_ = typeof rules === 'function' ? computed(() => rules(modelRef.value)) : rules;
-  const { validateInfos, validate } = Form.useForm(modelRef, rules_);
-
-  if (rules_) {
-    watch(rules_, async () => {
-      try {
-        await validate();
-        // eslint-disable-next-line no-empty
-      } catch {}
-    });
-  }
+  const { validateInfos, validate } = Form.useForm(modelRef, rules_, {
+    validateOnRuleChange: true,
+    immediate: true,
+  });
 
   const save = async () => {
     await validate();
