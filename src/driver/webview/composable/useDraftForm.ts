@@ -1,6 +1,6 @@
 import { Form } from 'ant-design-vue';
 import { every, isEqual, isEmpty, cloneDeepWith, isTypedArray } from 'lodash';
-import { Ref, computed, reactive, watchEffect, shallowRef, watch } from 'vue';
+import { Ref, computed, reactive, watchEffect, shallowRef, toRaw } from 'vue';
 
 type Data = Record<string, unknown>;
 type Rules = Record<string, unknown>;
@@ -23,7 +23,9 @@ export function useDraftForm<T = Data>(
   });
 
   const modelRef = computed(() => {
-    return (model.value ? reactive(cloneDeepWith(model.value, customClone)) : {}) as Partial<T>;
+    return (
+      model.value ? reactive(cloneDeepWith(toRaw(model.value), customClone)) : {}
+    ) as Partial<T>;
   });
 
   const rules_ = typeof rules === 'function' ? computed(() => rules(modelRef.value)) : rules;
