@@ -31,14 +31,14 @@ export function useEdit() {
     );
   });
 
-  const save = async (article: Article) => {
+  const save = async (article: Partial<Article>) => {
     const result = mapValues(article, (value) => {
       if (moment.isMoment(value)) {
         return Number(value.format('x'));
       }
 
       return value;
-    }) as Article;
+    }) as Partial<Article>;
 
     await saveArticle(result);
     stopEditing();

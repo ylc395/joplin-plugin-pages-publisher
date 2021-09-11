@@ -1,8 +1,11 @@
 import { container, InjectionToken, singleton } from 'tsyringe';
 import { ref, InjectionKey } from 'vue';
-import type { Github, Git } from '../model/Github';
+import type { Github } from '../model/Github';
 import { AppService } from './AppService';
 
+export interface Git {
+  push: (files: string[], info: Github) => Promise<void>;
+}
 export const gitClientToken: InjectionToken<Git> = Symbol();
 
 export const token: InjectionKey<PublishService> = Symbol();

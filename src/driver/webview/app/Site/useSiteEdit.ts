@@ -46,12 +46,16 @@ export function useSiteEdit() {
   };
 }
 
-export function useCustomFieldModel(siteModelRef: Ref<Site>) {
+export function useCustomFieldModel(siteModelRef: Ref<Partial<Site>>) {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { site, themeConfig } = inject(siteToken)!;
   watch(themeConfig, (theme, oldTheme) => {
     if (!theme || !site.value) {
       throw new Error('no site or theme');
+    }
+
+    if (!siteModelRef.value.custom) {
+      return;
     }
 
     if (oldTheme) {
@@ -62,7 +66,7 @@ export function useCustomFieldModel(siteModelRef: Ref<Site>) {
 
   return computed(() => {
     const themeName = themeConfig.value?.name;
-    if (!themeName || !site.value) {
+    if (!themeName || !site.value || !siteModelRef.value.custom) {
       return {};
     }
 
@@ -105,7 +109,7 @@ export function useBlockApp(isModified: Ref<boolean>, validateInfos: validateInf
   });
 }
 
-export function useWatchSelectTheme(siteModelRef: Ref<Site>) {
+export function useWatchSelectTheme(siteModelRef: Ref<Partial<Site>>) {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { loadTheme, site } = inject(siteToken)!;
   let doNotRun = false;
@@ -113,6 +117,10 @@ export function useWatchSelectTheme(siteModelRef: Ref<Site>) {
   watch(
     () => siteModelRef.value.themeName,
     (themeName, oldThemeName) => {
+      if (!themeName) {
+        return;
+      }
+
       if (doNotRun) {
         doNotRun = false;
         return;

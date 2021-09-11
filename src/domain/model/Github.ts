@@ -5,7 +5,3 @@ export interface Github {
   email: string;
   token: string;
 }
-
-export interface Git {
-  push: (files: string[], info: Github) => Promise<void>;
-}

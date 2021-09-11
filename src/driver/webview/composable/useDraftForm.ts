@@ -13,8 +13,8 @@ const customClone = (value: unknown) => {
 
 export function useDraftForm<T = Data>(
   model: Ref<T | null>,
-  saveFunc: (model: T) => Promise<T | void>,
-  rules?: Ref<Rules> | ((modelRef: T) => Rules),
+  saveFunc: (model: Partial<T>) => Promise<Partial<T> | void>,
+  rules?: Ref<Rules> | ((modelRef: Partial<T>) => Rules),
 ) {
   const origin: Ref<null | T> = shallowRef(null);
 
@@ -23,7 +23,7 @@ export function useDraftForm<T = Data>(
   });
 
   const modelRef = computed(() => {
-    return (model.value ? reactive(cloneDeepWith(model.value as any, customClone)) : {}) as T;
+    return (model.value ? reactive(cloneDeepWith(model.value, customClone)) : {}) as Partial<T>;
   });
 
   const rules_ = typeof rules === 'function' ? computed(() => rules(modelRef.value)) : rules;

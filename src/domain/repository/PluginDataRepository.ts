@@ -58,7 +58,7 @@ export class PluginDataRepository {
       const theme = await this.themeLoader.fetch(themeName);
       return theme;
     } catch (error) {
-      throw Error(`Fail to load theme: ${themeName}.\nReason: ${error.message}`);
+      throw Error(`Fail to load theme: ${themeName}.\nReason: ${(error as Error).message}`);
     }
   }
 

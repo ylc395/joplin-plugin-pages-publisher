@@ -96,8 +96,12 @@ export class ArticleService {
     this.selectedArticles.value = uniq(this.selectedArticles.value.concat(articles));
   }
 
-  saveArticle(article: Article) {
+  saveArticle(article: Partial<Article>) {
     const index = findIndex(this.articles, { noteId: article.noteId });
+
+    if (index < 0) {
+      throw new Error('can not find article');
+    }
 
     Object.assign(this.articles[index], article);
     return this.saveArticles();
