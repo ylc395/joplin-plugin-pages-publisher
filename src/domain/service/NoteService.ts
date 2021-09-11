@@ -6,6 +6,7 @@ import { JoplinDataRepository } from '../repository/JoplinDataRepository';
 import type { Note } from '../model/JoplinData';
 import { Article, getSyncStatus } from '../model/Article';
 import { ArticleService } from './ArticleService';
+import { AppService } from './AppService';
 
 export const token: InjectionKey<NoteService> = Symbol();
 interface SearchedNote extends Note {
@@ -15,6 +16,7 @@ interface SearchedNote extends Note {
 @singleton()
 export class NoteService {
   private readonly articleService = container.resolve(ArticleService);
+  private readonly appService = container.resolve(AppService);
   private readonly joplinDataRepository = new JoplinDataRepository();
   private readonly notesToBeAdded = ref<Note[]>([]);
   private readonly _searchedNotes: Ref<Note[]> = ref([]);
@@ -127,5 +129,9 @@ export class NoteService {
         return;
       }
     }
+  }
+
+  openNote(noteId: string) {
+    this.appService.app.openNote(noteId);
   }
 }

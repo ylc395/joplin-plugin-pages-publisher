@@ -15,7 +15,6 @@ import { token as noteToken } from '../../../../domain/service/NoteService';
 import { Article } from '../../../../domain/model/Article';
 import { token as editToken } from './useEdit';
 import { token as diffToken } from './useDiff';
-import { openNote } from '../../utils';
 
 export default defineComponent({
   components: {
@@ -37,7 +36,7 @@ export default defineComponent({
       selectedArticles,
       syncArticleContent,
     } = inject(articleToken)!;
-    const { syncNotes } = inject(noteToken)!;
+    const { syncNotes, openNote } = inject(noteToken)!;
     const { edit } = inject(editToken)!;
     const { viewDiff } = inject(diffToken)!;
 
