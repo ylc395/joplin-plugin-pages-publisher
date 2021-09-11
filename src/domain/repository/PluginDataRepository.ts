@@ -1,6 +1,7 @@
 import { omit } from 'lodash';
 import { container, InjectionToken } from 'tsyringe';
 import type { Article } from '../model/Article';
+import type { Github } from '../model/Github';
 import type { Vars } from '../model/Page';
 import { Site } from '../model/Site';
 import type { Theme } from '../model/Theme';
@@ -65,5 +66,13 @@ export class PluginDataRepository {
   async getThemes() {
     const themes = await this.themeLoader.fetchAll();
     return themes;
+  }
+
+  getGithubInfo() {
+    return this.pluginDataLoader.fetch<Github>(['github']);
+  }
+
+  saveGithubInfo(githubInfo: Github) {
+    return this.pluginDataLoader.save(['github'], githubInfo);
   }
 }

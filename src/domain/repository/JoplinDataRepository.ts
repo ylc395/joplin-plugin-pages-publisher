@@ -7,6 +7,7 @@ export type JoplinGetParams = Parameters<typeof joplin['data']['get']>;
 interface JoplinFetcher {
   fetchData: <T>(...args: JoplinGetParams) => Promise<T | null>;
   fetchAllData: <T>(...args: JoplinGetParams) => Promise<T[]>;
+  fetchPluginSetting: <T>(key: string) => Promise<T | null>;
 }
 
 export const token: InjectionToken<JoplinFetcher> = Symbol('joplinData');
@@ -44,5 +45,13 @@ export class JoplinDataRepository {
     });
 
     return note;
+  }
+
+  async getGithubToken() {
+    try {
+      return await this.joplinFetcher.fetchPluginSetting<string>('githubToken');
+    } catch {
+      return '';
+    }
   }
 }

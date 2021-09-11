@@ -74,6 +74,7 @@ export default defineComponent({
     v-if="!articlePage"
     banner
     message="There is no article page in this theme, so no article will be published"
+    class="mb-4"
   />
   <Search class="flex mb-2" @submit="handleSubmit" />
   <Button

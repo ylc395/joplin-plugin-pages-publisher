@@ -2,7 +2,7 @@ import { container } from 'tsyringe';
 import joplin from 'api';
 import { Db } from './db/joplinPlugin';
 import type { DbReadRequest, DbWriteRequest } from './db/webviewApi';
-import type { JoplinDataRequest } from './joplinData/webviewApi';
+import type { JoplinDataRequest, JoplinPluginSettingRequest } from './joplinData/webviewApi';
 import type { AppRequest } from './webview/utils/webviewApi';
 import type { FsRequest } from './fs/webviewApi';
 import type { ThemeConfigLoadRequest, ThemeConfigsLoadRequest } from './themeLoader/webviewApi';
@@ -21,6 +21,7 @@ export default (panelId: string) => {
       | DbReadRequest
       | DbWriteRequest
       | JoplinDataRequest
+      | JoplinPluginSettingRequest
       | ThemeConfigLoadRequest
       | ThemeConfigsLoadRequest
       | FsRequest
@@ -52,6 +53,8 @@ export default (panelId: string) => {
         return getGitRepositoryDir();
       case 'fsCall':
         return mockNodeFsCall(request.funcName, ...request.args);
+      case 'getJoplinPluginSetting':
+        return joplin.settings.value(request.key);
       default:
         break;
     }

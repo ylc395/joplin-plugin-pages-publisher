@@ -9,8 +9,13 @@ export interface JoplinDataRequest {
   args: JoplinGetParams;
 }
 
+export interface JoplinPluginSettingRequest {
+  event: 'getJoplinPluginSetting';
+  key: string;
+}
+
 declare const webviewApi: {
-  postMessage: <T>(payload: JoplinDataRequest) => Promise<T>;
+  postMessage: <T>(payload: JoplinDataRequest | JoplinPluginSettingRequest) => Promise<T>;
 };
 
 function fetchData<T>(...args: JoplinGetParams) {
@@ -22,7 +27,7 @@ function fetchData<T>(...args: JoplinGetParams) {
     .catch(() => null);
 }
 
-async function fetchAllData<T>(...args: JoplinGetParams) {
+function fetchAllData<T>(...args: JoplinGetParams) {
   return webviewApi
     .postMessage<T[]>({
       event: 'getJoplinDataAll',
@@ -31,4 +36,15 @@ async function fetchAllData<T>(...args: JoplinGetParams) {
     .catch(() => [] as T[]);
 }
 
-container.registerInstance(JoplinFetcherToken, { fetchData, fetchAllData });
+async function fetchPluginSetting<T>(key: string) {
+  try {
+    return await webviewApi.postMessage<T>({
+      event: 'getJoplinPluginSetting',
+      key,
+    });
+  } catch {
+    return null;
+  }
+}
+
+container.registerInstance(JoplinFetcherToken, { fetchData, fetchAllData, fetchPluginSetting });

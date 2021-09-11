@@ -1,7 +1,7 @@
 export interface Github {
-  username: string;
+  userName: string;
   repositoryName: string;
-  branch?: string;
   email: string;
-  token: string;
+  branch?: string;
+  token?: string;
 }

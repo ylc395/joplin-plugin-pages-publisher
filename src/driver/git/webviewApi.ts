@@ -23,7 +23,7 @@ class Git {
       fs,
       gitdir,
       message: 'test',
-      author: { name: githubInfo.username, email: githubInfo.email },
+      author: { name: githubInfo.userName, email: githubInfo.email },
     });
 
     // todo: handle non-simple-fast-forward push
@@ -32,8 +32,8 @@ class Git {
       http,
       gitdir,
       remoteRef: githubInfo.branch,
-      url: `https://github.com/${githubInfo.username}/${githubInfo.repositoryName}.git`,
-      onAuth: () => ({ username: githubInfo.username, password: githubInfo.token }),
+      url: `https://github.com/${githubInfo.userName}/${githubInfo.repositoryName}.git`,
+      onAuth: () => ({ username: githubInfo.userName, password: githubInfo.token }),
     });
   }
 }

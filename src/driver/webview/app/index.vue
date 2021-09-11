@@ -13,6 +13,7 @@ import { container } from 'tsyringe';
 import ArticleList from './ArticleList/index.vue';
 import Site from './Site/index.vue';
 import PageList from './PageList/index.vue';
+import Github from './Github/index.vue';
 import { ArticleService, token as articleToken } from '../../../domain/service/ArticleService';
 import { SiteService, token as siteToken } from '../../../domain/service/SiteService';
 import { PageService, token as pageToken } from '../../../domain/service/PageService';
@@ -37,6 +38,7 @@ export default defineComponent({
     ArticleList,
     Site,
     PageList,
+    Github,
   },
   setup() {
     const publishService = selfish(container.resolve(PublishService));
@@ -84,6 +86,7 @@ export default defineComponent({
     </TabPane>
     <TabPane key="Github" class="panel">
       <template #tab><GithubOutlined />Github</template>
+      <Github />
     </TabPane>
     <template #tabBarExtraContent>
       <Tooltip :title="appBlockInfo">
