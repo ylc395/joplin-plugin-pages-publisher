@@ -55,12 +55,10 @@ export default defineComponent({
       openNote,
       capitalize,
       tagColors: {
-        synced: 'green',
         diff: 'orange',
         deleted: 'red',
       },
       tagTips: {
-        synced: "Article's content is same to note's",
         diff: "There are diffs between article's content and Joplin note's content. Click to view.",
         deleted: 'Origin note has been deleted.',
       },
@@ -88,7 +86,7 @@ export default defineComponent({
       >
         {{ article.title }}
         <template v-if="article.syncStatus">
-          <Tooltip :title="tagTips[article.syncStatus]">
+          <Tooltip v-if="article.syncStatus !== 'synced'" :title="tagTips[article.syncStatus]">
             <Tag
               :color="tagColors[article.syncStatus]"
               :class="{ 'cursor-default': article.syncStatus !== 'diff' }"
