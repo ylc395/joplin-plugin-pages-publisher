@@ -44,13 +44,14 @@ export function useDraftForm<T = Data>(
     origin.value = cloneDeepWith(result || model.value, customClone);
   };
 
+  const isModified = computed(() => !isEqual(modelRef.value, origin.value));
   const canSave = computed(() => {
     return (
       !isEmpty(modelRef.value) &&
       every(validateInfos, { validateStatus: 'success' }) &&
-      !isEqual(modelRef.value, origin.value)
+      isModified.value
     );
   });
 
-  return { save, canSave, modelRef, validateInfos };
+  return { save, canSave, modelRef, validateInfos, isModified };
 }

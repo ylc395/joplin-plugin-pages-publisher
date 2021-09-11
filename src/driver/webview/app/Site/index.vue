@@ -10,6 +10,7 @@ import {
   useCustomFieldModel,
   useCustomFieldValidateInfo,
   useBlockApp,
+  useWatchSelectTheme,
 } from './useSiteEdit';
 
 export default defineComponent({
@@ -24,20 +25,25 @@ export default defineComponent({
     FieldForm,
   },
   setup() {
-    const { site, themes, saveSite, loadTheme } =
+    const { site, themes, saveSite } =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(siteToken)!;
 
     const { hasThemeFields, customFieldRules, customFields } = useSiteEdit();
 
-    const { modelRef, validateInfos, save, canSave } = useDraftForm(site, saveSite, (data) => ({
-      themeName: [{ required: true }],
-      feedEnabled: [{ required: true }],
-      feedLength: [{ required: data.feedEnabled }],
-      ...customFieldRules.value,
-    }));
+    const { modelRef, validateInfos, save, canSave, isModified } = useDraftForm(
+      site,
+      saveSite,
+      (data) => ({
+        themeName: [{ required: true }],
+        feedEnabled: [{ required: true }],
+        feedLength: [{ required: data.feedEnabled }],
+        ...customFieldRules.value,
+      }),
+    );
 
-    useBlockApp(modelRef, validateInfos);
+    useBlockApp(isModified, validateInfos);
+    useWatchSelectTheme(modelRef);
 
     provide(formToken, {
       model: useCustomFieldModel(modelRef),
@@ -47,7 +53,6 @@ export default defineComponent({
 
     return {
       themes,
-      loadTheme,
       validateInfos,
       modelRef,
       save,
@@ -61,7 +66,7 @@ export default defineComponent({
   <div class="px-6">
     <Form :labelCol="{ span: 4 }">
       <FormItem label="Theme" v-bind="validateInfos.themeName">
-        <Select v-model:value="modelRef.themeName" @change="loadTheme">
+        <Select v-model:value="modelRef.themeName">
           <SelectOption v-for="{ name } of themes" :key="name">{{ name }}</SelectOption>
         </Select>
       </FormItem>

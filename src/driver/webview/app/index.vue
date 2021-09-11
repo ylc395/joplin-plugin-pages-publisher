@@ -69,7 +69,6 @@ export default defineComponent({
           Generate
         </Button>
       </Tooltip>
-      <Button @click="gitPush"> Push </Button>
       <Button class="border-0 mr-4" @click="quitApp">
         <template #icon><CloseOutlined /></template>
       </Button>

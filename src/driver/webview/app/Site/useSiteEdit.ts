@@ -1,9 +1,10 @@
 import { computed, Ref, watch, inject, watchEffect } from 'vue';
-import { pick, mapKeys, cloneDeep, isEqual, every } from 'lodash';
+import { pick, mapKeys, cloneDeep, every, constant, isEqualWith } from 'lodash';
 import { token as siteToken } from '../../../../domain/service/SiteService';
 import { token as appToken } from '../../../../domain/service/AppService';
 import type { Site } from '../../../../domain/model/Site';
 import type { validateInfos } from 'ant-design-vue/lib/form/useForm';
+import { Modal } from 'ant-design-vue';
 
 export function useSiteEdit() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -90,19 +91,51 @@ export function useCustomFieldValidateInfo(
   });
 }
 
-export function useBlockApp(siteModelRef: Ref<Site>, validateInfos: validateInfos) {
+export function useBlockApp(isModified: Ref<boolean>, validateInfos: validateInfos) {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { setBlockFlag } = inject(appToken)!;
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { site } = inject(siteToken)!;
 
   watchEffect(() => {
-    const isModified = !isEqual(site.value, siteModelRef.value);
     const isValid = every(validateInfos, { validateStatus: 'success' });
     setBlockFlag(
       'siteConfig',
-      (isModified && 'Site modification has not been saved') ||
+      (isModified.value && 'Site modification has not been saved') ||
         (!isValid && 'Not all filed is filled correctly'),
     );
   });
+}
+
+export function useWatchSelectTheme(siteModelRef: Ref<Site>) {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const { loadTheme, site } = inject(siteToken)!;
+  let doNotRun = false;
+
+  watch(
+    () => siteModelRef.value.themeName,
+    (themeName, oldThemeName) => {
+      if (doNotRun) {
+        doNotRun = false;
+        return;
+      }
+      const isModified = !isEqualWith(site.value, siteModelRef.value, (_1, _2, key) =>
+        key === 'themeName' ? true : undefined,
+      );
+
+      if (isModified) {
+        Modal.confirm({
+          content: constant(
+            'Change a theme will drop all your modification that has not been save. Continue to change?',
+          ),
+          onOk: () => loadTheme(themeName),
+          onCancel: () => {
+            siteModelRef.value.themeName = oldThemeName;
+            doNotRun = true;
+            return Promise.resolve();
+          },
+        });
+      } else {
+        loadTheme(themeName);
+      }
+    },
+  );
 }
