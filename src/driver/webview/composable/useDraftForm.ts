@@ -1,5 +1,5 @@
 import { Form } from 'ant-design-vue';
-import { every, isEqual, isEmpty, cloneDeepWith, isTypedArray } from 'lodash';
+import { every, isEqual, isEmpty, cloneDeepWith, isTypedArray, defaultsDeep } from 'lodash';
 import { Ref, computed, reactive, watchEffect, shallowRef, toRaw } from 'vue';
 
 type Data = Record<string, unknown>;
@@ -43,9 +43,9 @@ export function useDraftForm<T = Data>(
   const isModified = computed(() => !isEqual(modelRef.value, origin.value));
   const canSave = computed(() => {
     return (
+      isModified.value &&
       !isEmpty(modelRef.value) &&
-      every(validateInfos, { validateStatus: 'success' }) &&
-      isModified.value
+      every(validateInfos, { validateStatus: 'success' })
     );
   });
 
