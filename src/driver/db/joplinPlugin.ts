@@ -3,25 +3,16 @@ import { get, set } from 'lodash';
 import { Low } from 'lowdb/lib';
 import { singleton } from 'tsyringe';
 import { JSONFile } from './adaptor';
-import type { Article } from '../../domain/model/Article';
-import type { Site } from '../../domain/model/Site';
-import type { PagesFieldVars } from '../../domain/service/PageService';
-
-interface DbData {
-  site: Partial<Site>;
-  pagesFieldVars: Record<Site['themeName'], PagesFieldVars>;
-  articles: Article[];
-}
 
 @singleton()
 export class Db {
-  private db: Low<DbData> | null = null;
+  private db: Low<Record<string, unknown>> | null = null;
   private ready = new Promise((resolve) => {
     this.init().then(resolve);
   });
   private async init() {
     const pluginDir = await joplin.plugins.dataDir();
-    this.db = new Low(new JSONFile<DbData>(`${pluginDir}/db.json`));
+    this.db = new Low(new JSONFile(`${pluginDir}/db.json`));
     await this.db.read();
 
     if (this.db.data === null) {
