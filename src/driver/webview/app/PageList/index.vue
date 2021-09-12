@@ -38,7 +38,7 @@ export default defineComponent({
         </div>
       </div>
       <div class="flex items-center">
-        <Button v-if="page.fields.value.length > 0" type="text" @click="customize(page)">
+        <Button v-if="page.fields.length > 0" type="text" @click="customize(page)">
           <template #icon><SettingOutlined /></template>
           Customize
         </Button>

@@ -16,7 +16,7 @@ container.registerInstance(appToken, {
   openModal(type, { title, content }) {
     // hack: when https://github.com/vueComponent/ant-design-vue/pull/4632 is merged, `constant` is no need
     return Modal[type]({
-      title: constant(title),
+      title: title ? constant(title) : undefined,
       content: content ? constant(content) : undefined,
     });
   },

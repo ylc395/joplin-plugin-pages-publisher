@@ -1,5 +1,5 @@
 import { compact } from 'lodash';
-import { computed, reactive, Ref } from 'vue';
+import { computed, reactive } from 'vue';
 import type { Theme } from './Theme';
 
 export interface Field {
@@ -44,15 +44,34 @@ export const PREDEFINED_FIELDS: Record<string, Field[] | undefined> = {
 
 export class Page {
   readonly fieldVars: Vars; // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
+
+  readonly fields = compact([
+    this.name === INDEX_PAGE_NAME
+      ? null
+      : {
+          name: 'url',
+          label: 'Url',
+          placeholder: `Default value is ${this.name}`,
+        },
+    ...(PREDEFINED_FIELDS[this.name] || []),
+    ...(this.themeConfig.pages[this.name] ?? []),
+  ]);
+
+  readonly isArticlePage = this.name === ARTICLE_PAGE_NAME;
+
   constructor(
     readonly name: string,
     fieldVars: Vars, // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
-    private readonly themeConfig: Ref<Theme | null>,
+    private readonly themeConfig: Theme,
   ) {
-    this.fieldVars = reactive(fieldVars);
+    this.fieldVars = reactive({
+      ...this.fields.reduce((result, filed) => {
+        result[filed.name] = null;
+        return result;
+      }, {} as Vars),
+      ...fieldVars,
+    });
   }
-
-  readonly isArticlePage = this.name === ARTICLE_PAGE_NAME;
 
   readonly url = computed(() => {
     if (this.name === INDEX_PAGE_NAME) {
@@ -60,24 +79,5 @@ export class Page {
     }
 
     return `/${this.fieldVars.url || this.name}`;
-  });
-
-  readonly fields = computed<Field[]>(() => {
-    if (!this.themeConfig.value) {
-      return [];
-    }
-
-    return compact([
-      this.name === INDEX_PAGE_NAME
-        ? null
-        : {
-            name: 'url',
-            label: 'Url',
-            defaultValue: this.name,
-            placeholder: 'Default value is the name of this page.',
-          },
-      ...(PREDEFINED_FIELDS[this.name] || []),
-      ...(this.themeConfig.value.pages[this.name] ?? []),
-    ]);
   });
 }

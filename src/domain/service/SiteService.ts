@@ -40,6 +40,7 @@ export class SiteService {
 
       const { siteFields } = this.themeConfig.value;
 
+      // todo: if ant-design-vue support validating non-existed props, following code can be removed
       if (!isEmpty(siteFields)) {
         const { custom } = this.site.value;
         custom[themeName] = defaults(

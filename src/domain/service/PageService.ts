@@ -34,7 +34,7 @@ export class PageService {
 
     this.pages.value = Object.keys(themeConfig.value.pages).map(
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      (pageName) => new Page(pageName, pagesVars[pageName] || {}, themeConfig),
+      (pageName) => new Page(pageName, pagesVars[pageName] || {}, themeConfig.value!),
     );
   }
 

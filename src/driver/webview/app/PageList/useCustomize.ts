@@ -8,7 +8,7 @@ export function useCustomize() {
   const { savePage, isValidUrl } = inject(pageToken)!;
   const isCustomizing = ref(false);
   const page: Ref<null | Page> = shallowRef(null);
-  const fields = computed(() => page.value?.fields.value || []);
+  const fields = computed(() => page.value?.fields || []);
   const filedVars: Ref<null | Vars> = ref(null);
   const rules = computed(() => {
     if (!page.value) {

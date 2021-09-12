@@ -20,7 +20,7 @@ export default defineComponent({
     Spin,
   },
   setup() {
-    const { article, stopEditing, saveArticle, isValidUrl, images } =
+    const { article, stopEditing, saveArticle, isValidUrl, images, customEqual } =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(editToken)!;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -41,6 +41,7 @@ export default defineComponent({
         createdAt: [{ required: true }],
         updatedAt: [{ required: true }],
       }),
+      customEqual,
     );
     const articleUrl = computed(() => {
       return articlePage.value ? `${articlePage.value.url.value}/${modelRef.value.url}` : '';

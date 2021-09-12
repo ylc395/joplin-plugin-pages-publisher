@@ -6,6 +6,7 @@ import { useDraftForm } from '../../composable/useDraftForm';
 
 export default defineComponent({
   components: { Form, FormItem: Form.Item, Input, Alert, Button },
+  //todo: github info's first validating doesn't work. see https://github.com/vueComponent/ant-design-vue/pull/4646/
   setup() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { githubInfo, saveGithubInfo } = inject(token)!;

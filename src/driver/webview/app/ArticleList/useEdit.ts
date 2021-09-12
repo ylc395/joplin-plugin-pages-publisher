@@ -1,6 +1,6 @@
 import { ref, provide, InjectionKey, inject, computed } from 'vue';
 import { bytesToBase64 } from 'byte-base64';
-import { mapValues } from 'lodash';
+import { mapValues, IsEqualCustomizer } from 'lodash';
 import moment from 'moment';
 import type { Article } from '../../../../domain/model/Article';
 import { token as articleToken } from '../../../../domain/service/ArticleService';
@@ -32,18 +32,21 @@ export function useEdit() {
   });
 
   const save = async (article: Partial<Article>) => {
-    const result = mapValues(article, (value) => {
-      if (moment.isMoment(value)) {
-        return Number(value.format('x'));
-      }
-
-      return value;
-    }) as Partial<Article>;
-
-    await saveArticle(result);
+    await saveArticle(article);
     stopEditing();
+  };
 
-    return result;
+  const customEqual: IsEqualCustomizer = (value, otherValue, key) => {
+    const whitelist = ['url', 'title', 'content', 'createdAt', 'updatedAt', 'tags'] as unknown[];
+
+    if (!whitelist.includes(key)) {
+      return true;
+    }
+
+    const isMoment = moment.isMoment(value) || moment.isMoment(otherValue);
+    if (isMoment) {
+      return value.valueOf() === otherValue.valueOf();
+    }
   };
 
   const service = {
@@ -55,6 +58,7 @@ export function useEdit() {
     isValidUrl,
     syncArticleContent,
     images,
+    customEqual,
   };
 
   provide(token, service);

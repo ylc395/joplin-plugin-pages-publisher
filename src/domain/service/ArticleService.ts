@@ -1,6 +1,7 @@
 import { ref, computed, InjectionKey, reactive, toRaw } from 'vue';
-import { filter, pull, negate, uniq, findIndex, sortBy, compact } from 'lodash';
+import { filter, pull, negate, uniq, findIndex, sortBy, compact, mapValues } from 'lodash';
 import { singleton } from 'tsyringe';
+import moment from 'moment';
 import isValidFilename from 'valid-filename';
 import type { File } from '../model/JoplinData';
 import { Article, getSyncStatus } from '../model/Article';
@@ -103,7 +104,15 @@ export class ArticleService {
       throw new Error('can not find article');
     }
 
-    Object.assign(this.articles[index], article);
+    const result = mapValues(article, (value) => {
+      if (moment.isMoment(value)) {
+        return value.valueOf();
+      }
+
+      return value;
+    }) as Partial<Article>;
+
+    Object.assign(this.articles[index], result);
     return this.saveArticles();
   }
 

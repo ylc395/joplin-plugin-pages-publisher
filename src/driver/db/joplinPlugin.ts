@@ -16,11 +16,7 @@ export class Db {
     await this.db.read();
 
     if (this.db.data === null) {
-      this.db.data = {
-        articles: [],
-        pagesFieldVars: {},
-        site: {},
-      };
+      this.db.data = {};
     }
   }
 

@@ -1,6 +1,15 @@
 import { Form } from 'ant-design-vue';
-import { every, isEqual, isEmpty, cloneDeepWith, isTypedArray, defaultsDeep } from 'lodash';
-import { Ref, computed, reactive, watchEffect, shallowRef, toRaw } from 'vue';
+import {
+  every,
+  isEqualWith,
+  IsEqualCustomizer,
+  isEmpty,
+  cloneDeepWith,
+  isTypedArray,
+  isUndefined,
+  isNil,
+} from 'lodash';
+import { Ref, computed, reactive, toRaw } from 'vue';
 
 type Data = Record<string, unknown>;
 type Rules = Record<string, unknown>;
@@ -11,20 +20,30 @@ const customClone = (value: unknown) => {
   }
 };
 
-export function useDraftForm<T = Data>(
-  model: Ref<T | null>,
-  saveFunc: (model: Partial<T>) => Promise<Partial<T> | void>,
-  rules?: Ref<Rules> | ((modelRef: Partial<T>) => Rules),
-) {
-  const origin: Ref<null | T> = shallowRef(null);
+const isUnset = (value: unknown) => isNil(value) || value === '';
 
-  watchEffect(() => {
-    origin.value = model.value;
-  });
+export function useDraftForm<T = Data>(
+  origin: Ref<T | null>,
+  saveFunc: (model: Partial<T>) => Promise<void>,
+  rules?: Ref<Rules> | ((modelRef: Partial<T>) => Rules),
+  customEqual?: IsEqualCustomizer,
+) {
+  const customEqual_: IsEqualCustomizer = (...args) => {
+    if (customEqual) {
+      const result = customEqual(...args);
+      if (!isUndefined(result)) {
+        return result;
+      }
+    }
+
+    if (isUnset(args[0]) && isUnset(args[1])) {
+      return true;
+    }
+  };
 
   const modelRef = computed(() => {
     return (
-      model.value ? reactive(cloneDeepWith(toRaw(model.value), customClone)) : {}
+      origin.value ? reactive(toRaw(cloneDeepWith(origin.value, customClone))) : reactive({})
     ) as Partial<T>;
   });
 
@@ -36,11 +55,10 @@ export function useDraftForm<T = Data>(
 
   const save = async () => {
     await validate();
-    const result = await saveFunc(modelRef.value);
-    origin.value = cloneDeepWith(result || model.value, customClone);
+    await saveFunc(modelRef.value);
   };
 
-  const isModified = computed(() => !isEqual(modelRef.value, origin.value));
+  const isModified = computed(() => !isEqualWith(modelRef.value, origin.value, customEqual_));
   const canSave = computed(() => {
     return (
       isModified.value &&

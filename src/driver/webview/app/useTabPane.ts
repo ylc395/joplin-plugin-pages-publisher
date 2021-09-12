@@ -2,7 +2,7 @@ import { ref, watch } from 'vue';
 import type { AppService } from '../../../domain/service/AppService';
 import { message } from 'ant-design-vue';
 
-export function useActiveTabPane({ isAppBlocked }: AppService) {
+export function useActiveTabPane({ isAppBlocked, appBlockInfo }: AppService) {
   const activeKey = ref('Site');
 
   let doNotRun = false;
@@ -14,7 +14,7 @@ export function useActiveTabPane({ isAppBlocked }: AppService) {
 
     if (isAppBlocked.value) {
       doNotRun = true;
-      message.warn({ content: 'Please save before leaving.', duration: 0.5 });
+      message.warn({ content: appBlockInfo.value, duration: 0.5 });
       activeKey.value = oldKey;
     }
   });
