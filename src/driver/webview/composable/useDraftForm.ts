@@ -8,8 +8,9 @@ import {
   isTypedArray,
   isUndefined,
   isNil,
+  defaultsDeep,
 } from 'lodash';
-import { Ref, computed, reactive, toRaw } from 'vue';
+import { Ref, computed, ref, watchEffect } from 'vue';
 
 type Data = Record<string, unknown>;
 type Rules = Record<string, unknown>;
@@ -41,10 +42,11 @@ export function useDraftForm<T = Data>(
     }
   };
 
-  const modelRef = computed(() => {
-    return (
-      origin.value ? reactive(toRaw(cloneDeepWith(origin.value, customClone))) : reactive({})
-    ) as Partial<T>;
+  const modelRef: Ref<Partial<T>> = ref({});
+  watchEffect(() => {
+    if (origin.value) {
+      modelRef.value = defaultsDeep(modelRef.value, cloneDeepWith(origin.value, customClone));
+    }
   });
 
   const rules_ = typeof rules === 'function' ? computed(() => rules(modelRef.value)) : rules;

@@ -10,7 +10,7 @@ import {
   useCustomFieldModel,
   useCustomFieldValidateInfo,
   useBlockApp,
-  useWatchSelectTheme,
+  useSelectTheme,
 } from './useSiteEdit';
 
 export default defineComponent({
@@ -43,7 +43,7 @@ export default defineComponent({
     );
 
     useBlockApp(isModified, validateInfos);
-    useWatchSelectTheme(modelRef);
+    const { handleSelect, selectedThemeName } = useSelectTheme(modelRef);
 
     provide(formToken, {
       model: useCustomFieldModel(modelRef),
@@ -58,6 +58,8 @@ export default defineComponent({
       save,
       canSave,
       hasThemeFields,
+      handleSelect,
+      selectedThemeName,
     };
   },
 });
@@ -66,7 +68,7 @@ export default defineComponent({
   <div class="px-6">
     <Form :labelCol="{ span: 4 }">
       <FormItem label="Theme" v-bind="validateInfos.themeName">
-        <Select v-model:value="modelRef.themeName">
+        <Select v-model:value="selectedThemeName" @select="handleSelect">
           <SelectOption v-for="{ name } of themes" :key="name">{{ name }}</SelectOption>
         </Select>
       </FormItem>
