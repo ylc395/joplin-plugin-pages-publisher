@@ -70,7 +70,6 @@ export class NoteService {
       note: fullNote,
       content: fullNote.body,
       url: slugify(fullNote.title, { lower: true }) || 'untitled',
-      coverImg: null,
     };
   }
 

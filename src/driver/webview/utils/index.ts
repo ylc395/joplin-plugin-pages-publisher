@@ -1,3 +1,5 @@
+import { isNil } from 'lodash';
+export const isUnset = (value: unknown) => isNil(value) || value === '';
 export function selfish<T>(target: T) {
   const cache = new WeakMap();
   return new Proxy(target as never, {

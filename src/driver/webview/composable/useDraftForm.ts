@@ -7,10 +7,12 @@ import {
   cloneDeepWith,
   isTypedArray,
   isUndefined,
-  isNil,
   defaultsDeep,
+  has,
+  set,
 } from 'lodash';
 import { Ref, computed, ref, watchEffect } from 'vue';
+import { isUnset } from '../utils';
 
 type Data = Record<string, unknown>;
 type Rules = Record<string, unknown>;
@@ -20,8 +22,6 @@ const customClone = (value: unknown) => {
     return null;
   }
 };
-
-const isUnset = (value: unknown) => isNil(value) || value === '';
 
 export function useDraftForm<T = Data>(
   origin: Ref<T | null>,
@@ -50,9 +50,40 @@ export function useDraftForm<T = Data>(
   });
 
   const rules_ = typeof rules === 'function' ? computed(() => rules(modelRef.value)) : rules;
+
+  // todo: if ant-design-vue support validating non-existed props, following code can be removed
+  if (rules_) {
+    watchEffect(() => {
+      if (!origin.value) {
+        return;
+      }
+
+      for (const name of Object.keys(rules_.value)) {
+        if (!has(modelRef.value, name)) {
+          set(modelRef.value, name, null);
+        }
+      }
+    });
+  }
+
   const { validateInfos, validate } = Form.useForm(modelRef, rules_, {
     validateOnRuleChange: true,
     immediate: true,
+  });
+
+  // todo: first validating doesn't work. see https://github.com/vueComponent/ant-design-vue/pull/4646/
+  // when merged, remove following code
+  let validated = false;
+  const stopValidate = watchEffect(() => {
+    if (validated) {
+      stopValidate();
+      return;
+    }
+
+    if (!isEmpty(modelRef.value)) {
+      validated = true;
+      validate();
+    }
   });
 
   const save = async () => {
@@ -69,5 +100,5 @@ export function useDraftForm<T = Data>(
     );
   });
 
-  return { save, canSave, modelRef, validateInfos, isModified, validate };
+  return { save, canSave, modelRef, validateInfos, isModified };
 }

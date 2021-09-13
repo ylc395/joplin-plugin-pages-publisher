@@ -1,10 +1,11 @@
 import { computed, Ref, watch, inject, watchEffect, ref } from 'vue';
-import { pick, mapKeys, cloneDeep, every, constant, isEqual } from 'lodash';
+import type { validateInfos } from 'ant-design-vue/lib/form/useForm';
+import { Modal } from 'ant-design-vue';
+import { pick, mapKeys, cloneDeep, every, constant, isEqual, pickBy, negate } from 'lodash';
 import { token as siteToken } from '../../../../domain/service/SiteService';
 import { token as appToken } from '../../../../domain/service/AppService';
 import type { Site } from '../../../../domain/model/Site';
-import type { validateInfos } from 'ant-design-vue/lib/form/useForm';
-import { Modal } from 'ant-design-vue';
+import { isUnset } from '../../utils';
 
 export function useSiteEdit() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -133,13 +134,17 @@ export function useSelectTheme(siteModelRef: Ref<Partial<Site>>) {
     }
 
     const isModified = !isEqual(
-      site.value.custom[currentThemeName],
-      siteModelRef.value.custom[currentThemeName],
+      pickBy(site.value.custom[currentThemeName], negate(isUnset)),
+      pickBy(siteModelRef.value.custom[currentThemeName], negate(isUnset)),
     );
 
+    const onFail = () => {
+      selectedThemeName.value = currentThemeName;
+      return Promise.resolve();
+    };
     const onSuccess = () => {
       siteModelRef.value.themeName = themeName;
-      return loadTheme(themeName);
+      return loadTheme(themeName).catch(onFail);
     };
 
     if (isModified) {
@@ -148,10 +153,7 @@ export function useSelectTheme(siteModelRef: Ref<Partial<Site>>) {
           'Change a theme will drop all your modification on theme fields that has not been saved. Continue to change?',
         ),
         onOk: onSuccess,
-        onCancel: () => {
-          selectedThemeName.value = currentThemeName;
-          return Promise.resolve();
-        },
+        onCancel: onFail,
       });
     } else {
       onSuccess();

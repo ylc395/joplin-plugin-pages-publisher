@@ -4,7 +4,7 @@ import { Theme, DEFAULT_THEME_NAME } from '../model/Theme';
 import { Site, DEFAULT_SITE } from '../model/Site';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { ExceptionService } from './ExceptionService';
-import { merge, defaults, isEmpty, map } from 'lodash';
+import { merge } from 'lodash';
 
 export const token: InjectionKey<SiteService> = Symbol('siteService');
 @singleton()
@@ -38,24 +38,14 @@ export class SiteService {
     try {
       this.themeConfig.value = await this.pluginDataRepository.getTheme(themeName);
 
-      const { siteFields } = this.themeConfig.value;
-
-      // todo: if ant-design-vue support validating non-existed props, following code can be removed
-      if (!isEmpty(siteFields)) {
-        const { custom } = this.site.value;
-        custom[themeName] = defaults(
-          custom[themeName],
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          map(siteFields!, 'name').reduce((result, name) => {
-            result[name] = null;
-            return result;
-          }, {} as Record<string, null>),
-        );
+      if (!this.site.value.custom[themeName]) {
+        this.site.value.custom[themeName] = {};
       }
     } catch (error) {
       this.themeConfig.value =
         this.themeConfig.value || (await this.pluginDataRepository.getTheme(DEFAULT_THEME_NAME));
       this.exceptionService.reportError(error as Error, { title: 'Fail to load theme' });
+      throw error;
     }
   }
 

@@ -1,10 +1,10 @@
 import { ref, computed, InjectionKey, reactive, toRaw } from 'vue';
-import { filter, pull, negate, uniq, findIndex, sortBy, compact, mapValues } from 'lodash';
+import { filter, pull, negate, uniq, findIndex, sortBy, compact, mapValues, pick } from 'lodash';
 import { singleton } from 'tsyringe';
 import moment from 'moment';
 import isValidFilename from 'valid-filename';
 import type { File } from '../model/JoplinData';
-import { Article, getSyncStatus } from '../model/Article';
+import { Article, getSyncStatus, REQUIRED_KEYS } from '../model/Article';
 import { JoplinDataRepository } from '../repository/JoplinDataRepository';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 
@@ -48,7 +48,9 @@ export class ArticleService {
   }
 
   saveArticles() {
-    return this.pluginDataRepository.saveArticles(toRaw(this.articles));
+    return this.pluginDataRepository.saveArticles(
+      toRaw(this.articles).map((article) => pick(article, REQUIRED_KEYS)),
+    );
   }
 
   async loadArticle(article: Article) {

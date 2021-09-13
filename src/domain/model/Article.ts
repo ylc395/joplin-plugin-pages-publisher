@@ -17,9 +17,18 @@ export interface Article {
   images?: File[];
   attachments?: File[];
   published: boolean;
-  coverImg: string | null;
   syncStatus?: 'synced' | 'deleted' | 'diff';
 }
+
+export const REQUIRED_KEYS: (keyof Article)[] = [
+  'published',
+  'noteId',
+  'createdAt',
+  'updatedAt',
+  'tags',
+  'content',
+  'url',
+];
 
 export function getSyncStatus(
   article: Article,
