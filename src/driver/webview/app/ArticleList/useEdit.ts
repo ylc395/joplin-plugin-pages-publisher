@@ -37,9 +37,9 @@ export function useEdit() {
   };
 
   const customEqual: IsEqualCustomizer = (value, otherValue, key) => {
-    const whitelist = ['url', 'title', 'content', 'createdAt', 'updatedAt', 'tags'] as unknown[];
+    const whitelist = ['url', 'title', 'content', 'createdAt', 'updatedAt', 'tags'];
 
-    if (!whitelist.includes(key)) {
+    if (key && !whitelist.includes(String(key))) {
       return true;
     }
 
