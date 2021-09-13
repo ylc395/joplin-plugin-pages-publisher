@@ -1,16 +1,16 @@
 <script lang="ts">
-import { defineComponent, inject, ref } from 'vue';
+import { defineComponent, inject, ref, watchEffect } from 'vue';
 import { Form, Input, Alert, Button } from 'ant-design-vue';
 import { token } from '../../../../domain/service/PublishService';
 import { useDraftForm } from '../../composable/useDraftForm';
+import { isEmpty } from 'lodash';
 
 export default defineComponent({
   components: { Form, FormItem: Form.Item, Input, Alert, Button },
-  //todo: github info's first validating doesn't work. see https://github.com/vueComponent/ant-design-vue/pull/4646/
   setup() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { githubInfo, saveGithubInfo } = inject(token)!;
-    const { modelRef, validateInfos, save, canSave } = useDraftForm(
+    const { modelRef, validateInfos, save, canSave, validate } = useDraftForm(
       githubInfo,
       saveGithubInfo,
       ref({
@@ -19,6 +19,20 @@ export default defineComponent({
         email: [{ required: true, type: 'email' }],
       }),
     );
+
+    // todo: github info's first validating doesn't work. see https://github.com/vueComponent/ant-design-vue/pull/4646/
+    // when merged, remove following code
+    let validated = false;
+    const stopValidate = watchEffect(() => {
+      if (validated) {
+        stopValidate();
+        return;
+      }
+      if (!isEmpty(modelRef.value) && !validated) {
+        validated = true;
+        validate();
+      }
+    });
 
     return { modelRef, validateInfos, save, canSave, githubInfo };
   },

@@ -69,5 +69,5 @@ export function useDraftForm<T = Data>(
     );
   });
 
-  return { save, canSave, modelRef, validateInfos, isModified };
+  return { save, canSave, modelRef, validateInfos, isModified, validate };
 }
