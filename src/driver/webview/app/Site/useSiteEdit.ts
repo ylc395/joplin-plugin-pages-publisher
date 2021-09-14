@@ -1,9 +1,9 @@
 import { computed, Ref, watch, inject, watchEffect, ref } from 'vue';
 import type { validateInfos } from 'ant-design-vue/lib/form/useForm';
 import { Modal } from 'ant-design-vue';
-import { pick, mapKeys, cloneDeep, every, constant, isEqual, pickBy, negate } from 'lodash';
+import { pick, mapKeys, cloneDeep, constant, isEqual, pickBy, negate } from 'lodash';
 import { token as siteToken } from '../../../../domain/service/SiteService';
-import { token as appToken } from '../../../../domain/service/AppService';
+import { token as appToken, FORBIDDEN } from '../../../../domain/service/AppService';
 import type { Site } from '../../../../domain/model/Site';
 import { isUnset } from '../../utils';
 
@@ -96,17 +96,19 @@ export function useCustomFieldValidateInfo(
   });
 }
 
-export function useBlockApp(isModified: Ref<boolean>, validateInfos: validateInfos) {
+export function useAppWarning(isModified: Ref<boolean>, isValid: Ref<boolean>) {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { setBlockFlag } = inject(appToken)!;
+  const { setWarning } = inject(appToken)!;
+  const MODIFICATION_WARNING = 'Site modification has not been saved.';
+  const INVALID_WARNING = 'Site field(s) has not been filled correctly.';
 
   watchEffect(() => {
-    const isValid = every(validateInfos, { validateStatus: 'success' });
-    setBlockFlag(
-      'siteConfig',
-      (isModified.value && 'Site modification has not been saved') ||
-        (!isValid && 'Not all filed is filled correctly'),
-    );
+    setWarning(FORBIDDEN.GENERATE, MODIFICATION_WARNING, isModified.value);
+    setWarning(FORBIDDEN.TAB_SWITCH, MODIFICATION_WARNING, isModified.value);
+  });
+  watchEffect(() => {
+    setWarning(FORBIDDEN.GENERATE, INVALID_WARNING, !isValid.value);
+    setWarning(FORBIDDEN.TAB_SWITCH, INVALID_WARNING, !isValid.value);
   });
 }
 

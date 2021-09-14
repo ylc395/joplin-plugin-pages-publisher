@@ -92,13 +92,8 @@ export function useDraftForm<T = Data>(
   };
 
   const isModified = computed(() => !isEqualWith(modelRef.value, origin.value, customEqual_));
-  const canSave = computed(() => {
-    return (
-      isModified.value &&
-      !isEmpty(modelRef.value) &&
-      every(validateInfos, { validateStatus: 'success' })
-    );
-  });
+  const isValid = computed(() => every(validateInfos, { validateStatus: 'success' }));
+  const canSave = computed(() => isModified.value && !isEmpty(modelRef.value) && isValid.value);
 
-  return { save, canSave, modelRef, validateInfos, isModified };
+  return { save, canSave, modelRef, validateInfos, isModified, isValid };
 }

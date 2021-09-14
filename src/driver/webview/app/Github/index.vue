@@ -1,15 +1,18 @@
 <script lang="ts">
-import { defineComponent, inject, ref } from 'vue';
+import { defineComponent, inject, ref, watchEffect, computed } from 'vue';
 import { Form, Input, Alert, Button } from 'ant-design-vue';
-import { token } from '../../../../domain/service/PublishService';
+import { token as publishToken } from '../../../../domain/service/PublishService';
+import { token as appToken, FORBIDDEN } from '../../../../domain/service/AppService';
 import { useDraftForm } from '../../composable/useDraftForm';
 
 export default defineComponent({
   components: { Form, FormItem: Form.Item, Input, Alert, Button },
   setup() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const { githubInfo, saveGithubInfo } = inject(token)!;
-    const { modelRef, validateInfos, save, canSave } = useDraftForm(
+    const { githubInfo, saveGithubInfo } = inject(publishToken)!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const { setWarning, getLatestWarning } = inject(appToken)!;
+    const { modelRef, validateInfos, save, canSave, isModified } = useDraftForm(
       githubInfo,
       saveGithubInfo,
       ref({
@@ -19,7 +22,21 @@ export default defineComponent({
       }),
     );
 
-    return { modelRef, validateInfos, save, canSave, githubInfo };
+    const MODIFICATION_WARNING = 'Github modification has not been saved.';
+
+    watchEffect(() => {
+      setWarning(FORBIDDEN.TAB_SWITCH, MODIFICATION_WARNING, isModified.value);
+    });
+
+    return {
+      modelRef,
+      validateInfos,
+      save,
+      canSave,
+      githubInfo,
+      warningForGenerating: computed(() => getLatestWarning(FORBIDDEN.GENERATE)),
+      warningForTabSwitching: computed(() => getLatestWarning(FORBIDDEN.TAB_SWITCH)),
+    };
   },
 });
 </script>

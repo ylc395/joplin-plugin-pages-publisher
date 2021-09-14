@@ -1,6 +1,6 @@
-import { computed, InjectionKey, ref, Ref } from 'vue';
+import { InjectionKey, reactive } from 'vue';
 import { singleton, InjectionToken, container } from 'tsyringe';
-import { filter, first, isString, omit, some } from 'lodash';
+import { last, pull } from 'lodash';
 
 export const appToken: InjectionToken<App> = Symbol();
 interface App {
@@ -14,20 +14,34 @@ interface App {
 
 export const token: InjectionKey<AppService> = Symbol();
 
+export enum FORBIDDEN {
+  TAB_SWITCH,
+  GENERATE,
+}
+
 @singleton()
 export class AppService {
-  private readonly blockInfos: Ref<Record<string, string>> = ref({});
   readonly app = container.resolve(appToken);
-  readonly isAppBlocked = computed(() => {
-    return some(this.blockInfos.value, isString);
+  private readonly warnings: Record<FORBIDDEN, string[]> = reactive({
+    [FORBIDDEN.TAB_SWITCH]: [],
+    [FORBIDDEN.GENERATE]: [],
   });
 
-  readonly appBlockInfo = computed(() => {
-    return first(filter(this.blockInfos.value));
-  });
-  setBlockFlag(flag: string, value: boolean | string) {
-    this.blockInfos.value = value
-      ? { ...this.blockInfos.value, [flag]: isString(value) ? value : '' }
-      : omit(this.blockInfos.value, [flag]);
+  setWarning(effect: FORBIDDEN, warning: string, add: boolean) {
+    if (!warning) {
+      throw new Error('invalid waring');
+    }
+
+    if (this.warnings[effect].includes(warning)) {
+      pull(this.warnings[effect], warning);
+    }
+
+    if (add) {
+      this.warnings[effect].push(warning);
+    }
+  }
+
+  getLatestWarning(effect: FORBIDDEN) {
+    return last(this.warnings[effect]);
   }
 }

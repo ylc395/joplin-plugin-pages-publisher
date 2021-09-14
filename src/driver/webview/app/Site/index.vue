@@ -9,7 +9,7 @@ import {
   useSiteEdit,
   useCustomFieldModel,
   useCustomFieldValidateInfo,
-  useBlockApp,
+  useAppWarning,
   useSelectTheme,
 } from './useSiteEdit';
 
@@ -31,7 +31,7 @@ export default defineComponent({
 
     const { hasThemeFields, customFieldRules, customFields } = useSiteEdit();
 
-    const { modelRef, validateInfos, save, canSave, isModified } = useDraftForm(
+    const { modelRef, validateInfos, save, canSave, isModified, isValid } = useDraftForm(
       site,
       saveSite,
       (data) => ({
@@ -42,7 +42,7 @@ export default defineComponent({
       }),
     );
 
-    useBlockApp(isModified, validateInfos);
+    useAppWarning(isModified, isValid);
     const { handleSelect, selectedThemeName } = useSelectTheme(modelRef);
 
     provide(formToken, {

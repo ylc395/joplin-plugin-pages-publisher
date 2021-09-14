@@ -3,7 +3,7 @@ import { ref, InjectionKey, Ref, toRaw } from 'vue';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { JoplinDataRepository } from '../repository/JoplinDataRepository';
 import type { Github } from '../model/Github';
-import { AppService } from './AppService';
+import { AppService, FORBIDDEN } from './AppService';
 import { omit } from 'lodash';
 
 export interface Git {
@@ -47,7 +47,7 @@ export class PublishService {
   }
 
   async generateSite() {
-    if (this.isGenerating.value || this.appService.isAppBlocked.value) {
+    if (this.isGenerating.value || this.appService.getLatestWarning(FORBIDDEN.GENERATE)) {
       return;
     }
     this.isGenerating.value = true;

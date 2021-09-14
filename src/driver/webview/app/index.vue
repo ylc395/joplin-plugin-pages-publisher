@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, provide } from 'vue';
+import { defineComponent, provide, computed } from 'vue';
 import { Tabs, Button, Tooltip } from 'ant-design-vue';
 import {
   CloseOutlined,
@@ -19,7 +19,7 @@ import { SiteService, token as siteToken } from '../../../domain/service/SiteSer
 import { PageService, token as pageToken } from '../../../domain/service/PageService';
 import { NoteService, token as noteToken } from '../../../domain/service/NoteService';
 import { PublishService, token as publishToken } from '../../../domain/service/PublishService';
-import { AppService, token as appToken } from '../../../domain/service/AppService';
+import { AppService, token as appToken, FORBIDDEN } from '../../../domain/service/AppService';
 import { selfish } from '../utils';
 import { useActiveTabPane } from './useTabPane';
 
@@ -54,8 +54,7 @@ export default defineComponent({
     const { isGenerating, generateSite, gitPush } = publishService;
     const {
       app: { quit: quitApp },
-      isAppBlocked,
-      appBlockInfo,
+      getLatestWarning,
     } = appService;
 
     return {
@@ -64,8 +63,8 @@ export default defineComponent({
       isGenerating,
       gitPush,
       activeKey: useActiveTabPane(appService),
-      isAppBlocked,
-      appBlockInfo,
+      warningForGenerating: computed(() => getLatestWarning(FORBIDDEN.GENERATE)),
+      warningForTabSwitching: computed(() => getLatestWarning(FORBIDDEN.TAB_SWITCH)),
     };
   },
 });
@@ -89,8 +88,8 @@ export default defineComponent({
       <Github />
     </TabPane>
     <template #tabBarExtraContent>
-      <Tooltip :title="appBlockInfo">
-        <Button :loading="isGenerating" :disabled="isAppBlocked" @click="generateSite">
+      <Tooltip :title="warningForGenerating">
+        <Button :loading="isGenerating" :disabled="!!warningForGenerating" @click="generateSite">
           <template #icon><RocketOutlined /></template>
           Generate
         </Button>
