@@ -11,7 +11,7 @@ import {
   useCustomFieldValidateInfo,
   useAppWarning,
   useSelectTheme,
-} from './useSiteEdit';
+} from './composable';
 
 export default defineComponent({
   components: {
