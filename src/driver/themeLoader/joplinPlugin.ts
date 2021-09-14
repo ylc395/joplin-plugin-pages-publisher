@@ -6,15 +6,18 @@ import type { Theme } from '../../domain/model/Theme';
 import { DEFAULT_THEME_NAME } from '../../domain/model/Theme';
 import { THEME_SCHEMA } from './schema';
 import { getThemeDir } from '../generator/pathHelper';
+import { getValidator } from '../utils';
 
 const { readJson, readdir } = joplin.require('fs-extra') as {
   readJson: typeof IReadJSON;
   readdir: typeof IReaddir;
 };
 
-const themeValidate = new Ajv()
+const themeValidator = new Ajv()
   .addFormat('validPageUrl', (str) => isValidFilename(str) && !str.startsWith('_'))
   .compile<Theme>(THEME_SCHEMA);
+
+const validateTheme = getValidator(themeValidator, 'Invalid config.js');
 
 async function loadDefault(): Promise<Theme> {
   return readJson(`${await getThemeDir(DEFAULT_THEME_NAME)}/config.json`);
@@ -29,13 +32,7 @@ export async function loadTheme(themeName: string) {
   try {
     const res = await readJson(`${pluginDir}/themes/${themeName}/config.json`);
     res.name = res.name || themeName;
-
-    if (!themeValidate(res)) {
-      const errMsg = themeValidate.errors
-        ?.map(({ message, instancePath }) => `${instancePath}: ${message}`)
-        .join(`\n${' '.repeat(4)}`);
-      throw new Error(`Invalid config.json: \n${' '.repeat(4)}${errMsg}`);
-    }
+    validateTheme(res);
     return res;
   } catch (err) {
     console.warn(err);

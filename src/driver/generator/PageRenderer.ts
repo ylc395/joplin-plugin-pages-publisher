@@ -3,6 +3,7 @@ import ejs from 'ejs';
 import moment from 'moment';
 import { container } from 'tsyringe';
 import { Feed } from 'feed';
+import Ajv from 'ajv';
 import { Site, DEFAULT_SITE } from '../../domain/model/Site';
 import type { Article } from '../../domain/model/Article';
 import type { Theme } from '../../domain/model/Theme';
@@ -25,12 +26,16 @@ import {
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { loadTheme } from '../themeLoader/joplinPlugin';
 import { Db } from '../db/joplinPlugin';
+import { ARTICLE_SCHEMA } from '../db/schema';
 import { addScriptLinkStyleTags } from './htmlProcess';
 import type { RenderEnv } from './type';
+import { getValidator } from '../utils';
 
 ejs.fileLoader = readFileSync;
 
 const db = container.resolve(Db);
+const articleValidator = new Ajv().compile<Article>(ARTICLE_SCHEMA);
+const validateArticle = getValidator(articleValidator, 'Invalid article');
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Data = Readonly<Record<string, any>>;
 
@@ -59,6 +64,7 @@ export class PageRenderer {
   private async getSite() {
     const site = await db.fetch<Site>(['site']);
     const articles = (await db.fetch<Article[]>(['articles'])) || [];
+    articles.forEach(validateArticle);
 
     if (!site) {
       throw new Error('no site info in db.json');
