@@ -10,8 +10,9 @@ import {
   defaultsDeep,
   has,
   set,
+  noop,
 } from 'lodash';
-import { Ref, computed, ref, watchEffect } from 'vue';
+import { Ref, computed, ref, watchEffect, nextTick } from 'vue';
 import { isUnset } from '../utils';
 
 type Data = Record<string, unknown>;
@@ -42,14 +43,14 @@ export function useDraftForm<T = Data>(
     }
   };
 
-  const modelRef: Ref<Partial<T>> = ref({});
+  const draftModel: Ref<Partial<T>> = ref({});
   watchEffect(() => {
     if (origin.value) {
-      modelRef.value = defaultsDeep(modelRef.value, cloneDeepWith(origin.value, customClone));
+      draftModel.value = defaultsDeep(draftModel.value, cloneDeepWith(origin.value, customClone));
     }
   });
 
-  const rules_ = typeof rules === 'function' ? computed(() => rules(modelRef.value)) : rules;
+  const rules_ = typeof rules === 'function' ? computed(() => rules(draftModel.value)) : rules;
 
   // todo: if ant-design-vue support validating non-existed props, following code can be removed
   if (rules_) {
@@ -59,17 +60,26 @@ export function useDraftForm<T = Data>(
       }
 
       for (const name of Object.keys(rules_.value)) {
-        if (!has(modelRef.value, name)) {
-          set(modelRef.value, name, null);
+        if (!has(draftModel.value, name)) {
+          set(draftModel.value, name, null);
         }
       }
     });
   }
 
-  const { validateInfos, validate } = Form.useForm(modelRef, rules_, {
+  const {
+    validateInfos,
+    validate,
+    resetFields: _resetFields,
+  } = Form.useForm(draftModel, rules_, {
     validateOnRuleChange: true,
     immediate: true,
   });
+
+  const resetFields = () => {
+    _resetFields(origin.value || undefined);
+    nextTick(() => validate().catch(noop));
+  };
 
   // todo: first validating doesn't work. see https://github.com/vueComponent/ant-design-vue/pull/4646/
   // when merged, remove following code
@@ -80,7 +90,7 @@ export function useDraftForm<T = Data>(
       return;
     }
 
-    if (!isEmpty(modelRef.value)) {
+    if (!isEmpty(draftModel.value)) {
       validated = true;
       validate();
     }
@@ -88,12 +98,12 @@ export function useDraftForm<T = Data>(
 
   const save = async () => {
     await validate();
-    await saveFunc(modelRef.value);
+    await saveFunc(draftModel.value);
   };
 
-  const isModified = computed(() => !isEqualWith(modelRef.value, origin.value, customEqual_));
+  const isModified = computed(() => !isEqualWith(draftModel.value, origin.value, customEqual_));
   const isValid = computed(() => every(validateInfos, { validateStatus: 'success' }));
-  const canSave = computed(() => isModified.value && !isEmpty(modelRef.value) && isValid.value);
+  const canSave = computed(() => isModified.value && !isEmpty(draftModel.value) && isValid.value);
 
-  return { save, canSave, modelRef, validateInfos, isModified, isValid };
+  return { save, canSave, modelRef: draftModel, validateInfos, isModified, isValid, resetFields };
 }

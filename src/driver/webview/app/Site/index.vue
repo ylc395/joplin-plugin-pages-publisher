@@ -31,16 +31,13 @@ export default defineComponent({
 
     const { hasThemeFields, customFieldRules, customFields } = useSiteEdit();
 
-    const { modelRef, validateInfos, save, canSave, isModified, isValid } = useDraftForm(
-      site,
-      saveSite,
-      (data) => ({
+    const { modelRef, validateInfos, save, canSave, isModified, isValid, resetFields } =
+      useDraftForm(site, saveSite, (data) => ({
         themeName: [{ required: true }],
         feedEnabled: [{ required: true }],
         feedLength: [{ required: data.feedEnabled }],
         ...customFieldRules.value,
-      }),
-    );
+      }));
 
     useAppWarning(isModified, isValid);
     const { handleSelect, selectedThemeName } = useSelectTheme(modelRef);
@@ -60,6 +57,8 @@ export default defineComponent({
       hasThemeFields,
       handleSelect,
       selectedThemeName,
+      isModified,
+      resetFields,
     };
   },
 });
@@ -81,6 +80,7 @@ export default defineComponent({
     </Form>
     <FieldForm v-if="hasThemeFields" class="mt-10" />
     <div class="text-right">
+      <Button v-if="isModified" class="mr-3" @click="resetFields">Reset</Button>
       <Button type="primary" :disabled="!canSave" @click="save">Save</Button>
     </div>
   </div>

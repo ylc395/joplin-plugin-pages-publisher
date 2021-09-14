@@ -12,7 +12,7 @@ export default defineComponent({
     const { githubInfo, saveGithubInfo } = inject(publishToken)!;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { setWarning, getLatestWarning } = inject(appToken)!;
-    const { modelRef, validateInfos, save, canSave, isModified } = useDraftForm(
+    const { modelRef, validateInfos, save, canSave, isModified, resetFields } = useDraftForm(
       githubInfo,
       saveGithubInfo,
       ref({
@@ -26,6 +26,7 @@ export default defineComponent({
 
     watchEffect(() => {
       setWarning(FORBIDDEN.TAB_SWITCH, MODIFICATION_WARNING, isModified.value);
+      setWarning(FORBIDDEN.GENERATE, MODIFICATION_WARNING, isModified.value);
     });
 
     return {
@@ -34,6 +35,8 @@ export default defineComponent({
       save,
       canSave,
       githubInfo,
+      resetFields,
+      isModified,
       warningForGenerating: computed(() => getLatestWarning(FORBIDDEN.GENERATE)),
       warningForTabSwitching: computed(() => getLatestWarning(FORBIDDEN.TAB_SWITCH)),
     };
@@ -69,6 +72,7 @@ export default defineComponent({
       </FormItem>
     </Form>
     <div class="text-right">
+      <Button v-if="isModified" class="mr-3" @click="resetFields">Reset</Button>
       <Button type="primary" :disabled="!canSave" @click="save">Save</Button>
     </div>
   </div>
