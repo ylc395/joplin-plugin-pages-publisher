@@ -57,7 +57,11 @@ export default defineComponent({
             <p>{{ message }}</p>
             <p>
               Or, if you are a Git user, you can use Git manually.
-              <a href="https://github.com" target="_blank">See this docs for details</a>
+              <a
+                href="https://github.com/ylc395/joplin-plugin-page-publisher/blob/master/docs/how-to-use-git-manually.md"
+                target="_blank"
+                >See this docs for details</a
+              >
             </p>
           </div>
           <div v-else-if="githubInfo">
