@@ -1,8 +1,9 @@
 import { Modal } from 'ant-design-vue';
 import { ExclamationCircleOutlined } from '@ant-design/icons-vue';
+import { container } from 'tsyringe';
 import { constant } from 'lodash';
 import { createVNode } from 'vue';
-import type { Modal as AppModal } from '../../../domain/service/AppService';
+import { Modal as AppModal, openModalToken } from '../../../domain/service/AppService';
 
 export interface AppRequest {
   event: 'quitApp' | 'openNote' | 'getOutputDir' | 'getGitRepositoryDir';
@@ -39,3 +40,5 @@ export function getOutputDir() {
 export function getGitRepositoryDir() {
   return webviewApi.postMessage<string>({ event: 'getGitRepositoryDir' });
 }
+
+container.registerInstance(openModalToken, openModal);

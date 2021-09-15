@@ -1,5 +1,5 @@
 import { InjectionKey, reactive, ref, Ref } from 'vue';
-import { singleton } from 'tsyringe';
+import { container, InjectionToken, singleton } from 'tsyringe';
 import { last, pull } from 'lodash';
 import { ButtonProps } from 'ant-design-vue';
 
@@ -17,7 +17,9 @@ export enum FORBIDDEN {
   GENERATE,
 }
 
+export const openModalToken: InjectionToken<(modal: Modal) => void> = Symbol();
 export const token: InjectionKey<AppService> = Symbol();
+
 @singleton()
 export class AppService {
   private readonly warnings: Record<FORBIDDEN, string[]> = reactive({
@@ -25,7 +27,7 @@ export class AppService {
     [FORBIDDEN.GENERATE]: [],
   });
 
-  readonly modal: Ref<Modal | null> = ref(null);
+  readonly openModal = container.resolve(openModalToken);
 
   setWarning(effect: FORBIDDEN, warning: string, add: boolean) {
     if (!warning) {
@@ -43,9 +45,5 @@ export class AppService {
 
   getLatestWarning(effect: FORBIDDEN) {
     return last(this.warnings[effect]);
-  }
-
-  openModal(modal: Modal) {
-    this.modal.value = modal;
   }
 }

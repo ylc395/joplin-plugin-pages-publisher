@@ -23,7 +23,7 @@ import { PublishService, token as publishToken } from '../../../domain/service/P
 import { AppService, token as appToken, FORBIDDEN } from '../../../domain/service/AppService';
 import { selfish } from '../utils';
 import { quit as quitApp } from '../utils/webviewApi';
-import { useActiveTabPane, useAppModal } from './composable';
+import { useActiveTabPane } from './composable';
 
 export default defineComponent({
   components: {
@@ -46,7 +46,6 @@ export default defineComponent({
   setup() {
     const publishService = selfish(container.resolve(PublishService));
     const appService = selfish(container.resolve(AppService));
-    useAppModal(appService);
 
     provide(articleToken, selfish(container.resolve(ArticleService)));
     provide(noteToken, selfish(container.resolve(NoteService)));

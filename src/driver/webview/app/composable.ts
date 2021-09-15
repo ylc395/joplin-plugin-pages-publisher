@@ -26,13 +26,3 @@ export function useActiveTabPane({ getLatestWarning }: AppService) {
 
   return activeKey;
 }
-
-export function useAppModal({ modal }: AppService) {
-  watch(modal, (modal) => {
-    if (!modal) {
-      return;
-    }
-
-    openModal(modal);
-  });
-}
