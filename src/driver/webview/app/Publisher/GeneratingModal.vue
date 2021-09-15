@@ -3,7 +3,7 @@ import { computed, defineComponent, inject } from 'vue';
 import { Modal, Progress, Result, Button } from 'ant-design-vue';
 import { token as publishToken } from '../../../../domain/service/PublishService';
 import { activeTabToken } from '../composable';
-import { useModalProps, useOutputDir } from './composable';
+import { useModalProps } from './composable';
 
 export default defineComponent({
   components: { Modal, Progress, Result, Button },
@@ -14,6 +14,7 @@ export default defineComponent({
       refreshGeneratingProgress,
       gitPush,
       isGithubInfoValid,
+      outputDir,
     } =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(publishToken)!;
@@ -26,7 +27,7 @@ export default defineComponent({
       progress,
       visible: computed(() => isGenerating.value || !!progress.result),
       modalProps: useModalProps(),
-      outputDir: useOutputDir(),
+      outputDir,
       reset,
       gitPush: async () => {
         await reset();

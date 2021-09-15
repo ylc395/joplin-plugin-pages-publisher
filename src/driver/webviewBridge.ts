@@ -4,6 +4,7 @@ import { Db } from './db/joplinPlugin';
 import type { DbReadRequest, DbWriteRequest } from './db/webviewApi';
 import type { JoplinDataRequest, JoplinPluginSettingRequest } from './joplinData/webviewApi';
 import type { AppRequest } from './webview/utils/webviewApi';
+import type { GitRequest } from './git/webviewApi';
 import type { FsRequest } from './fs/webviewApi';
 import type { GeneratorRequest } from './generator/webviewApi';
 import type { ThemeConfigLoadRequest, ThemeConfigsLoadRequest } from './themeLoader/webviewApi';
@@ -27,6 +28,7 @@ export default (panelId: string) => {
       | ThemeConfigsLoadRequest
       | FsRequest
       | GeneratorRequest
+      | GitRequest
       | AppRequest,
   ) => {
     switch (request.event) {

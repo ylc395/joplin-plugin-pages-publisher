@@ -7,13 +7,14 @@ import { AppService, FORBIDDEN } from './AppService';
 import { isEmpty, omit, pick, some } from 'lodash';
 
 export interface Git {
-  push: (files: string[], info: Github, force: boolean) => Promise<void>;
+  push: (dir: string, files: string[], info: Github, force: boolean) => Promise<void>;
   getProgress: () => Promise<PublishingProgress>;
 }
 
 export interface Generator {
   generateSite: () => Promise<string[]>;
   getProgress: () => Promise<GeneratingProgress>;
+  getOutputDir: () => Promise<string>;
 }
 
 export const gitClientToken: InjectionToken<Git> = Symbol();
@@ -48,6 +49,7 @@ export class PublishService {
   readonly githubInfo: Ref<Github | null> = ref(null);
   readonly isGenerating = ref(false);
   readonly isPublishing = ref(false);
+  readonly outputDir = ref('');
   readonly generatingProgress: Required<GeneratingProgress> = reactive({
     ...initialGeneratingProgress,
   });
@@ -68,6 +70,7 @@ export class PublishService {
       token: (await this.joplinDataRepository.getGithubToken()) || '',
       ...(await this.pluginDataRepository.getGithubInfo()),
     };
+    this.outputDir.value = await this.generator.getOutputDir();
   }
 
   isGithubInfoValid = computed(() => {
@@ -130,7 +133,7 @@ export class PublishService {
       return;
     }
 
-    if (!this.isGithubInfoValid.value) {
+    if (!this.isGithubInfoValid.value || !this.outputDir.value) {
       throw new Error('no github info');
     }
 
@@ -158,7 +161,7 @@ export class PublishService {
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      await this.git.push(this.files, this.githubInfo.value!, force);
+      await this.git.push(this.outputDir.value, this.files, this.githubInfo.value!, force);
       this.publishingProgress.result = 'success';
     } catch (error) {
       this.publishingProgress.result = 'fail';

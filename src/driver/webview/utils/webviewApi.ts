@@ -6,7 +6,7 @@ import { createVNode } from 'vue';
 import { Modal as AppModal, openModalToken } from '../../../domain/service/AppService';
 
 export interface AppRequest {
-  event: 'quitApp' | 'openNote' | 'getOutputDir' | 'getGitRepositoryDir';
+  event: 'quitApp' | 'openNote';
   payload?: any;
 }
 
@@ -31,14 +31,6 @@ export function quit() {
 
 export function openNote(noteId: string) {
   return webviewApi.postMessage({ event: 'openNote', payload: noteId });
-}
-
-export function getOutputDir() {
-  return webviewApi.postMessage<string>({ event: 'getOutputDir' });
-}
-
-export function getGitRepositoryDir() {
-  return webviewApi.postMessage<string>({ event: 'getGitRepositoryDir' });
 }
 
 container.registerInstance(openModalToken, openModal);

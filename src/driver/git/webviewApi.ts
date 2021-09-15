@@ -4,13 +4,22 @@ import http from 'isomorphic-git/http/web';
 import fs from '../fs/webviewApi';
 import { gitClientToken, initialPublishProgress } from '../../domain/service/PublishService';
 import type { Github, PublishingProgress } from '../../domain/model/Publishing';
-import { getOutputDir, getGitRepositoryDir } from '../webview/utils/webviewApi';
+
+export interface GitRequest {
+  event: 'getGitRepositoryDir';
+}
+declare const webviewApi: {
+  postMessage: <T>(payload: GitRequest) => Promise<T>;
+};
 
 class Git {
   private progress: PublishingProgress = { ...initialPublishProgress };
-  async push(files: string[], githubInfo: Github, force: boolean) {
-    const dir = await getOutputDir();
-    const gitdir = await getGitRepositoryDir();
+  private getGitRepositoryDir() {
+    return webviewApi.postMessage<string>({ event: 'getGitRepositoryDir' });
+  }
+
+  async push(dir: string, files: string[], githubInfo: Github, force: boolean) {
+    const gitdir = await this.getGitRepositoryDir();
 
     await init({ fs, gitdir, dir });
 
