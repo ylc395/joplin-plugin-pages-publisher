@@ -1,5 +1,5 @@
 import { container } from 'tsyringe';
-import type { GeneratingProgress } from '../../domain/model/Site';
+import type { GeneratingProgress } from '../../domain/model/Publishing';
 import { generatorToken } from '../../domain/service/PublishService';
 export interface GeneratorRequest {
   event: 'generateSite' | 'getGeneratingProgress';
@@ -13,7 +13,7 @@ container.registerInstance(generatorToken, {
     return webviewApi.postMessage<string[]>({ event: 'generateSite' });
   },
 
-  getGeneratingProgress() {
+  getProgress() {
     return webviewApi.postMessage<GeneratingProgress>({ event: 'getGeneratingProgress' });
   },
 });

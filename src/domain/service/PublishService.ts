@@ -2,18 +2,18 @@ import { container, InjectionToken, singleton } from 'tsyringe';
 import { ref, InjectionKey, Ref, toRaw, reactive, computed } from 'vue';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { JoplinDataRepository } from '../repository/JoplinDataRepository';
-import type { Github } from '../model/Github';
-import type { GeneratingProgress } from '../model/Site';
+import type { Github, GeneratingProgress, PublishingProgress } from '../model/Publishing';
 import { AppService, FORBIDDEN } from './AppService';
 import { isEmpty, omit, pick, some } from 'lodash';
 
 export interface Git {
   push: (files: string[], info: Github) => Promise<void>;
+  getProgress: () => Promise<PublishingProgress>;
 }
 
 export interface Generator {
   generateSite: () => Promise<string[]>;
-  getGeneratingProgress: () => Promise<GeneratingProgress>;
+  getProgress: () => Promise<GeneratingProgress>;
 }
 
 export const gitClientToken: InjectionToken<Git> = Symbol();
@@ -21,11 +21,18 @@ export const generatorToken: InjectionToken<Generator> = Symbol();
 
 export const token: InjectionKey<PublishService> = Symbol();
 
-const initialProgress = {
+const initialGeneratingProgress: Required<GeneratingProgress> = {
   totalPages: 0,
   generatedPages: 0,
   result: null,
-  reason: '',
+  message: '',
+};
+
+export const initialPublishProgress: PublishingProgress = {
+  phase: '',
+  message: '',
+  loaded: 0,
+  total: 0,
 };
 
 @singleton()
@@ -36,12 +43,18 @@ export class PublishService {
   private readonly generator = container.resolve(generatorToken);
   private readonly git = container.resolve(gitClientToken);
   private files: string[] = [];
-  readonly isGenerating = ref(false);
-  readonly isPushing = ref(false);
+  private generatingTimer: number | null = null;
+  private publishingTimer: number | null = null;
   readonly githubInfo: Ref<Github | null> = ref(null);
-  readonly progress: Required<GeneratingProgress> = reactive({ ...initialProgress });
-
-  private checkingTimer: number | null = null;
+  readonly isGenerating = ref(false);
+  readonly isPublishing = ref(false);
+  readonly generatingProgress: Required<GeneratingProgress> = reactive({
+    ...initialGeneratingProgress,
+  });
+  readonly publishingProgress: Required<PublishingProgress> = reactive({
+    ...initialPublishProgress,
+    result: null,
+  });
 
   constructor() {
     this.init();
@@ -78,44 +91,66 @@ export class PublishService {
     }
 
     this.isGenerating.value = true;
-    this.progress.result = null;
+    await this.refreshGeneratingProgress(true);
 
     try {
-      this.checkingTimer = setInterval(this.refreshProgress.bind(this), 100);
+      this.generatingTimer = setInterval(this.refreshGeneratingProgress.bind(this), 100);
       const files = await this.generator.generateSite();
       this.files = files;
-      this.progress.result = 'success';
-      this.progress.reason = String(files.length);
+      this.generatingProgress.result = 'success';
+      this.generatingProgress.message = `${files.length} files in totals`;
     } catch (error) {
-      this.progress.result = 'fail';
-      this.progress.reason = (error as Error).message;
+      this.generatingProgress.result = 'fail';
+      this.generatingProgress.message = (error as Error).message;
     } finally {
       this.isGenerating.value = false;
-      if (this.checkingTimer) {
-        clearInterval(this.checkingTimer);
+      if (this.generatingTimer) {
+        clearInterval(this.generatingTimer);
       }
-      this.refreshProgress();
+      this.refreshGeneratingProgress();
     }
   }
 
-  async refreshProgress(reset = false) {
+  async refreshGeneratingProgress(reset = false) {
     Object.assign(
-      this.progress,
-      reset ? initialProgress : await this.generator.getGeneratingProgress(),
+      this.generatingProgress,
+      reset ? initialGeneratingProgress : await this.generator.getProgress(),
+    );
+  }
+
+  async refreshPublishingProgress(reset = false) {
+    Object.assign(
+      this.publishingProgress,
+      reset ? { ...initialPublishProgress, result: null } : await this.git.getProgress(),
     );
   }
 
   async gitPush() {
-    if (this.isPushing.value) {
+    if (this.isPublishing.value) {
       return;
     }
 
     if (!this.isGithubInfoValid.value) {
       throw new Error('no github info');
     }
-    this.isPushing.value = true;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await this.git.push(this.files, this.githubInfo.value!);
-    this.isPushing.value = false;
+    this.isPublishing.value = true;
+    await this.refreshPublishingProgress(true);
+    this.publishingTimer = setInterval(this.refreshPublishingProgress.bind(this), 100);
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      await this.git.push(this.files, this.githubInfo.value!);
+      this.publishingProgress.result = 'success';
+    } catch (error) {
+      this.publishingProgress.result = 'fail';
+      const message = (error as Error).message;
+
+      this.publishingProgress.message = message.includes('401')
+        ? `${message}. Probably your token is invalid.`
+        : message;
+    } finally {
+      this.isPublishing.value = false;
+      clearInterval(this.publishingTimer);
+    }
   }
 }

@@ -4,7 +4,8 @@ import moment from 'moment';
 import { container } from 'tsyringe';
 import { Feed } from 'feed';
 import Ajv from 'ajv';
-import { Site, DEFAULT_SITE, GeneratingProgress } from '../../domain/model/Site';
+import { Site, DEFAULT_SITE } from '../../domain/model/Site';
+import type { GeneratingProgress } from '../../domain/model/Publishing';
 import type { Article } from '../../domain/model/Article';
 import type { Theme } from '../../domain/model/Theme';
 import { ARTICLE_PAGE_NAME, INDEX_PAGE_NAME, PREDEFINED_FIELDS } from '../../domain/model/Page';
@@ -219,7 +220,8 @@ export class PageRenderer {
       throw new Error('pageRenderer is not initialized');
     }
 
-    this.progress.totalPages = Object.keys(this.pages).length + this.site.articles.length - 1;
+    const pageNames = Object.keys(this.pages);
+    this.progress.totalPages = pageNames.length + this.site.articles.length - 1;
 
     const backupDir = `${this.outputDir}_backup`;
     try {
@@ -227,7 +229,7 @@ export class PageRenderer {
         await move(this.outputDir, backupDir, { overwrite: true });
       }
 
-      for (const pageName of Object.keys(this.pages)) {
+      for (const pageName of pageNames) {
         await this.outputPage(pageName);
       }
 

@@ -1,7 +1,7 @@
 import { omit } from 'lodash';
 import { container, InjectionToken } from 'tsyringe';
 import type { Article } from '../model/Article';
-import type { Github } from '../model/Github';
+import type { Github } from '../model/Publishing';
 import type { Vars } from '../model/Page';
 import { Site } from '../model/Site';
 import type { Theme } from '../model/Theme';

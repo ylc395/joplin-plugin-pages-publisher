@@ -16,10 +16,3 @@ export const DEFAULT_SITE: Readonly<Site> = {
   feedLength: 10,
   custom: {},
 };
-
-export interface GeneratingProgress {
-  totalPages: number;
-  generatedPages: number;
-  result?: null | 'success' | 'fail';
-  reason?: string;
-}
