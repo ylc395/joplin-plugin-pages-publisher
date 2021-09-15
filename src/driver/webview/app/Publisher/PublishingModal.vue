@@ -64,8 +64,10 @@ export default defineComponent({
         <template #extra>
           <Button v-if="progress.result" @click="reset">Confirm</Button>
           <template v-if="progress.result === 'fail'">
-            <Button v-if="!needForce && !is401Error" @click="gitPush">Retry</Button>
-            <Button v-if="needForce" danger @click="gitPushForce">Retry FORCE PUSH</Button>
+            <Button v-if="!needForce && !is401Error" type="primary" @click="gitPush">Retry</Button>
+            <Button v-if="needForce" type="primary" danger @click="gitPushForce"
+              >Retry FORCE PUSH</Button
+            >
           </template>
         </template>
       </Result>
