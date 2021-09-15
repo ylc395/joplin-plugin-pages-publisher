@@ -129,8 +129,4 @@ export class NoteService {
       }
     }
   }
-
-  openNote(noteId: string) {
-    this.appService.app.openNote(noteId);
-  }
 }

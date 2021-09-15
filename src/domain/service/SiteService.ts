@@ -3,14 +3,14 @@ import { Ref, shallowRef, InjectionKey, ref, toRaw } from 'vue';
 import { Theme, DEFAULT_THEME_NAME } from '../model/Theme';
 import { Site, DEFAULT_SITE } from '../model/Site';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
-import { ExceptionService } from './ExceptionService';
+import { AppService } from './AppService';
 import { merge } from 'lodash';
 
 export const token: InjectionKey<SiteService> = Symbol('siteService');
 @singleton()
 export class SiteService {
   private readonly pluginDataRepository = new PluginDataRepository();
-  private readonly exceptionService = container.resolve(ExceptionService);
+  private readonly appService = container.resolve(AppService);
   readonly site: Ref<Site | null> = ref(null);
   readonly themes: Ref<Theme[]> = shallowRef([]);
   readonly themeConfig: Ref<Theme | null> = shallowRef(null);
@@ -44,7 +44,11 @@ export class SiteService {
     } catch (error) {
       this.themeConfig.value =
         this.themeConfig.value || (await this.pluginDataRepository.getTheme(DEFAULT_THEME_NAME));
-      this.exceptionService.reportError(error as Error, { title: 'Fail to load theme' });
+      this.appService.openModal({
+        type: 'error',
+        title: 'Fail to load theme',
+        content: (error as Error).message,
+      });
       throw error;
     }
   }

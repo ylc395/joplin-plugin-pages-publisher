@@ -1,31 +1,27 @@
-import { InjectionKey, reactive } from 'vue';
-import { singleton, InjectionToken, container } from 'tsyringe';
+import { InjectionKey, reactive, ref, Ref } from 'vue';
+import { singleton } from 'tsyringe';
 import { last, pull } from 'lodash';
 
-export const appToken: InjectionToken<App> = Symbol();
-interface App {
-  openModal: (type: 'error' | 'confirm', args: { title?: string; content?: string }) => void;
-  quit: () => Promise<void>;
-  openNote: (noteId: string) => Promise<void>;
-  generateSite: () => Promise<string[]>;
-  getOutputDir: () => Promise<string>;
-  getGitRepositoryDir: () => Promise<string>;
+export interface Modal {
+  type: 'error' | 'confirm';
+  title?: string;
+  content?: string;
 }
-
-export const token: InjectionKey<AppService> = Symbol();
 
 export enum FORBIDDEN {
   TAB_SWITCH,
   GENERATE,
 }
 
+export const token: InjectionKey<AppService> = Symbol();
 @singleton()
 export class AppService {
-  readonly app = container.resolve(appToken);
   private readonly warnings: Record<FORBIDDEN, string[]> = reactive({
     [FORBIDDEN.TAB_SWITCH]: [],
     [FORBIDDEN.GENERATE]: [],
   });
+
+  readonly modal: Ref<Modal | null> = ref(null);
 
   setWarning(effect: FORBIDDEN, warning: string, add: boolean) {
     if (!warning) {
@@ -43,5 +39,9 @@ export class AppService {
 
   getLatestWarning(effect: FORBIDDEN) {
     return last(this.warnings[effect]);
+  }
+
+  openModal(modal: Modal) {
+    this.modal.value = modal;
   }
 }

@@ -28,6 +28,7 @@ export const REQUIRED_KEYS: (keyof Article)[] = [
   'tags',
   'content',
   'url',
+  'title',
 ];
 
 export function getSyncStatus(

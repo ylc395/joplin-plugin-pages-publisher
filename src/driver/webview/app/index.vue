@@ -14,6 +14,7 @@ import ArticleList from './ArticleList/index.vue';
 import Site from './Site/index.vue';
 import PageList from './PageList/index.vue';
 import Github from './Github/index.vue';
+import Publisher from './Publisher/index.vue';
 import { ArticleService, token as articleToken } from '../../../domain/service/ArticleService';
 import { SiteService, token as siteToken } from '../../../domain/service/SiteService';
 import { PageService, token as pageToken } from '../../../domain/service/PageService';
@@ -21,7 +22,8 @@ import { NoteService, token as noteToken } from '../../../domain/service/NoteSer
 import { PublishService, token as publishToken } from '../../../domain/service/PublishService';
 import { AppService, token as appToken, FORBIDDEN } from '../../../domain/service/AppService';
 import { selfish } from '../utils';
-import { useActiveTabPane } from './useTabPane';
+import { quit as quitApp } from '../utils/webviewApi';
+import { useActiveTabPane, useAppModal } from './composable';
 
 export default defineComponent({
   components: {
@@ -39,10 +41,12 @@ export default defineComponent({
     Site,
     PageList,
     Github,
+    Publisher,
   },
   setup() {
     const publishService = selfish(container.resolve(PublishService));
     const appService = selfish(container.resolve(AppService));
+    useAppModal(appService);
 
     provide(articleToken, selfish(container.resolve(ArticleService)));
     provide(noteToken, selfish(container.resolve(NoteService)));
@@ -52,10 +56,7 @@ export default defineComponent({
     provide(appToken, appService);
 
     const { isGenerating, generateSite, gitPush } = publishService;
-    const {
-      app: { quit: quitApp },
-      getLatestWarning,
-    } = appService;
+    const { getLatestWarning } = appService;
 
     return {
       quitApp,
@@ -99,6 +100,7 @@ export default defineComponent({
       </Button>
     </template>
   </Tabs>
+  <Publisher />
 </template>
 <style scoped>
 :global(:root) {

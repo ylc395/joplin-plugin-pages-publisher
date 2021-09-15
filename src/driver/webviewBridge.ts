@@ -5,10 +5,11 @@ import type { DbReadRequest, DbWriteRequest } from './db/webviewApi';
 import type { JoplinDataRequest, JoplinPluginSettingRequest } from './joplinData/webviewApi';
 import type { AppRequest } from './webview/utils/webviewApi';
 import type { FsRequest } from './fs/webviewApi';
+import type { GeneratorRequest } from './generator/webviewApi';
 import type { ThemeConfigLoadRequest, ThemeConfigsLoadRequest } from './themeLoader/webviewApi';
 
 import { loadTheme, loadThemes } from './themeLoader/joplinPlugin';
-import generateSite from './generator';
+import { generateSite, getProgress } from './generator';
 import { getOutputDir, getGitRepositoryDir } from './generator/pathHelper';
 import { fetchData, fetchAllData } from './joplinData/joplinPlugin';
 import { mockNodeFsCall } from './fs/joplinPlugin';
@@ -25,6 +26,7 @@ export default (panelId: string) => {
       | ThemeConfigLoadRequest
       | ThemeConfigsLoadRequest
       | FsRequest
+      | GeneratorRequest
       | AppRequest,
   ) => {
     switch (request.event) {
@@ -45,6 +47,8 @@ export default (panelId: string) => {
         return;
       case 'generateSite':
         return generateSite();
+      case 'getGeneratingProgress':
+        return getProgress();
       case 'openNote':
         return joplin.commands.execute('openNote', request.payload);
       case 'getOutputDir':

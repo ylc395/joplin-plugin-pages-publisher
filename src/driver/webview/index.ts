@@ -4,6 +4,7 @@ import { createApp } from 'vue';
 import { container } from 'tsyringe';
 import '../db/webviewApi';
 import '../themeLoader/webviewApi';
+import '../generator/webviewApi';
 import '../joplinData/webviewApi';
 import '../git/webviewApi';
 import './utils/webviewApi';

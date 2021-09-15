@@ -4,7 +4,7 @@ import moment from 'moment';
 import { container } from 'tsyringe';
 import { Feed } from 'feed';
 import Ajv from 'ajv';
-import { Site, DEFAULT_SITE } from '../../domain/model/Site';
+import { Site, DEFAULT_SITE, GeneratingProgress } from '../../domain/model/Site';
 import type { Article } from '../../domain/model/Article';
 import type { Theme } from '../../domain/model/Theme';
 import { ARTICLE_PAGE_NAME, INDEX_PAGE_NAME, PREDEFINED_FIELDS } from '../../domain/model/Page';
@@ -46,8 +46,15 @@ export class PageRenderer {
   private themeDir?: string;
   private outputDir?: string;
   private pages?: Theme['pages'];
+  readonly progress: GeneratingProgress = {
+    totalPages: 0,
+    generatedPages: 0,
+  };
 
   async init() {
+    this.progress.totalPages = 0;
+    this.progress.generatedPages = 0;
+
     await this.getSite();
     await this.getThemeData();
 
@@ -122,14 +129,14 @@ export class PageRenderer {
     };
 
     const env: RenderEnv = { $page: values, $site: siteData, _, _moment: moment };
+    env.$page.url = pageName === INDEX_PAGE_NAME ? 'index' : values.url || pageName;
+
     if (pageName === ARTICLE_PAGE_NAME) {
       await this.outputArticles(env);
     } else {
       const htmlString = await ejs.renderFile(templatePath, env);
-      await outputFile(
-        `${this.outputDir}/${pageName === INDEX_PAGE_NAME ? 'index' : values.url || pageName}.html`,
-        htmlString,
-      );
+      await outputFile(`${this.outputDir}/${env.$page.url}.html`, htmlString);
+      this.progress.generatedPages += 1;
     }
   }
 
@@ -167,6 +174,7 @@ export class PageRenderer {
       );
       await this.markdownRenderer.outputResources(resourceIds);
       await this.markdownRenderer.copyMarkdownPluginAssets(pluginAssets);
+      this.progress.generatedPages += 1;
 
       if (recentArticles.length < this.site.feedLength) {
         recentArticles.push(article);
@@ -210,6 +218,8 @@ export class PageRenderer {
     if (!this.pages || !this.site || !this.outputDir) {
       throw new Error('pageRenderer is not initialized');
     }
+
+    this.progress.totalPages = Object.keys(this.pages).length + this.site.articles.length - 1;
 
     const backupDir = `${this.outputDir}_backup`;
     try {

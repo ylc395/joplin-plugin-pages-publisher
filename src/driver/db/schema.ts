@@ -10,6 +10,7 @@ export const ARTICLE_SCHEMA = {
     tags: { type: 'array', items: { type: 'string' } },
     content: { type: 'string' },
     url: { type: 'string' },
+    title: { type: 'string' },
   },
   required: REQUIRED_KEYS,
 } as const;

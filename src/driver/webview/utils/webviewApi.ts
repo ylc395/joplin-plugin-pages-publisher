@@ -1,10 +1,9 @@
-import { appToken } from '../../../domain/service/AppService';
-import { container } from 'tsyringe';
 import { Modal } from 'ant-design-vue';
 import { constant } from 'lodash';
+import type { Modal as AppModal } from '../../../domain/service/AppService';
 
 export interface AppRequest {
-  event: 'quitApp' | 'generateSite' | 'openNote' | 'getOutputDir' | 'getGitRepositoryDir';
+  event: 'quitApp' | 'openNote' | 'getOutputDir' | 'getGitRepositoryDir';
   payload?: any;
 }
 
@@ -12,32 +11,26 @@ declare const webviewApi: {
   postMessage: <T = void>(payload: AppRequest) => Promise<T>;
 };
 
-container.registerInstance(appToken, {
-  openModal(type, { title, content }) {
-    // hack: when https://github.com/vueComponent/ant-design-vue/pull/4632 is merged, `constant` is no need
-    return Modal[type]({
-      title: title ? constant(title) : undefined,
-      content: content ? constant(content) : undefined,
-    });
-  },
+export const openModal = ({ type, title, content }: AppModal) => {
+  // hack: when https://github.com/vueComponent/ant-design-vue/pull/4632 is merged, `constant` is no need
+  return Modal[type]({
+    title: title ? constant(title) : undefined,
+    content: content ? constant(content) : undefined,
+  });
+};
 
-  quit() {
-    return webviewApi.postMessage({ event: 'quitApp' });
-  },
+export function quit() {
+  return webviewApi.postMessage({ event: 'quitApp' });
+}
 
-  generateSite() {
-    return webviewApi.postMessage<string[]>({ event: 'generateSite' });
-  },
+export function openNote(noteId: string) {
+  return webviewApi.postMessage({ event: 'openNote', payload: noteId });
+}
 
-  openNote(noteId: string) {
-    return webviewApi.postMessage({ event: 'openNote', payload: noteId });
-  },
+export function getOutputDir() {
+  return webviewApi.postMessage<string>({ event: 'getOutputDir' });
+}
 
-  getOutputDir() {
-    return webviewApi.postMessage<string>({ event: 'getOutputDir' });
-  },
-
-  getGitRepositoryDir() {
-    return webviewApi.postMessage<string>({ event: 'getGitRepositoryDir' });
-  },
-});
+export function getGitRepositoryDir() {
+  return webviewApi.postMessage<string>({ event: 'getGitRepositoryDir' });
+}
