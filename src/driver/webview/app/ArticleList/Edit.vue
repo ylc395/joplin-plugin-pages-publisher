@@ -65,7 +65,7 @@ export default defineComponent({
     <Alert
       type="info"
       showIcon
-      message="Any modification here won't affect origin note."
+      message="Any modification here won't affect origin note in Joplin."
       class="mb-4"
     />
     <Spin :spinning="!article" tip="Loading article and its resources...">

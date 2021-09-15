@@ -53,7 +53,13 @@ export default defineComponent({
         :title="progress.result === 'fail' ? 'Fail to publish' : 'Published Successfully'"
       >
         <template #subTitle>
-          <div v-if="progress.result === 'fail'">{{ message }}</div>
+          <div v-if="progress.result === 'fail'" class="text-left">
+            <p>{{ message }}</p>
+            <p>
+              Or, if you are a Git user, you can use Git manually.
+              <a href="https://github.com" target="_blank">See this docs for details</a>
+            </p>
+          </div>
           <div v-else-if="githubInfo">
             Please Check
             <strong class="text-black"
