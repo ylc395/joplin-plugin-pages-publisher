@@ -68,7 +68,7 @@ export default defineComponent({
         <Input v-model:value="modelRef.repositoryName" />
       </FormItem>
       <FormItem label="Branch">
-        <Input v-model:value="modelRef.branch" placeholder="Default value is main" />
+        <Input v-model:value="modelRef.branch" placeholder="Default value is master" />
       </FormItem>
     </Form>
     <div class="text-right">

@@ -8,7 +8,7 @@ import { getOutputDir, getGitRepositoryDir } from '../webview/utils/webviewApi';
 
 class Git {
   private progress: PublishingProgress = { ...initialPublishProgress };
-  async push(files: string[], githubInfo: Github) {
+  async push(files: string[], githubInfo: Github, force: boolean) {
     const dir = await getOutputDir();
     const gitdir = await getGitRepositoryDir();
 
@@ -30,6 +30,7 @@ class Git {
       fs,
       http,
       gitdir,
+      force,
       remoteRef: githubInfo.branch,
       url: `https://github.com/${githubInfo.userName}/${githubInfo.repositoryName}.git`,
       onAuth: () => ({ username: githubInfo.userName, password: githubInfo.token }),

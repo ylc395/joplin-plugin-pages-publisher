@@ -1,11 +1,15 @@
 import { InjectionKey, reactive, ref, Ref } from 'vue';
 import { singleton } from 'tsyringe';
 import { last, pull } from 'lodash';
+import { ButtonProps } from 'ant-design-vue';
 
 export interface Modal {
-  type: 'error' | 'confirm';
+  type: 'error' | 'confirm' | 'warning';
   title?: string;
   content?: string;
+  onOk?: () => void;
+  onCancel?: () => void;
+  okButtonProps?: ButtonProps;
 }
 
 export enum FORBIDDEN {

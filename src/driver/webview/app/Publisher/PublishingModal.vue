@@ -7,18 +7,34 @@ import { useModalProps } from './composable';
 export default defineComponent({
   components: { Modal, Progress, Result, Button },
   setup() {
-    const { isPublishing, publishingProgress, gitPush, refreshPublishingProgress, githubInfo } =
+    const {
+      isPublishing,
+      publishingProgress: progress,
+      gitPush,
+      refreshPublishingProgress,
+      githubInfo,
+    } =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(publishToken)!;
 
     return {
-      visible: computed(() => isPublishing.value || !!publishingProgress.result),
+      visible: computed(() => isPublishing.value || !!progress.result),
       isPublishing,
-      progress: publishingProgress,
+      progress,
       modalProps: useModalProps(),
       gitPush,
+      gitPushForce: () => gitPush(true),
       githubInfo,
       reset: () => refreshPublishingProgress(true),
+      needForce: computed(() => progress.message.includes('not a simple fast-forward')),
+      is401Error: computed(() => progress.message.includes('401')),
+      message: computed(() => {
+        const prefix = progress.phase ? `${progress.phase}: ` : '';
+        if (progress.message.includes('401')) {
+          return `${prefix}${progress.message}. Probably your token is invalid.`;
+        }
+        return `${prefix}${progress.message}`;
+      }),
     };
   },
 });
@@ -37,19 +53,20 @@ export default defineComponent({
         :title="progress.result === 'fail' ? 'Fail to publish' : 'Published Successfully'"
       >
         <template #subTitle>
-          <div v-if="progress.result === 'fail'">
-            {{ progress.phase ? `${progress.phase}: ` : '' }}{{ progress.message }}
-          </div>
+          <div v-if="progress.result === 'fail'">{{ message }}</div>
           <div v-else-if="githubInfo">
-            Check it in
+            Please Check
             <strong class="text-black"
-              >https://{{ githubInfo.userName }}.{{ githubInfo.repositoryName }}.com</strong
+              >https://github.com/{{ githubInfo.userName }}/{{ githubInfo.repositoryName }}</strong
             >
           </div>
         </template>
         <template #extra>
           <Button v-if="progress.result" @click="reset">Confirm</Button>
-          <Button v-if="progress.result === 'fail'" @click="gitPush">Retry</Button>
+          <template v-if="progress.result === 'fail'">
+            <Button v-if="!needForce && !is401Error" @click="gitPush">Retry</Button>
+            <Button v-if="needForce" danger @click="gitPushForce">Retry FORCE PUSH</Button>
+          </template>
         </template>
       </Result>
     </div>

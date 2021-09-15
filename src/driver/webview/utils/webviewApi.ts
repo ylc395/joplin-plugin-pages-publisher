@@ -1,5 +1,7 @@
 import { Modal } from 'ant-design-vue';
+import { ExclamationCircleOutlined } from '@ant-design/icons-vue';
 import { constant } from 'lodash';
+import { createVNode } from 'vue';
 import type { Modal as AppModal } from '../../../domain/service/AppService';
 
 export interface AppRequest {
@@ -11,11 +13,14 @@ declare const webviewApi: {
   postMessage: <T = void>(payload: AppRequest) => Promise<T>;
 };
 
-export const openModal = ({ type, title, content }: AppModal) => {
+export const openModal = ({ type, content, title, ...options }: AppModal) => {
   // hack: when https://github.com/vueComponent/ant-design-vue/pull/4632 is merged, `constant` is no need
   return Modal[type]({
     title: title ? constant(title) : undefined,
     content: content ? constant(content) : undefined,
+    closable: false,
+    ...(type === 'confirm' ? { icon: () => createVNode(ExclamationCircleOutlined) } : null),
+    ...options,
   });
 };
 

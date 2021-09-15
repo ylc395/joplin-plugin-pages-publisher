@@ -7,7 +7,7 @@ import { AppService, FORBIDDEN } from './AppService';
 import { isEmpty, omit, pick, some } from 'lodash';
 
 export interface Git {
-  push: (files: string[], info: Github) => Promise<void>;
+  push: (files: string[], info: Github, force: boolean) => Promise<void>;
   getProgress: () => Promise<PublishingProgress>;
 }
 
@@ -125,7 +125,7 @@ export class PublishService {
     );
   }
 
-  async gitPush() {
+  async gitPush(force = false) {
     if (this.isPublishing.value) {
       return;
     }
@@ -133,21 +133,36 @@ export class PublishService {
     if (!this.isGithubInfoValid.value) {
       throw new Error('no github info');
     }
+
+    if (force) {
+      const branch = this.githubInfo.value?.branch || 'master';
+      const confirmed = await new Promise<boolean>((resolve) => {
+        this.appService.openModal({
+          type: 'confirm',
+          title: 'Are you sure?',
+          content: `Force Push will replace the ${branch} branch's all commits on Github with commits of ${branch} branch in this machine. Be sure that you do know what you are doing.`,
+          onOk: () => resolve(true),
+          onCancel: () => resolve(false),
+          okButtonProps: { danger: true, type: 'primary' },
+        });
+      });
+
+      if (!confirmed) {
+        return;
+      }
+    }
+
     this.isPublishing.value = true;
     await this.refreshPublishingProgress(true);
     this.publishingTimer = setInterval(this.refreshPublishingProgress.bind(this), 100);
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      await this.git.push(this.files, this.githubInfo.value!);
+      await this.git.push(this.files, this.githubInfo.value!, force);
       this.publishingProgress.result = 'success';
     } catch (error) {
       this.publishingProgress.result = 'fail';
-      const message = (error as Error).message;
-
-      this.publishingProgress.message = message.includes('401')
-        ? `${message}. Probably your token is invalid.`
-        : message;
+      this.publishingProgress.message = (error as Error).message;
     } finally {
       this.isPublishing.value = false;
       clearInterval(this.publishingTimer);
