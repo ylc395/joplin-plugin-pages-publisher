@@ -1,7 +1,7 @@
 import 'core-js/proposals/reflect-metadata';
 import joplin from 'api';
 import { SettingItemType } from 'api/types';
-import webviewBridge from './driver/webviewBridge';
+import webviewBridge from './driver/webview/webviewBridge';
 
 const OPEN_PAGES_PUBLISHER_COMMAND = 'openPagesPublisher';
 const panels = joplin.views.panels;

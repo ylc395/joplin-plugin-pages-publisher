@@ -1,19 +1,19 @@
 import { container } from 'tsyringe';
 import joplin from 'api';
-import { Db } from './db/joplinPlugin';
-import type { DbReadRequest, DbWriteRequest } from './db/webviewApi';
-import type { JoplinDataRequest, JoplinPluginSettingRequest } from './joplinData/webviewApi';
-import type { JoplinAction } from './joplin/webviewApi';
-import type { GitRequest } from './git/webviewApi';
-import type { FsRequest } from './fs/webviewApi';
-import type { GeneratorRequest } from './generator/webviewApi';
-import type { ThemeConfigLoadRequest, ThemeConfigsLoadRequest } from './themeLoader/webviewApi';
+import { Db } from '../db/joplinPlugin';
+import type { DbReadRequest, DbWriteRequest } from '../db/webviewApi';
+import type { JoplinDataRequest, JoplinPluginSettingRequest } from '../joplinData/webviewApi';
+import type { JoplinAction } from '../joplin/webviewApi';
+import type { GitRequest } from '../git/webviewApi';
+import type { FsRequest } from '../fs/webviewApi';
+import type { GeneratorRequest } from '../generator/webviewApi';
+import type { ThemeConfigLoadRequest, ThemeConfigsLoadRequest } from '../themeLoader/webviewApi';
 
-import { loadTheme, loadThemes } from './themeLoader/joplinPlugin';
-import { generateSite, getProgress } from './generator';
-import { getOutputDir, getGitRepositoryDir } from './generator/pathHelper';
-import { fetchData, fetchAllData } from './joplinData/joplinPlugin';
-import { mockNodeFsCall } from './fs/joplinPlugin';
+import { loadTheme, loadThemes } from '../themeLoader/joplinPlugin';
+import { generateSite, getProgress } from '../generator';
+import { getOutputDir, getGitRepositoryDir } from '../generator/pathHelper';
+import { fetchData, fetchAllData } from '../joplinData/joplinPlugin';
+import { mockNodeFsCall } from '../fs/joplinPlugin';
 
 export default (panelId: string) => {
   const db = container.resolve(Db);
