@@ -65,7 +65,7 @@ export async function mockNodeFsCall(
   try {
     const result = await fs[funcName](...args);
     const methodsResult =
-      isObjectLike(result) && !isBuffer(result)
+      isObjectLike(result) && !isBuffer(result) && !Array.isArray(result)
         ? functionsIn(result).reduce((res, methodName) => {
             res[methodName] = result[methodName]();
             return res;

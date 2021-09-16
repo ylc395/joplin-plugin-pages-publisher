@@ -2,15 +2,24 @@ import { container, InjectionToken, singleton } from 'tsyringe';
 import { ref, InjectionKey, Ref, toRaw, reactive, computed } from 'vue';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { JoplinDataRepository } from '../repository/JoplinDataRepository';
-import type { Github, GeneratingProgress, PublishingProgress } from '../model/Publishing';
+import {
+  Github,
+  GeneratingProgress,
+  PublishingProgress,
+  initialGeneratingProgress,
+  initialPublishProgress,
+} from '../model/Publishing';
 import { AppService, FORBIDDEN } from './AppService';
 import { isEmpty, omit, pick, some } from 'lodash';
 
+// todo: use eventEmitter
 export interface Git {
-  push: (dir: string, files: string[], info: Github, force: boolean) => Promise<void>;
+  init: (githubInfo: Github) => Promise<void>;
+  push: (files: string[], force: boolean) => Promise<void>;
   getProgress: () => Promise<PublishingProgress>;
 }
 
+// todo: use eventEmitter
 export interface Generator {
   generateSite: () => Promise<string[]>;
   getProgress: () => Promise<GeneratingProgress>;
@@ -19,22 +28,7 @@ export interface Generator {
 
 export const gitClientToken: InjectionToken<Git> = Symbol();
 export const generatorToken: InjectionToken<Generator> = Symbol();
-
 export const token: InjectionKey<PublishService> = Symbol();
-
-const initialGeneratingProgress: Required<GeneratingProgress> = {
-  totalPages: 0,
-  generatedPages: 0,
-  result: null,
-  message: '',
-};
-
-export const initialPublishProgress: PublishingProgress = {
-  phase: '',
-  message: '',
-  loaded: 0,
-  total: 0,
-};
 
 @singleton()
 export class PublishService {
@@ -71,6 +65,10 @@ export class PublishService {
       ...(await this.pluginDataRepository.getGithubInfo()),
     };
     this.outputDir.value = await this.generator.getOutputDir();
+
+    if (this.isGithubInfoValid.value) {
+      this.git.init(this.githubInfo.value);
+    }
   }
 
   isGithubInfoValid = computed(() => {
@@ -80,12 +78,18 @@ export class PublishService {
     return Object.keys(keyInfos).length === requiredKeys.length && !some(keyInfos, isEmpty);
   });
 
-  saveGithubInfo(githubInfo: Partial<Github>) {
+  async saveGithubInfo(githubInfo: Partial<Github>) {
     const githubInfo_ = omit(githubInfo, ['token']);
 
-    return this.pluginDataRepository.saveGithubInfo(
+    await this.pluginDataRepository.saveGithubInfo(
       omit(toRaw(Object.assign(this.githubInfo.value, githubInfo_)), ['token']),
     );
+
+    if (!this.githubInfo.value) {
+      throw new Error('no github info');
+    }
+
+    this.git.init(this.githubInfo.value);
   }
 
   async generateSite() {
@@ -133,7 +137,7 @@ export class PublishService {
       return;
     }
 
-    if (!this.isGithubInfoValid.value || !this.outputDir.value) {
+    if (!this.isGithubInfoValid.value) {
       throw new Error('no github info');
     }
 
@@ -160,8 +164,7 @@ export class PublishService {
     this.publishingTimer = setInterval(this.refreshPublishingProgress.bind(this), 100);
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      await this.git.push(this.outputDir.value, this.files, this.githubInfo.value!, force);
+      await this.git.push(this.files, force);
       this.publishingProgress.result = 'success';
     } catch (error) {
       this.publishingProgress.result = 'fail';

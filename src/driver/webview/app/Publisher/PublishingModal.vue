@@ -22,7 +22,7 @@ export default defineComponent({
       isPublishing,
       progress,
       modalProps: useModalProps(),
-      gitPush,
+      gitPush: () => gitPush(false),
       gitPushForce: () => gitPush(true),
       githubInfo,
       reset: () => refreshPublishingProgress(true),
@@ -43,7 +43,7 @@ export default defineComponent({
   <Modal v-model:visible="visible" v-bind="modalProps">
     <template v-if="isPublishing">
       <div>{{ progress.phase || 'Publishing...' }}</div>
-      <Progress :percent="(progress.loaded / progress.total) * 100" />
+      <Progress :percent="(progress.loaded / progress.total) * 100" :showInfo="false" />
       <div>{{ progress.message }}</div>
     </template>
     <div v-if="progress.result">
@@ -56,7 +56,8 @@ export default defineComponent({
           <div v-if="progress.result === 'fail'" class="text-left">
             <p>{{ message }}</p>
             <p>
-              Or, if you are a Git user, you can use Git manually.
+              This is an unexpected error, you can report it as a Github issue. If you are a Git
+              user, you can use Git manually to continue publishing.
               <a
                 href="https://github.com/ylc395/joplin-plugin-page-publisher/blob/master/docs/how-to-use-git-manually.md"
                 target="_blank"

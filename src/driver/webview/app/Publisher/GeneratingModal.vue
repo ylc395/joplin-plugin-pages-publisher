@@ -47,6 +47,7 @@ export default defineComponent({
     <Progress
       v-if="isGenerating"
       :percent="(progress.generatedPages / progress.totalPages) * 100"
+      :showInfo="false"
     />
     <div v-if="progress.result">
       <Result

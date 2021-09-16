@@ -1,4 +1,5 @@
-import type { PromiseFsClient } from 'isomorphic-git';
+import fsExtra from 'fs-extra';
+
 import { constant, isTypedArray, isObjectLike, isString, mapValues } from 'lodash';
 import type { MockNodeFsCallResult } from './type';
 
@@ -15,7 +16,7 @@ declare const webviewApi: {
 };
 
 const cache = new Map();
-const fs: PromiseFsClient = {
+const fs = {
   promises: new Proxy(
     {},
     {
@@ -33,8 +34,8 @@ const fs: PromiseFsClient = {
                   throw result;
                 }
 
-                // buffer here is Unit9Array
-                if (!isObjectLike(result) || isTypedArray(result)) {
+                // buffer here is Unit8Array
+                if (!isObjectLike(result) || isTypedArray(result) || Array.isArray(result)) {
                   return result;
                 }
 
@@ -48,7 +49,7 @@ const fs: PromiseFsClient = {
         return cache.get(funcName);
       },
     },
-  ) as PromiseFsClient['promises'],
+  ) as typeof fsExtra,
 };
 
 export default fs;
