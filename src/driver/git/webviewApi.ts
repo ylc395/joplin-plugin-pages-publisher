@@ -38,9 +38,24 @@ class Git {
   private getGitRepositoryDir() {
     return webviewApi.postMessage<string>({ event: 'getGitRepositoryDir' });
   }
+  private initPromise: Promise<void> | null = null;
 
-  async init(githubInfo: Github) {
+  init(githubInfo: Github) {
+    if (this.initPromise) {
+      return this.initPromise;
+    }
+
     this.githubInfo = githubInfo;
+    this.initPromise = this.initRepo();
+    this.initPromise.then(() => (this.initPromise = null));
+
+    return this.initPromise;
+  }
+
+  private async initRepo() {
+    if (!this.githubInfo) {
+      throw new Error('no github info');
+    }
 
     if (!this.dir) {
       this.dir = await this.generator.getOutputDir();
@@ -67,11 +82,14 @@ class Git {
       onMessage: this.handleMessage,
       onProgress: this.handleProgress,
     });
-    await setConfig({ fs, gitdir: this.gitdir, path: 'user.name', value: githubInfo.userName });
-    await setConfig({ fs, gitdir: this.gitdir, path: 'user.email', value: githubInfo.email });
+
+    const { userName, email } = this.githubInfo;
+    await setConfig({ fs, gitdir: this.gitdir, path: 'user.name', value: userName });
+    await setConfig({ fs, gitdir: this.gitdir, path: 'user.email', value: email });
   }
 
   async push(files: string[], force: boolean) {
+    await this.initPromise;
     const { dir, gitdir, remoteUrl: url, githubInfo } = this;
 
     if (!dir || !gitdir || !url || !githubInfo) {
