@@ -7,6 +7,7 @@ import '../themeLoader/webviewApi';
 import '../generator/webviewApi';
 import '../joplinData/webviewApi';
 import '../git/webviewApi';
+import '../joplin/webviewApi';
 import './utils/webviewApi';
 import App from './app/index.vue';
 import { ExceptionService } from '../../domain/service/ExceptionService';

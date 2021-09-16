@@ -5,15 +5,6 @@ import { constant } from 'lodash';
 import { createVNode } from 'vue';
 import { Modal as AppModal, openModalToken } from '../../../domain/service/AppService';
 
-export interface AppRequest {
-  event: 'quitApp' | 'openNote';
-  payload?: any;
-}
-
-declare const webviewApi: {
-  postMessage: <T = void>(payload: AppRequest) => Promise<T>;
-};
-
 export const openModal = ({ type, content, title, ...options }: AppModal) => {
   // hack: when https://github.com/vueComponent/ant-design-vue/pull/4632 is merged, `constant` is no need
   return Modal[type]({
@@ -24,13 +15,5 @@ export const openModal = ({ type, content, title, ...options }: AppModal) => {
     ...options,
   });
 };
-
-export function quit() {
-  return webviewApi.postMessage({ event: 'quitApp' });
-}
-
-export function openNote(noteId: string) {
-  return webviewApi.postMessage({ event: 'openNote', payload: noteId });
-}
 
 container.registerInstance(openModalToken, openModal);

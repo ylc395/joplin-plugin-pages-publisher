@@ -22,7 +22,6 @@ import { NoteService, token as noteToken } from '../../../domain/service/NoteSer
 import { PublishService, token as publishToken } from '../../../domain/service/PublishService';
 import { AppService, token as appToken, FORBIDDEN } from '../../../domain/service/AppService';
 import { selfish } from '../utils';
-import { quit as quitApp } from '../utils/webviewApi';
 import { useActiveTabPane } from './composable';
 
 export default defineComponent({
@@ -55,7 +54,7 @@ export default defineComponent({
     provide(appToken, appService);
 
     const { isGenerating, generateSite, gitPush } = publishService;
-    const { getLatestWarning } = appService;
+    const { getLatestWarning, quitApp } = appService;
 
     return {
       quitApp,

@@ -12,10 +12,10 @@ import {
 import { capitalize } from 'lodash';
 import { token as articleToken } from '../../../../domain/service/ArticleService';
 import { token as noteToken } from '../../../../domain/service/NoteService';
-import { Article } from '../../../../domain/model/Article';
+import { token as appToken } from '../../../../domain/service/AppService';
+import type { Article } from '../../../../domain/model/Article';
 import { token as editToken } from './useEdit';
 import { token as diffToken } from './useDiff';
-import { openNote } from '../../utils/webviewApi';
 
 export default defineComponent({
   components: {
@@ -40,6 +40,7 @@ export default defineComponent({
     const { syncNotes } = inject(noteToken)!;
     const { edit } = inject(editToken)!;
     const { viewDiff } = inject(diffToken)!;
+    const { openNote } = inject(appToken)!;
 
     window.addEventListener('focus', syncNotes);
     onUnmounted(() => window.removeEventListener('focus', syncNotes));
