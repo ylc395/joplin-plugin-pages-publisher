@@ -1,5 +1,5 @@
 import joplin from 'api';
-import { get, set } from 'lodash';
+import { cloneDeep, get, set } from 'lodash';
 import { Low } from 'lowdb/lib';
 import { singleton } from 'tsyringe';
 import { JSONFile } from './adaptor';
@@ -22,7 +22,7 @@ export class Db {
 
   fetch<T>(path: string[]) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return this.ready.then<T | null>(() => get(this.db!.data, path, null));
+    return this.ready.then<T | null>(() => cloneDeep(get(this.db!.data, path, null)));
   }
 
   save(path: string[], data: unknown) {

@@ -1,4 +1,3 @@
-import { omit } from 'lodash';
 import { container, InjectionToken } from 'tsyringe';
 import type { Article } from '../model/Article';
 import type { Github } from '../model/Publishing';
@@ -38,12 +37,7 @@ export class PluginDataRepository {
   }
 
   saveArticles(articles: Article[]) {
-    const toOmit = ['images', 'attachments', 'noteContent', 'htmlContent'];
-
-    return this.pluginDataLoader.save(
-      ['articles'],
-      articles.map((article) => omit(article, toOmit)),
-    );
+    return this.pluginDataLoader.save(['articles'], articles);
   }
 
   getSite() {
