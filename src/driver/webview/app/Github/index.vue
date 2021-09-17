@@ -57,7 +57,7 @@ export default defineComponent({
         for details.
       </template>
     </Alert>
-    <Form :labelCol="{ span: 4 }">
+    <Form :labelCol="{ span: 6 }">
       <FormItem label="User Name" v-bind="validateInfos.userName">
         <Input v-model:value="modelRef.userName" />
       </FormItem>

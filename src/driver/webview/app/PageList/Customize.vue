@@ -26,7 +26,7 @@ export default defineComponent({
 <template>
   <Form />
   <div class="text-right">
-    <Button type="primary" class="mr-2" :disabled="!canSave" @click="save">Save</Button>
-    <Button @click="stopCustomize">Cancel</Button>
+    <Button class="mr-2" @click="stopCustomize">Cancel</Button>
+    <Button type="primary" :disabled="!canSave" @click="save">Save</Button>
   </div>
 </template>

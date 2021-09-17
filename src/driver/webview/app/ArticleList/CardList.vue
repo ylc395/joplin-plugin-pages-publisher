@@ -87,17 +87,18 @@ export default defineComponent({
         @click="article.note && openNote(article.noteId)"
       >
         {{ article.title }}
-        <template v-if="article.syncStatus">
-          <Tooltip v-if="article.syncStatus !== 'synced'" :title="tagTips[article.syncStatus]">
-            <Tag
-              :color="tagColors[article.syncStatus]"
-              :class="{ 'cursor-default': article.syncStatus !== 'diff' }"
-              @click.stop="article.syncStatus === 'diff' && viewDiff(article)"
-            >
-              {{ capitalize(article.syncStatus) }}
-            </Tag>
-          </Tooltip>
-        </template>
+        <Tooltip
+          v-if="article.syncStatus && article.syncStatus !== 'synced'"
+          :title="tagTips[article.syncStatus]"
+        >
+          <Tag
+            :color="tagColors[article.syncStatus]"
+            :class="{ 'cursor-default': article.syncStatus !== 'diff' }"
+            @click.stop="article.syncStatus === 'diff' && viewDiff(article)"
+          >
+            {{ capitalize(article.syncStatus) }}
+          </Tag>
+        </Tooltip>
       </h2>
       <div class="flex flex-col flex-wrap">
         <div class="info">
@@ -109,9 +110,7 @@ export default defineComponent({
         </div>
         <div v-if="article.tags.length > 0" class="info">
           <TagOutlined class="mr-2" />
-          <div class="">
-            <Tag v-for="tag of article.tags" :key="tag">{{ tag }}</Tag>
-          </div>
+          <Tag v-for="tag of article.tags" :key="tag">{{ tag }}</Tag>
         </div>
       </div>
     </div>
@@ -137,6 +136,7 @@ export default defineComponent({
   margin-bottom: 4px;
   align-items: center;
   color: rgb(153, 153, 153);
+  font-size: 12px;
 }
 
 .info:last-child {
