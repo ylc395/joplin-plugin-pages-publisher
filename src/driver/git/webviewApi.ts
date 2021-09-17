@@ -1,4 +1,5 @@
 import { container } from 'tsyringe';
+import EventEmitter from 'eventemitter3';
 import {
   GitProgressEvent,
   push,
@@ -11,8 +12,8 @@ import {
 } from 'isomorphic-git';
 import http from 'isomorphic-git/http/web';
 import fs from '../fs/webviewApi';
-import { gitClientToken, generatorToken } from '../../domain/service/PublishService';
-import { Github, PublishingProgress, initialPublishProgress } from '../../domain/model/Publishing';
+import { gitClientToken, GitEvents } from '../../domain/service/PublishService';
+import { Github } from '../../domain/model/Publishing';
 import { difference } from 'lodash';
 
 export interface GitRequest {
@@ -22,9 +23,8 @@ declare const webviewApi: {
   postMessage: <T>(payload: GitRequest) => Promise<T>;
 };
 
-class Git {
+class Git extends EventEmitter<GitEvents> {
   private static readonly remote = 'github';
-  private readonly generator = container.resolve(generatorToken);
   private dir?: string;
   private gitdir?: string;
   private githubInfo?: Github;
@@ -34,15 +34,22 @@ class Git {
     }
     return `https://github.com/${this.githubInfo.userName}/${this.githubInfo.repositoryName}.git`;
   }
-  private progress: PublishingProgress = { ...initialPublishProgress };
   private getGitRepositoryDir() {
     return webviewApi.postMessage<string>({ event: 'getGitRepositoryDir' });
   }
   private initPromise: Promise<void> | null = null;
 
-  init(githubInfo: Github) {
+  async init(githubInfo: Github, dir?: string) {
     if (this.initPromise) {
       return this.initPromise;
+    }
+
+    if (dir) {
+      this.dir = dir;
+    }
+
+    if (!this.gitdir) {
+      this.gitdir = await this.getGitRepositoryDir();
     }
 
     this.githubInfo = githubInfo;
@@ -53,17 +60,10 @@ class Git {
   }
 
   private async initRepo() {
-    if (!this.githubInfo) {
+    if (!this.githubInfo || !this.gitdir || !this.dir) {
       throw new Error('no github info');
     }
 
-    if (!this.dir) {
-      this.dir = await this.generator.getOutputDir();
-    }
-
-    if (!this.gitdir) {
-      this.gitdir = await this.getGitRepositoryDir();
-    }
     await fs.promises.emptyDir(this.gitdir);
     await fs.promises.emptyDir(this.dir);
 
@@ -81,6 +81,7 @@ class Git {
       onAuth: this.handleAuth,
       onMessage: this.handleMessage,
       onProgress: this.handleProgress,
+      onAuthFailure: this.handleAuthFail,
     });
 
     const { userName, email } = this.githubInfo;
@@ -106,16 +107,7 @@ class Git {
       await remove({ fs, dir, gitdir, filepath: deletedFile });
     }
 
-    await commit({
-      fs,
-      gitdir,
-      message: 'test',
-    });
-
-    if (!dir || !gitdir || !url || !githubInfo) {
-      throw new Error('no github info');
-    }
-
+    await commit({ fs, gitdir, message: 'test' });
     await push({
       fs,
       http,
@@ -129,15 +121,21 @@ class Git {
       onAuth: this.handleAuth,
       onMessage: this.handleMessage,
       onProgress: this.handleProgress,
+      onAuthFailure: this.handleAuthFail,
     });
   }
 
   private handleProgress = (e: GitProgressEvent) => {
-    Object.assign(this.progress, e);
+    this.emit(GitEvents.PROGRESS, e);
   };
 
   private handleMessage = (e: string) => {
-    this.progress.message = e;
+    this.emit(GitEvents.MESSAGE, e);
+  };
+
+  private handleAuthFail = () => {
+    this.emit(GitEvents.AUTH_FAIL);
+    return { cancel: true };
   };
 
   private handleAuth = () => {
@@ -150,10 +148,6 @@ class Git {
       password: this.githubInfo.token,
     };
   };
-
-  getProgress() {
-    return Promise.resolve(this.progress);
-  }
 }
 
 container.registerSingleton(gitClientToken, Git);

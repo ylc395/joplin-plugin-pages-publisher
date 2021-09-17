@@ -63,6 +63,7 @@
     "core-js": "^3.15.1",
     "diff": "^5.0.0",
     "ejs": "^3.1.6",
+    "eventemitter3": "^4.0.7",
     "feed": "^4.2.2",
     "isomorphic-git": "^1.10.0",
     "lodash": "^4.17.21",

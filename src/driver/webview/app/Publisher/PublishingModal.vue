@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent, inject, computed } from 'vue';
 import { Modal, Progress, Result, Button } from 'ant-design-vue';
-import { token as publishToken } from '../../../../domain/service/PublishService';
+import { GitEvents, token as publishToken } from '../../../../domain/service/PublishService';
 import { useModalProps } from './composable';
 
 export default defineComponent({
@@ -10,7 +10,7 @@ export default defineComponent({
     const {
       isPublishing,
       publishingProgress: progress,
-      gitPush,
+      publish,
       refreshPublishingProgress,
       githubInfo,
     } =
@@ -22,16 +22,16 @@ export default defineComponent({
       isPublishing,
       progress,
       modalProps: useModalProps(),
-      gitPush: () => gitPush(false),
-      gitPushForce: () => gitPush(true),
+      publish: () => publish(false),
+      gitPushForce: () => publish(true),
       githubInfo,
-      reset: () => refreshPublishingProgress(true),
+      reset: () => refreshPublishingProgress(),
       needForce: computed(() => progress.message.includes('not a simple fast-forward')),
-      is401Error: computed(() => progress.message.includes('401')),
+      isAuthError: computed(() => progress.message === GitEvents.AUTH_FAIL),
       message: computed(() => {
         const prefix = progress.phase ? `${progress.phase}: ` : '';
-        if (progress.message.includes('401')) {
-          return `${prefix}${progress.message}. Probably your token is invalid.`;
+        if (progress.message === GitEvents.AUTH_FAIL) {
+          return `${prefix}${progress.message}. Probably your Github information, including token, is invalid.`;
         }
         return `${prefix}${progress.message}`;
       }),
@@ -56,8 +56,10 @@ export default defineComponent({
           <div v-if="progress.result === 'fail'" class="text-left">
             <p>{{ message }}</p>
             <p>
-              This is an unexpected error, you can report it as a Github issue. If you are a Git
-              user, you can use Git manually to continue publishing.
+              <template v-if="!isAuthError"
+                >This is an unexpected error, you can report it as a Github issue.
+              </template>
+              If you are a Git user, you can use Git manually to continue publishing.
               <a
                 href="https://github.com/ylc395/joplin-plugin-page-publisher/blob/master/docs/how-to-use-git-manually.md"
                 target="_blank"
@@ -75,7 +77,7 @@ export default defineComponent({
         <template #extra>
           <Button v-if="progress.result" @click="reset">Confirm</Button>
           <template v-if="progress.result === 'fail'">
-            <Button v-if="!needForce && !is401Error" type="primary" @click="gitPush">Retry</Button>
+            <Button v-if="!needForce && !isAuthError" type="primary" @click="publish">Retry</Button>
             <Button v-if="needForce" type="primary" danger @click="gitPushForce"
               >Retry FORCE PUSH</Button
             >

@@ -53,14 +53,12 @@ export default defineComponent({
     provide(publishToken, publishService);
     provide(appToken, appService);
 
-    const { isGenerating, generateSite, gitPush } = publishService;
+    const { generateSite } = publishService;
     const { getLatestWarning, quitApp } = appService;
 
     return {
       quitApp,
       generateSite,
-      isGenerating,
-      gitPush,
       activeKey: useActiveTabPane(appService),
       warningForGenerating: computed(() => getLatestWarning(FORBIDDEN.GENERATE)),
       warningForTabSwitching: computed(() => getLatestWarning(FORBIDDEN.TAB_SWITCH)),
@@ -88,7 +86,7 @@ export default defineComponent({
     </TabPane>
     <template #tabBarExtraContent>
       <Tooltip :title="warningForGenerating">
-        <Button :loading="isGenerating" :disabled="!!warningForGenerating" @click="generateSite">
+        <Button :disabled="!!warningForGenerating" @click="generateSite">
           <template #icon><RocketOutlined /></template>
           Generate
         </Button>

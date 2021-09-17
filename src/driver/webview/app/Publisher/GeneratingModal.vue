@@ -12,7 +12,7 @@ export default defineComponent({
       isGenerating,
       generatingProgress: progress,
       refreshGeneratingProgress,
-      gitPush,
+      publish,
       isGithubInfoValid,
       outputDir,
     } =
@@ -20,7 +20,7 @@ export default defineComponent({
       inject(publishToken)!;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const activeTab = inject(activeTabToken)!;
-    const reset = () => refreshGeneratingProgress(true);
+    const reset = () => refreshGeneratingProgress();
 
     return {
       isGenerating,
@@ -29,10 +29,7 @@ export default defineComponent({
       modalProps: useModalProps(),
       outputDir,
       reset,
-      gitPush: async () => {
-        await reset();
-        await gitPush();
-      },
+      publish: () => publish(),
       isGithubInfoValid,
       switchToGithubTab: async () => {
         await reset();
@@ -86,7 +83,7 @@ export default defineComponent({
           <Button
             v-if="progress.result === 'success' && isGithubInfoValid"
             type="primary"
-            @click="gitPush"
+            @click="publish"
             >Publish</Button
           >
           <Button

@@ -1,5 +1,6 @@
 import { container, InjectionToken, singleton } from 'tsyringe';
 import { ref, InjectionKey, Ref, toRaw, reactive, computed } from 'vue';
+import type EventEmitter from 'eventemitter3';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { JoplinDataRepository } from '../repository/JoplinDataRepository';
 import {
@@ -12,17 +13,23 @@ import {
 import { AppService, FORBIDDEN } from './AppService';
 import { isEmpty, omit, pick, some } from 'lodash';
 
-// todo: use eventEmitter
-export interface Git {
-  init: (githubInfo: Github) => Promise<void>;
-  push: (files: string[], force: boolean) => Promise<void>;
-  getProgress: () => Promise<PublishingProgress>;
+export enum GeneratorEvents {
+  PAGE_GENERATED = 'PAGE_GENERATED',
 }
 
-// todo: use eventEmitter
-export interface Generator {
+export enum GitEvents {
+  PROGRESS = 'PROGRESS',
+  MESSAGE = 'MESSAGE',
+  AUTH_FAIL = 'AUTH_FAIL',
+}
+
+export interface Git extends EventEmitter<GitEvents> {
+  init: (githubInfo: Github, dir?: string) => Promise<void>;
+  push: (files: string[], force: boolean) => Promise<void>;
+}
+
+export interface Generator extends EventEmitter<GeneratorEvents> {
   generateSite: () => Promise<string[]>;
-  getProgress: () => Promise<GeneratingProgress>;
   getOutputDir: () => Promise<string>;
 }
 
@@ -38,8 +45,6 @@ export class PublishService {
   private readonly generator = container.resolve(generatorToken);
   private readonly git = container.resolve(gitClientToken);
   private files: string[] = [];
-  private generatingTimer: number | null = null;
-  private publishingTimer: number | null = null;
   readonly githubInfo: Ref<Github | null> = ref(null);
   readonly isGenerating = ref(false);
   readonly isPublishing = ref(false);
@@ -57,6 +62,16 @@ export class PublishService {
   }
 
   private async init() {
+    this.git.on(GitEvents.AUTH_FAIL, () => {
+      this.publishingProgress.message = GitEvents.AUTH_FAIL;
+    });
+
+    this.git.on(GitEvents.PROGRESS, this.refreshPublishingProgress.bind(this));
+    this.git.on(GitEvents.MESSAGE, (e) => {
+      this.publishingProgress.message = e;
+    });
+    this.generator.on(GeneratorEvents.PAGE_GENERATED, this.refreshGeneratingProgress.bind(this));
+
     this.githubInfo.value = {
       userName: '',
       repositoryName: '',
@@ -67,7 +82,7 @@ export class PublishService {
     this.outputDir.value = await this.generator.getOutputDir();
 
     if (this.isGithubInfoValid.value) {
-      this.git.init(this.githubInfo.value);
+      this.git.init(this.githubInfo.value, this.outputDir.value);
     }
   }
 
@@ -98,10 +113,9 @@ export class PublishService {
     }
 
     this.isGenerating.value = true;
-    await this.refreshGeneratingProgress(true);
+    this.refreshGeneratingProgress();
 
     try {
-      this.generatingTimer = setInterval(this.refreshGeneratingProgress.bind(this), 100);
       const files = await this.generator.generateSite();
       this.files = files;
       this.generatingProgress.result = 'success';
@@ -111,28 +125,18 @@ export class PublishService {
       this.generatingProgress.message = (error as Error).message;
     } finally {
       this.isGenerating.value = false;
-      if (this.generatingTimer) {
-        clearInterval(this.generatingTimer);
-      }
-      this.refreshGeneratingProgress();
     }
   }
 
-  async refreshGeneratingProgress(reset = false) {
-    Object.assign(
-      this.generatingProgress,
-      reset ? initialGeneratingProgress : await this.generator.getProgress(),
-    );
+  async refreshGeneratingProgress(progress: GeneratingProgress = initialGeneratingProgress) {
+    Object.assign(this.generatingProgress, progress);
   }
 
-  async refreshPublishingProgress(reset = false) {
-    Object.assign(
-      this.publishingProgress,
-      reset ? { ...initialPublishProgress, result: null } : await this.git.getProgress(),
-    );
+  async refreshPublishingProgress(progress: PublishingProgress = initialPublishProgress) {
+    Object.assign(this.publishingProgress, progress);
   }
 
-  async gitPush(force = false) {
+  async publish(force = false) {
     if (this.isPublishing.value) {
       return;
     }
@@ -159,9 +163,9 @@ export class PublishService {
       }
     }
 
+    this.refreshGeneratingProgress();
+    this.refreshPublishingProgress();
     this.isPublishing.value = true;
-    await this.refreshPublishingProgress(true);
-    this.publishingTimer = setInterval(this.refreshPublishingProgress.bind(this), 100);
 
     try {
       await this.git.push(this.files, force);
@@ -171,7 +175,6 @@ export class PublishService {
       this.publishingProgress.message = (error as Error).message;
     } finally {
       this.isPublishing.value = false;
-      clearInterval(this.publishingTimer);
     }
   }
 }

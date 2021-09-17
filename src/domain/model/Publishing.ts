@@ -28,9 +28,10 @@ export const initialGeneratingProgress: Required<GeneratingProgress> = {
   message: '',
 } as const;
 
-export const initialPublishProgress: PublishingProgress = {
+export const initialPublishProgress: Required<PublishingProgress> = {
   phase: '',
   message: '',
   loaded: 0,
   total: 0,
+  result: null,
 } as const;
