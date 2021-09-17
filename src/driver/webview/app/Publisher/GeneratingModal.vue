@@ -40,7 +40,7 @@ export default defineComponent({
 });
 </script>
 <template>
-  <Modal v-model:visible="visible" v-bind="modalProps">
+  <Modal :visible="visible" v-bind="modalProps">
     <Progress
       v-if="isGenerating"
       :percent="(progress.generatedPages / progress.totalPages) * 100"

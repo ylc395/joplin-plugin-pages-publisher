@@ -130,7 +130,7 @@ export default defineComponent({
     </CollapsePanel>
   </Collapse>
   <Modal
-    v-model:visible="isEditing"
+    :visible="isEditing"
     :getContainer="getModalContainer"
     :closable="false"
     :maskClosable="false"
@@ -139,7 +139,7 @@ export default defineComponent({
     <Edit />
   </Modal>
   <Modal
-    v-model:visible="isViewingDiff"
+    :visible="isViewingDiff"
     :getContainer="getModalContainer"
     :maskClosable="false"
     :footer="null"

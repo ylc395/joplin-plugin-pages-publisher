@@ -40,7 +40,7 @@ export default defineComponent({
 });
 </script>
 <template>
-  <Modal v-model:visible="visible" v-bind="modalProps">
+  <Modal :visible="visible" v-bind="modalProps">
     <template v-if="isPublishing">
       <div>{{ progress.phase || 'Publishing...' }}</div>
       <Progress :percent="(progress.loaded / progress.total) * 100" :showInfo="false" />

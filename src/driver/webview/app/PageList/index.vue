@@ -45,7 +45,7 @@ export default defineComponent({
       </div>
     </div>
     <Modal
-      v-model:visible="isCustomizing"
+      :visible="isCustomizing"
       :getContainer="getModalContainer"
       :maskClosable="false"
       :closable="false"
