@@ -31,20 +31,24 @@ export class ArticleService {
     const articles = sortBy(await this.pluginDataRepository.getArticles(), ['createdAt']).reverse();
 
     if (articles) {
-      const notes = await Promise.all(
-        articles.map(({ noteId }) => this.joplinDataRepository.getNote(noteId)),
-      );
-
-      for (let i = 0; i < notes.length; i++) {
-        const note = notes[i];
-        const article = articles[i];
-
-        article.note = note;
-        article.syncStatus = getSyncStatus(article, note);
-      }
+      await this.associateNotes(articles);
     }
 
     this.articles.push(...(articles ?? []));
+  }
+
+  private async associateNotes(articles: Article[]) {
+    const notes = await Promise.all(
+      articles.map(({ noteId }) => this.joplinDataRepository.getNote(noteId)),
+    );
+
+    for (let i = 0; i < notes.length; i++) {
+      const note = notes[i];
+      const article = articles[i];
+
+      article.note = note;
+      article.syncStatus = getSyncStatus(article);
+    }
   }
 
   saveArticles() {
@@ -106,6 +110,7 @@ export class ArticleService {
       throw new Error('can not find article');
     }
 
+    article.syncStatus = getSyncStatus(article);
     const result = mapValues(article, (value) => {
       if (moment.isMoment(value)) {
         return value.valueOf();

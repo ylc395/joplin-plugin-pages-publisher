@@ -31,13 +31,10 @@ export const REQUIRED_KEYS: (keyof Article)[] = [
   'title',
 ];
 
-export function getSyncStatus(
-  article: Article,
-  note: Note | null,
-): Required<Article>['syncStatus'] {
-  if (!note) {
+export function getSyncStatus(article: Partial<Article>): Required<Article>['syncStatus'] {
+  if (!article.note) {
     return 'deleted';
   }
 
-  return article.content === note.body ? 'synced' : 'diff';
+  return article.content === article.note.body ? 'synced' : 'diff';
 }
