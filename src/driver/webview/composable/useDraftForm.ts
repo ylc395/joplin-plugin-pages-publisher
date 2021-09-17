@@ -77,7 +77,7 @@ export function useDraftForm<T = Data>(
   });
 
   const resetFields = () => {
-    _resetFields(origin.value || undefined);
+    _resetFields(cloneDeepWith(origin.value, customClone) || undefined);
     nextTick(() => validate().catch(noop));
   };
 
