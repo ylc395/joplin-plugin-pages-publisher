@@ -24,7 +24,7 @@ export enum GitEvents {
 }
 
 export interface Git extends EventEmitter<GitEvents> {
-  init: (githubInfo: Github, dir?: string) => Promise<void>;
+  init: (githubInfo: Github, dir: string) => Promise<void>;
   push: (files: string[], force: boolean) => Promise<void>;
 }
 
@@ -104,7 +104,7 @@ export class PublishService {
       throw new Error('no github info');
     }
 
-    this.git.init(this.githubInfo.value);
+    this.git.init(this.githubInfo.value, this.outputDir.value);
   }
 
   async generateSite() {

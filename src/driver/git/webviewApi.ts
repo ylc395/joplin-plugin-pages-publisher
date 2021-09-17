@@ -39,7 +39,7 @@ class Git extends EventEmitter<GitEvents> {
   }
   private initPromise: Promise<void> | null = null;
 
-  async init(githubInfo: Github, dir?: string) {
+  async init(githubInfo: Github, dir: string) {
     if (this.initPromise) {
       return this.initPromise;
     }
