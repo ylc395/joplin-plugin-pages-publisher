@@ -57,9 +57,10 @@ export default defineComponent({
             <p>{{ message }}</p>
             <p>
               <template v-if="!isAuthError"
-                >This is an unexpected error, you can report it as a Github issue.
+                >This is an unexpected error, you can report it as a Github issue. You may retry, or
+                restart Joplin and try publishing again.
               </template>
-              If you are a Git user, you can use Git manually to continue publishing.
+              Or if you are a Git user, you can use Git manually to continue publishing.
               <a
                 href="https://github.com/ylc395/joplin-plugin-page-publisher/blob/master/docs/how-to-use-git-manually.md"
                 target="_blank"
@@ -70,7 +71,9 @@ export default defineComponent({
           <div v-else-if="githubInfo">
             Please Check
             <strong class="text-black"
-              >https://github.com/{{ githubInfo.userName }}/{{ githubInfo.repositoryName }}</strong
+              >https://github.com/{{ githubInfo.userName }}/{{ githubInfo.repositoryName }}/tree/{{
+                githubInfo.branch || 'master'
+              }}</strong
             >
           </div>
         </template>

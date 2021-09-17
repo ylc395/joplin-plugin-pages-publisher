@@ -9,6 +9,8 @@ import {
   listFiles,
   clone,
   remove,
+  listBranches,
+  branch,
 } from 'isomorphic-git';
 import http from 'isomorphic-git/http/web';
 import fs from '../fs/webviewApi';
@@ -64,19 +66,19 @@ class Git extends EventEmitter<GitEvents> {
       throw new Error('no github info');
     }
 
-    await fs.promises.emptyDir(this.gitdir);
-    await fs.promises.emptyDir(this.dir);
+    const { dir, gitdir } = this;
+
+    await fs.promises.emptyDir(gitdir);
+    await fs.promises.emptyDir(dir);
 
     await clone({
       fs,
       http,
-      dir: this.dir,
-      gitdir: this.gitdir,
+      dir,
+      gitdir,
       url: this.remoteUrl,
-      ref: this.githubInfo.branch,
       remote: Git.remote,
       depth: 1,
-      singleBranch: true,
       noCheckout: true,
       onAuth: this.handleAuth,
       onMessage: this.handleMessage,
@@ -84,9 +86,16 @@ class Git extends EventEmitter<GitEvents> {
       onAuthFailure: this.handleAuthFail,
     });
 
+    const branches = await listBranches({ fs, dir, gitdir });
+    const { branch: branchName = 'master' } = this.githubInfo;
+
+    if (!branches.includes(branchName)) {
+      await branch({ fs, dir, gitdir, ref: branchName });
+    }
+
     const { userName, email } = this.githubInfo;
-    await setConfig({ fs, gitdir: this.gitdir, path: 'user.name', value: userName });
-    await setConfig({ fs, gitdir: this.gitdir, path: 'user.email', value: email });
+    await setConfig({ fs, gitdir, path: 'user.name', value: userName });
+    await setConfig({ fs, gitdir, path: 'user.email', value: email });
   }
 
   async push(files: string[], force: boolean) {
@@ -99,7 +108,7 @@ class Git extends EventEmitter<GitEvents> {
 
     await add({ fs, gitdir, dir, filepath: '.' });
 
-    const filesExisted = await listFiles({ fs, gitdir, dir, ref: 'HEAD' });
+    const filesExisted = await listFiles({ fs, gitdir, dir, ref: githubInfo.branch });
     const files_ = files.map((path) => path.replace(`${dir}/`, ''));
     const deletedFiles = difference(filesExisted, files_);
 
@@ -107,7 +116,7 @@ class Git extends EventEmitter<GitEvents> {
       await remove({ fs, dir, gitdir, filepath: deletedFile });
     }
 
-    await commit({ fs, gitdir, message: 'test' });
+    await commit({ fs, gitdir, message: 'test', ref: githubInfo.branch });
     await push({
       fs,
       http,
