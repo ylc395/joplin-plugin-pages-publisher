@@ -70,10 +70,9 @@ export default defineComponent({
           </div>
           <div v-else-if="githubInfo">
             Please Check
-            <strong class="text-black"
-              >https://github.com/{{ githubInfo.userName }}/{{ githubInfo.repositoryName }}/tree/{{
-                githubInfo.branch || 'master'
-              }}</strong
+            <span class="text-gray-400"
+              >https://github.com/{{ githubInfo.userName }}/{{ githubInfo.repositoryName
+              }}{{ githubInfo.branch ? `/tree/${githubInfo.branch}` : '' }}</span
             >
           </div>
         </template>

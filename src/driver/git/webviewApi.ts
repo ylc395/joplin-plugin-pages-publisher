@@ -27,25 +27,18 @@ declare const webviewApi: {
 
 class Git extends EventEmitter<GitEvents> {
   private static readonly remote = 'github';
+  private static getRemoteUrl(userName: string, repoName: string) {
+    return `https://github.com/${userName}/${repoName}.git`;
+  }
   private dir?: string;
   private gitdir?: string;
   private githubInfo?: Github;
-  private get remoteUrl() {
-    if (!this.githubInfo) {
-      throw new Error('no github info');
-    }
-    return `https://github.com/${this.githubInfo.userName}/${this.githubInfo.repositoryName}.git`;
-  }
   private getGitRepositoryDir() {
     return webviewApi.postMessage<string>({ event: 'getGitRepositoryDir' });
   }
-  private initPromise: Promise<void> | null = null;
+  private initPromise: Promise<void> = Promise.resolve();
 
   async init(githubInfo: Github, dir: string) {
-    if (this.initPromise) {
-      return this.initPromise;
-    }
-
     if (dir) {
       this.dir = dir;
     }
@@ -54,16 +47,19 @@ class Git extends EventEmitter<GitEvents> {
       this.gitdir = await this.getGitRepositoryDir();
     }
 
-    this.githubInfo = githubInfo;
-    this.initPromise = this.initRepo();
-    this.initPromise.then(() => (this.initPromise = null));
-
+    this.initPromise = this.initPromise.then(() => this.initRepo(githubInfo));
     return this.initPromise;
   }
 
-  private async initRepo() {
-    if (!this.githubInfo || !this.gitdir || !this.dir) {
-      throw new Error('no github info');
+  private async initRepo({
+    branch: branchName = 'master',
+    userName,
+    repositoryName,
+    email,
+    token,
+  }: Github) {
+    if (!this.gitdir || !this.dir) {
+      throw new Error('no dir info');
     }
 
     const { dir, gitdir } = this;
@@ -71,38 +67,49 @@ class Git extends EventEmitter<GitEvents> {
     await fs.promises.emptyDir(gitdir);
     await fs.promises.emptyDir(dir);
 
-    await clone({
-      fs,
-      http,
-      dir,
-      gitdir,
-      url: this.remoteUrl,
-      remote: Git.remote,
-      depth: 1,
-      noCheckout: true,
-      onAuth: this.handleAuth,
-      onMessage: this.handleMessage,
-      onProgress: this.handleProgress,
-      onAuthFailure: this.handleAuthFail,
-    });
+    if (
+      this.githubInfo?.userName !== userName ||
+      this.githubInfo?.token !== token ||
+      this.githubInfo?.repositoryName !== repositoryName
+    ) {
+      await clone({
+        fs,
+        http,
+        dir,
+        gitdir,
+        url: Git.getRemoteUrl(userName, repositoryName),
+        remote: Git.remote,
+        depth: 1,
+        noCheckout: true,
+        onAuth: () => ({ username: userName, password: token }),
+        onMessage: this.handleMessage,
+        onProgress: this.handleProgress,
+        onAuthFailure: this.handleAuthFail,
+      });
+    }
 
     const branches = await listBranches({ fs, dir, gitdir });
-    const { branch: branchName = 'master' } = this.githubInfo;
 
     if (!branches.includes(branchName)) {
       await branch({ fs, dir, gitdir, ref: branchName });
     }
 
-    const { userName, email } = this.githubInfo;
-    await setConfig({ fs, gitdir, path: 'user.name', value: userName });
-    await setConfig({ fs, gitdir, path: 'user.email', value: email });
+    if (this.githubInfo?.userName !== userName) {
+      await setConfig({ fs, gitdir, path: 'user.name', value: userName });
+    }
+
+    if (this.githubInfo?.email !== email) {
+      await setConfig({ fs, gitdir, path: 'user.email', value: email });
+    }
+
+    this.githubInfo = { branch: branchName, email, userName, repositoryName, token };
   }
 
   async push(files: string[], force: boolean) {
     await this.initPromise;
-    const { dir, gitdir, remoteUrl: url, githubInfo } = this;
+    const { dir, gitdir, githubInfo } = this;
 
-    if (!dir || !gitdir || !url || !githubInfo) {
+    if (!dir || !gitdir || !githubInfo) {
       throw new Error('no github info');
     }
 
@@ -126,7 +133,7 @@ class Git extends EventEmitter<GitEvents> {
       ref: githubInfo.branch,
       remoteRef: githubInfo.branch,
       remote: Git.remote,
-      url,
+      url: Git.getRemoteUrl(githubInfo.userName, githubInfo.repositoryName),
       onAuth: this.handleAuth,
       onMessage: this.handleMessage,
       onProgress: this.handleProgress,

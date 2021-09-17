@@ -100,8 +100,8 @@ export class PublishService {
       omit(toRaw(Object.assign(this.githubInfo.value, githubInfo_)), ['token']),
     );
 
-    if (!this.githubInfo.value) {
-      throw new Error('no github info');
+    if (!this.isGithubInfoValid.value || !this.githubInfo.value) {
+      throw new Error('invalid github info');
     }
 
     this.git.init(this.githubInfo.value, this.outputDir.value);
@@ -142,7 +142,7 @@ export class PublishService {
     }
 
     if (!this.isGithubInfoValid.value) {
-      throw new Error('no github info');
+      throw new Error('invalid github info');
     }
 
     if (force) {
