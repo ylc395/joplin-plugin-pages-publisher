@@ -50,7 +50,7 @@ export class PageService {
   }
 
   isValidUrl(url: string, pageName: string) {
-    if (!isValidFilename(url) || url.startsWith('_assets')) {
+    if (!isValidFilename(url) || url.startsWith('_')) {
       return false;
     }
 
