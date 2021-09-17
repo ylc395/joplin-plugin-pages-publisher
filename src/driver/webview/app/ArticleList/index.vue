@@ -131,6 +131,7 @@ export default defineComponent({
   </Collapse>
   <Modal
     :visible="isEditing"
+    :destroyOnClose="true"
     :getContainer="getModalContainer"
     :closable="false"
     :maskClosable="false"

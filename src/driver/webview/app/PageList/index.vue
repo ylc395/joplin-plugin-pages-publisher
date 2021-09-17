@@ -46,6 +46,7 @@ export default defineComponent({
     </div>
     <Modal
       :visible="isCustomizing"
+      :destroyOnClose="true"
       :getContainer="getModalContainer"
       :maskClosable="false"
       :closable="false"
