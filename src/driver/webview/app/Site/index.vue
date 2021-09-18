@@ -29,7 +29,7 @@ export default defineComponent({
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(siteToken)!;
 
-    const { hasThemeFields, customFieldRules, customFields } = useSiteEdit();
+    const { customFieldRules, customFields } = useSiteEdit();
 
     const { modelRef, validateInfos, save, canSave, isModified, isValid, resetFields } =
       useDraftForm(site, saveSite, (data) => ({
@@ -54,7 +54,7 @@ export default defineComponent({
       modelRef,
       save,
       canSave,
-      hasThemeFields,
+      customFields,
       handleSelect,
       selectedThemeName,
       isModified,
@@ -67,7 +67,7 @@ export default defineComponent({
   <div class="px-6">
     <Form :labelCol="{ span: 4 }">
       <FormItem label="Theme" v-bind="validateInfos.themeName">
-        <Select v-model:value="selectedThemeName" @change="handleSelect">
+        <Select :value="selectedThemeName" @change="handleSelect">
           <SelectOption v-for="{ name } of themes" :key="name">{{ name }}</SelectOption>
         </Select>
       </FormItem>
@@ -78,7 +78,7 @@ export default defineComponent({
         <InputNumber v-model:value="modelRef.feedLength" :min="1" />
       </FormItem>
     </Form>
-    <FieldForm v-if="hasThemeFields" class="mt-10" />
+    <FieldForm v-if="customFields.length > 0" class="mt-10" />
     <div class="text-right">
       <Button v-if="isModified" class="mr-3" @click="resetFields">Reset</Button>
       <Button type="primary" :disabled="!canSave" @click="save">Save</Button>

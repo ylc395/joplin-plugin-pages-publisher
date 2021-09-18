@@ -10,14 +10,7 @@ import { isUnset } from '../../utils';
 export function useSiteEdit() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { themeConfig } = inject(siteToken)!;
-  const hasThemeFields = computed(() => Boolean(themeConfig.value?.siteFields?.length));
   const customFields = computed(() => {
-    const themeName = themeConfig.value?.name;
-
-    if (!themeName) {
-      return [];
-    }
-
     return themeConfig.value?.siteFields ?? [];
   });
   const customFieldRules = computed(() => {
@@ -27,13 +20,9 @@ export function useSiteEdit() {
       return {};
     }
 
-    return (themeConfig.value?.siteFields ?? []).reduce((result, field) => {
+    return customFields.value.reduce((result, field) => {
       if (field.rules) {
-        result[`custom.${themeName}.${field.name}`] = field.rules?.map((rule) =>
-          rule.required
-            ? { ...rule, message: rule.message || `${field.label || field.name} is Required` }
-            : rule,
-        );
+        result[`custom.${themeName}.${field.name}`] = field.rules;
       }
 
       return result;
@@ -41,7 +30,6 @@ export function useSiteEdit() {
   });
 
   return {
-    hasThemeFields,
     customFieldRules,
     customFields,
   };
@@ -147,14 +135,15 @@ export function useSelectTheme(siteModelRef: Ref<Partial<Site>>) {
       pickBy(siteModelRef.value.custom[currentThemeName], negate(isUnset)),
     );
 
-    const onFail = () => {
-      selectedThemeName.value = currentThemeName;
-      return Promise.resolve();
-    };
-
-    const onSuccess = () => {
+    const onSuccess = async () => {
       siteModelRef.value.themeName = themeName;
-      return loadTheme(themeName).catch(onFail);
+      selectedThemeName.value = themeName;
+
+      try {
+        await loadTheme(themeName);
+      } catch {
+        selectedThemeName.value = currentThemeName;
+      }
     };
 
     if (isModified) {
@@ -162,7 +151,6 @@ export function useSelectTheme(siteModelRef: Ref<Partial<Site>>) {
         content:
           'Change a theme will drop all your modification on theme fields that has not been saved. Continue to change?',
         onOk: onSuccess,
-        onCancel: onFail,
       });
     } else {
       onSuccess();
