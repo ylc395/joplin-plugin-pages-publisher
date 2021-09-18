@@ -11,6 +11,7 @@ import {
   has,
   set,
   noop,
+  isFunction,
 } from 'lodash';
 import { Ref, computed, ref, watchEffect, nextTick, watch } from 'vue';
 import { isUnset } from '../utils';
@@ -50,7 +51,7 @@ export function useDraftForm<T = Data>(
     }
   });
 
-  const rules_ = typeof rules === 'function' ? computed(() => rules(draftModel.value)) : rules;
+  const rules_ = isFunction(rules) ? computed(() => rules(draftModel.value)) : rules;
 
   // todo: if ant-design-vue support validating non-existed props, following code can be removed
   if (rules_) {
