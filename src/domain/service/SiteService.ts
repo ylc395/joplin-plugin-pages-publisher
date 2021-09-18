@@ -4,7 +4,7 @@ import { Theme, DEFAULT_THEME_NAME } from '../model/Theme';
 import { Site, DEFAULT_SITE } from '../model/Site';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { AppService } from './AppService';
-import { merge } from 'lodash';
+import { merge, noop, set, defaults, cloneDeep } from 'lodash';
 
 export const token: InjectionKey<SiteService> = Symbol('siteService');
 @singleton()
@@ -27,7 +27,29 @@ export class SiteService {
     };
 
     const { themeName } = this.site.value;
-    await this.loadTheme(themeName);
+    await this.loadTheme(themeName).catch(noop);
+  }
+
+  private readonly initializedThemeNames = new Set();
+  private initCustomValues(themeConfig: Theme) {
+    const themeName = themeConfig.name;
+
+    if (!themeConfig.siteFields || this.initializedThemeNames.has(themeName)) {
+      return;
+    }
+
+    if (!this.site.value) {
+      throw new Error('no site info');
+    }
+
+    const defaultCustom = {};
+
+    for (const field of themeConfig.siteFields) {
+      set(defaultCustom, field.name, null);
+    }
+
+    defaults(this.site.value.custom[themeName], defaultCustom);
+    this.initializedThemeNames.add(themeName);
   }
 
   async loadTheme(themeName: string) {
@@ -37,13 +59,12 @@ export class SiteService {
 
     try {
       this.themeConfig.value = await this.pluginDataRepository.getTheme(themeName);
-
-      if (!this.site.value.custom[themeName]) {
-        this.site.value.custom[themeName] = {};
-      }
+      this.initCustomValues(this.themeConfig.value);
     } catch (error) {
-      this.themeConfig.value =
-        this.themeConfig.value || (await this.pluginDataRepository.getTheme(DEFAULT_THEME_NAME));
+      if (!this.themeConfig.value) {
+        this.themeConfig.value = await this.pluginDataRepository.getTheme(DEFAULT_THEME_NAME);
+      }
+
       this.appService.openModal({
         type: 'error',
         title: 'Fail to load theme',

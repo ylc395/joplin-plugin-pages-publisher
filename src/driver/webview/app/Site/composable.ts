@@ -51,24 +51,27 @@ export function useCustomFieldModel(siteModelRef: Ref<Partial<Site>>) {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { site, themeConfig } = inject(siteToken)!;
   watch(themeConfig, (theme, oldTheme) => {
-    if (!theme || !site.value) {
-      throw new Error('no site or theme');
-    }
-
-    if (!siteModelRef.value.custom) {
+    if (!oldTheme) {
       return;
     }
 
-    if (oldTheme) {
-      siteModelRef.value.custom[theme.name] = cloneDeep(site.value.custom[theme.name]) ?? {};
-      siteModelRef.value.custom[oldTheme.name] = cloneDeep(site.value.custom[oldTheme.name]) ?? {};
+    if (!site.value || !siteModelRef.value.custom) {
+      throw new Error('no site or theme');
     }
+
+    // discard all modification of draft after themeConfig changed
+    siteModelRef.value.custom[oldTheme.name] = cloneDeep(site.value.custom[oldTheme.name]) ?? {};
   });
 
   return computed(() => {
     const themeName = themeConfig.value?.name;
-    if (!themeName || !site.value || !siteModelRef.value.custom) {
+
+    if (!themeName) {
       return {};
+    }
+
+    if (!siteModelRef.value.custom) {
+      throw new Error('no custom values in site');
     }
 
     return siteModelRef.value.custom[themeName] ?? {};
@@ -125,6 +128,10 @@ export function useSelectTheme(siteModelRef: Ref<Partial<Site>>) {
   });
 
   const handleSelect = (themeName: string) => {
+    if (themeName === siteModelRef.value.themeName) {
+      return;
+    }
+
     if (!site.value?.custom || !siteModelRef.value.custom) {
       throw new Error('no custom fields');
     }
@@ -146,6 +153,8 @@ export function useSelectTheme(siteModelRef: Ref<Partial<Site>>) {
     };
     const onSuccess = () => {
       siteModelRef.value.themeName = themeName;
+      selectedThemeName.value = themeName;
+
       return loadTheme(themeName).catch(onFail);
     };
 

@@ -12,7 +12,7 @@ import {
   set,
   noop,
 } from 'lodash';
-import { Ref, computed, ref, watchEffect, nextTick } from 'vue';
+import { Ref, computed, ref, watchEffect, nextTick, watch } from 'vue';
 import { isUnset } from '../utils';
 
 type Data = Record<string, unknown>;
@@ -46,7 +46,7 @@ export function useDraftForm<T = Data>(
   const draftModel: Ref<Partial<T>> = ref({});
   watchEffect(() => {
     if (origin.value) {
-      draftModel.value = defaultsDeep(draftModel.value, cloneDeepWith(origin.value, customClone));
+      defaultsDeep(draftModel.value, cloneDeepWith(origin.value, customClone));
     }
   });
 
@@ -101,7 +101,15 @@ export function useDraftForm<T = Data>(
     await saveFunc(draftModel.value);
   };
 
-  const isModified = computed(() => !isEqualWith(draftModel.value, origin.value, customEqual_));
+  const isModified = ref(false);
+  watch(
+    [draftModel, origin],
+    () => {
+      isModified.value = !isEqualWith(draftModel.value, origin.value, customEqual_);
+    },
+    { immediate: true, deep: true },
+  );
+
   const isValid = computed(() => every(validateInfos, { validateStatus: 'success' }));
   const canSave = computed(() => isModified.value && !isEmpty(draftModel.value) && isValid.value);
 
