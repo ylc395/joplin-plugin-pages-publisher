@@ -1,7 +1,7 @@
 import { computed, Ref, watch, inject, watchEffect, ref } from 'vue';
 import type { validateInfos } from 'ant-design-vue/lib/form/useForm';
 import { Modal } from 'ant-design-vue';
-import { pick, mapKeys, cloneDeep, constant, isEqual, pickBy, negate } from 'lodash';
+import { pick, mapKeys, cloneDeep, isEqual, pickBy, negate } from 'lodash';
 import { token as siteToken } from '../../../../domain/service/SiteService';
 import { token as appToken, FORBIDDEN } from '../../../../domain/service/AppService';
 import type { Site } from '../../../../domain/model/Site';
@@ -151,18 +151,16 @@ export function useSelectTheme(siteModelRef: Ref<Partial<Site>>) {
       selectedThemeName.value = currentThemeName;
       return Promise.resolve();
     };
+
     const onSuccess = () => {
       siteModelRef.value.themeName = themeName;
-      selectedThemeName.value = themeName;
-
       return loadTheme(themeName).catch(onFail);
     };
 
     if (isModified) {
       Modal.confirm({
-        content: constant(
+        content:
           'Change a theme will drop all your modification on theme fields that has not been saved. Continue to change?',
-        ),
         onOk: onSuccess,
         onCancel: onFail,
       });

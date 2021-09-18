@@ -1,10 +1,10 @@
 import { container, singleton } from 'tsyringe';
+import { merge, noop, set, defaults } from 'lodash';
 import { Ref, shallowRef, InjectionKey, ref, toRaw } from 'vue';
 import { Theme, DEFAULT_THEME_NAME } from '../model/Theme';
 import { Site, DEFAULT_SITE } from '../model/Site';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { AppService } from './AppService';
-import { merge, noop, set, defaults, cloneDeep } from 'lodash';
 
 export const token: InjectionKey<SiteService> = Symbol('siteService');
 @singleton()

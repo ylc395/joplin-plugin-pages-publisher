@@ -67,7 +67,7 @@ export default defineComponent({
   <div class="px-6">
     <Form :labelCol="{ span: 4 }">
       <FormItem label="Theme" v-bind="validateInfos.themeName">
-        <Select v-model:value="selectedThemeName" @select="handleSelect">
+        <Select v-model:value="selectedThemeName" @change="handleSelect">
           <SelectOption v-for="{ name } of themes" :key="name">{{ name }}</SelectOption>
         </Select>
       </FormItem>

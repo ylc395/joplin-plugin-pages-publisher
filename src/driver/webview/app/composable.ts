@@ -1,7 +1,6 @@
 import { ref, watch, provide, InjectionKey } from 'vue';
 import { message } from 'ant-design-vue';
 import { AppService, FORBIDDEN } from '../../../domain/service/AppService';
-import { openModal } from '../utils/webviewApi';
 
 export const activeTabToken: InjectionKey<ReturnType<typeof useActiveTabPane>> = Symbol();
 export function useActiveTabPane({ getLatestWarning }: AppService) {

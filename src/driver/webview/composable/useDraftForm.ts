@@ -81,21 +81,6 @@ export function useDraftForm<T = Data>(
     nextTick(() => validate().catch(noop));
   };
 
-  // todo: first validating doesn't work. see https://github.com/vueComponent/ant-design-vue/pull/4646/
-  // when merged, remove following code
-  let validated = false;
-  const stopValidate = watchEffect(() => {
-    if (validated) {
-      stopValidate();
-      return;
-    }
-
-    if (!isEmpty(draftModel.value)) {
-      validated = true;
-      validate();
-    }
-  });
-
   const save = async () => {
     await validate();
     await saveFunc(draftModel.value);
