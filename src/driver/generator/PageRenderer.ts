@@ -1,4 +1,4 @@
-import _, { pick, isString, mapValues, merge, filter, sortBy } from 'lodash';
+import _, { pick, isString, mapValues, defaultsDeep, filter, sortBy } from 'lodash';
 import ejs from 'ejs';
 import moment from 'moment';
 import { container } from 'tsyringe';
@@ -38,13 +38,13 @@ ejs.fileLoader = readFileSync;
 const db = container.resolve(Db);
 const articleValidator = new Ajv().compile<Article>(ARTICLE_SCHEMA);
 const validateArticle = getValidator(articleValidator, 'Invalid article');
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Data = Readonly<Record<string, any>>;
+
+type Data = Readonly<Record<string, unknown>>;
 
 export class PageRenderer {
   private site?: Required<Site>;
   private markdownRenderer?: MarkdownRenderer;
-  private pageFieldValues?: Record<string, unknown>;
+  private pageFieldValues?: Record<string, Record<string, unknown> | undefined>;
   private themeDir?: string;
   private outputDir?: string;
   private pages?: Theme['pages'];
@@ -98,8 +98,7 @@ export class PageRenderer {
 
     const pagesFieldVars = (await db.fetch<Data>(['pagesFieldVars', themeName])) || {};
     const defaultFieldVars = mapValues(themeConfig.pages, (fields, pageName) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const allFields = [...fields!, ...(PREDEFINED_FIELDS[pageName] || [])];
+      const allFields = [...(fields || []), ...(PREDEFINED_FIELDS[pageName] || [])];
       return allFields.reduce((vars, field) => {
         vars[field.name] = field.defaultValue ?? '';
 
@@ -107,7 +106,7 @@ export class PageRenderer {
       }, {} as Record<string, unknown>);
     });
 
-    this.pageFieldValues = merge(defaultFieldVars, pagesFieldVars);
+    this.pageFieldValues = defaultsDeep(pagesFieldVars, defaultFieldVars);
     this.pages = themeConfig.pages;
   }
 
@@ -122,7 +121,12 @@ export class PageRenderer {
       throw new Error('no site when rendering');
     }
 
-    const values = this.pageFieldValues[pageName] as Record<string, unknown>;
+    const values = this.pageFieldValues[pageName];
+
+    if (!values) {
+      throw new Error(`no field values in ${pageName}`);
+    }
+
     const { themeName } = this.site;
     const templatePath = `${this.themeDir}/templates/${pageName}.ejs`;
     const siteData = {

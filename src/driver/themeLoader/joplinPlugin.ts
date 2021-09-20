@@ -17,7 +17,10 @@ const themeValidator = new Ajv()
   .addFormat('validPageUrl', (str) => isValidFilename(str) && !str.startsWith('_'))
   .compile<Theme>(THEME_SCHEMA);
 
-const validateTheme = getValidator(themeValidator, 'Invalid config.js');
+const validateTheme: (data: unknown) => asserts data is Theme = getValidator(
+  themeValidator,
+  'Invalid config.js',
+);
 
 async function loadDefault(): Promise<Theme> {
   return readJson(`${await getThemeDir(DEFAULT_THEME_NAME)}/config.json`);
