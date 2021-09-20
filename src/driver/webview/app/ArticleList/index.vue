@@ -1,5 +1,5 @@
 <script lang="ts">
-import { computed, defineComponent, ref, inject } from 'vue';
+import { computed, defineComponent, inject } from 'vue';
 import { filter } from 'lodash';
 import { Button, Collapse, Modal, Alert } from 'ant-design-vue';
 import CardList from './CardList.vue';
@@ -10,6 +10,7 @@ import { token as articleToken } from '../../../../domain/service/ArticleService
 import { token as pageToken } from '../../../../domain/service/PageService';
 import { useEdit } from './useEdit';
 import { useDiff } from './useDiff';
+import { usePanel } from './usePanel';
 
 export default defineComponent({
   components: {
@@ -36,13 +37,7 @@ export default defineComponent({
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { articlePage } = inject(pageToken)!;
     const { isEditing } = useEdit();
-
-    const activePanels = ref(['published', 'unpublished']);
-    const handleSubmit = () => {
-      if (!activePanels.value.includes('unpublished')) {
-        activePanels.value = [...activePanels.value, 'unpublished'];
-      }
-    };
+    const { handleSubmit, activePanels } = usePanel();
     const { isViewing: isViewingDiff, stopDiff: stopViewingDiff } = useDiff();
 
     return {
@@ -89,6 +84,7 @@ export default defineComponent({
   <Collapse v-model:activeKey="activePanels">
     <CollapsePanel
       key="published"
+      :disabled="publishedArticles.length === 0"
       :header="`Published${publishedArticles.length > 0 ? `(${publishedArticles.length})` : ''}`"
     >
       <template #extra>
@@ -108,6 +104,7 @@ export default defineComponent({
     </CollapsePanel>
     <CollapsePanel
       key="unpublished"
+      :disabled="unpublishedArticles.length === 0"
       :header="`Unpublished${
         unpublishedArticles.length > 0 ? `(${unpublishedArticles.length})` : ''
       }`"
