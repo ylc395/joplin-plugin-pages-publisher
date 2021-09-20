@@ -13,7 +13,7 @@ import {
   noop,
   isFunction,
 } from 'lodash';
-import { Ref, computed, ref, watchEffect, nextTick, watch } from 'vue';
+import { Ref, computed, ref, nextTick, watch } from 'vue';
 import { isUnset } from '../utils';
 
 type Data = Record<string, unknown>;
@@ -45,27 +45,43 @@ export function useDraftForm<T = Data>(
   };
 
   const draftModel: Ref<Partial<T>> = ref({});
-  watchEffect(() => {
-    if (origin.value) {
+  const isModified = ref(false);
+
+  watch(
+    origin,
+    () => {
       defaultsDeep(draftModel.value, cloneDeepWith(origin.value, customClone));
-    }
-  });
+    },
+    { immediate: true, deep: true },
+  );
+
+  watch(
+    [draftModel, origin],
+    () => {
+      isModified.value = !isEqualWith(draftModel.value, origin.value, customEqual_);
+    },
+    { immediate: true, deep: true },
+  );
 
   const rules_ = isFunction(rules) ? computed(() => rules(draftModel.value)) : rules;
 
   // todo: if ant-design-vue support validating non-existed props, following code can be removed
   if (rules_) {
-    watchEffect(() => {
-      if (!origin.value) {
-        return;
-      }
-
-      for (const name of Object.keys(rules_.value)) {
-        if (!has(draftModel.value, name)) {
-          set(draftModel.value, name, null);
+    watch(
+      rules_,
+      () => {
+        if (!origin.value) {
+          return;
         }
-      }
-    });
+
+        for (const name of Object.keys(rules_.value)) {
+          if (!has(draftModel.value, name)) {
+            set(draftModel.value, name, null);
+          }
+        }
+      },
+      { immediate: true },
+    );
   }
 
   const {
@@ -86,15 +102,6 @@ export function useDraftForm<T = Data>(
     await validate();
     await saveFunc(draftModel.value);
   };
-
-  const isModified = ref(false);
-  watch(
-    [draftModel, origin],
-    () => {
-      isModified.value = !isEqualWith(draftModel.value, origin.value, customEqual_);
-    },
-    { immediate: true, deep: true },
-  );
 
   const isValid = computed(() => every(validateInfos, { validateStatus: 'success' }));
   const canSave = computed(() => isModified.value && !isEmpty(draftModel.value) && isValid.value);

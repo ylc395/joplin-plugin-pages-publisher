@@ -136,11 +136,11 @@ export function useSelectTheme(siteModelRef: Ref<Partial<Site>>) {
     );
 
     const onSuccess = async () => {
-      siteModelRef.value.themeName = themeName;
       selectedThemeName.value = themeName;
 
       try {
         await loadTheme(themeName);
+        siteModelRef.value.themeName = themeName;
       } catch {
         selectedThemeName.value = currentThemeName;
       }
