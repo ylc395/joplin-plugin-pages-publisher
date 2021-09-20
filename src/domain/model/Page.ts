@@ -18,9 +18,10 @@ export interface Field {
     | 'checkbox'
     | 'date'
     | 'switch'
-    | 'image-picker'
     | 'number';
-  readonly options?: Array<Readonly<{ label: string; value: string; tip?: string }>>;
+
+  // valid when inputType is select, multiple-select, radio, checkbox
+  readonly options?: Array<Readonly<{ label: string; value: string }>>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
