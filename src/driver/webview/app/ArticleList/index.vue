@@ -85,12 +85,10 @@ export default defineComponent({
     <CollapsePanel
       key="published"
       :disabled="publishedArticles.length === 0"
-      :header="`Published${publishedArticles.length > 0 ? `(${publishedArticles.length})` : ''}`"
+      :header="`Published(${publishedArticles.length})`"
     >
       <template #extra>
-        <Button class="mr-1" size="small" type="primary" @click.stop="selectAll('published')"
-          >Select All</Button
-        >
+        <Button class="mr-1" size="small" @click.stop="selectAll('published')">Select All</Button>
 
         <Button
           size="small"
@@ -105,14 +103,10 @@ export default defineComponent({
     <CollapsePanel
       key="unpublished"
       :disabled="unpublishedArticles.length === 0"
-      :header="`Unpublished${
-        unpublishedArticles.length > 0 ? `(${unpublishedArticles.length})` : ''
-      }`"
+      :header="`Unpublished(${unpublishedArticles.length})`"
     >
       <template #extra>
-        <Button class="mr-1" size="small" type="primary" @click.stop="selectAll('unpublished')"
-          >Select All</Button
-        >
+        <Button class="mr-1" size="small" @click.stop="selectAll('unpublished')">Select All</Button>
         <Button
           type="primary"
           size="small"

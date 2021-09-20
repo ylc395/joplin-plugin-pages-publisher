@@ -86,13 +86,14 @@ export default defineComponent({
     </TabPane>
     <template #tabBarExtraContent>
       <Tooltip :title="warningForGenerating">
-        <Button :disabled="!!warningForGenerating" @click="generateSite">
+        <Button class="mr-2" :disabled="!!warningForGenerating" @click="generateSite">
           <template #icon><RocketOutlined /></template>
           Generate
         </Button>
       </Tooltip>
-      <Button class="border-0 mr-4" @click="quitApp">
+      <Button class="mr-4" @click="quitApp">
         <template #icon><CloseOutlined /></template>
+        Quit
       </Button>
     </template>
   </Tabs>

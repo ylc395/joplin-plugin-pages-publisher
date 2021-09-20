@@ -65,6 +65,7 @@ export default defineComponent({
 </script>
 <template>
   <div class="px-6">
+    <h2 class="text-gray-400">General Configuration</h2>
     <Form :labelCol="{ span: 4 }">
       <FormItem label="Theme" v-bind="validateInfos.themeName">
         <Select :value="selectedThemeName" @change="handleSelect">
@@ -78,7 +79,10 @@ export default defineComponent({
         <InputNumber v-model:value="modelRef.feedLength" :min="1" />
       </FormItem>
     </Form>
-    <FieldForm v-if="customFields.length > 0" class="mt-10" />
+    <template v-if="customFields.length > 0" class="mt-10">
+      <h2 class="text-gray-400">Theme customized Configuration</h2>
+      <FieldForm />
+    </template>
     <div class="text-right">
       <Button v-if="isModified" class="mr-3" @click="resetFields">Reset</Button>
       <Button type="primary" :disabled="!canSave" @click="save">Save</Button>

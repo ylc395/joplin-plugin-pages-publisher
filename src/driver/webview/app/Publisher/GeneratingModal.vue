@@ -59,7 +59,7 @@ export default defineComponent({
           <div v-else class="subTitle">
             <p>
               Site(<strong>{{ progress.message }}</strong
-              >) have been generated. The root directory is:
+              >) has been generated. The root directory is:
             </p>
             <p class="break-all text-black font-semibold">{{ outputDir }}</p>
             <p>
@@ -70,11 +70,11 @@ export default defineComponent({
               >)<template v-if="isGithubInfoValid"
                 >, or/and you can <strong>click "Publish" button</strong> to publish them to Github
                 directly.</template
-              ><template v-else
-                >. You can't publish your site to Github directly, because
-                <strong>you haven't filled/saved all your Github information correctly</strong
-                >.</template
-              >
+              ><template v-else>. </template>
+            </p>
+            <p v-if="!isGithubInfoValid">
+              You can't publish your site to Github directly, because
+              <strong>you haven't filled/saved all your Github information correctly</strong>.
             </p>
           </div>
         </template>
