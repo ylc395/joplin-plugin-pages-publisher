@@ -16,3 +16,21 @@ export function useFieldForm() {
 
   return { model, fields, validateInfos: computed(() => unref(validateInfos)) };
 }
+
+export function useLabelSpan() {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const { fields } = inject(token)!;
+  return computed(() => {
+    const maxLength = Math.max(...fields.value.map(({ name, label = name }) => label.length));
+
+    if (maxLength >= 15) {
+      return 24;
+    }
+
+    if (maxLength >= 10) {
+      return 6;
+    }
+
+    return 4;
+  });
+}

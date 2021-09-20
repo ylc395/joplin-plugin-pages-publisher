@@ -12,7 +12,7 @@ import {
   Input,
 } from 'ant-design-vue';
 import _sanitizeHtml from 'sanitize-html';
-import { useFieldForm } from './useFieldForm';
+import { useFieldForm, useLabelSpan } from './useFieldForm';
 
 const sanitizeHtml = (html: string) =>
   _sanitizeHtml(html, {
@@ -62,13 +62,14 @@ export default defineComponent({
     return {
       ...useFieldForm(),
       sanitizeHtml,
+      labelSpan: useLabelSpan(),
     };
   },
 });
 </script>
 
 <template>
-  <Form :labelCol="{ span: 4 }">
+  <Form :labelCol="{ span: labelSpan }">
     <FormItem
       v-for="field of fields"
       :key="field.name"
