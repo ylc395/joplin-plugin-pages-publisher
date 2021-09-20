@@ -1,5 +1,5 @@
-import { compact } from 'lodash';
-import { computed, reactive } from 'vue';
+import { compact, mapValues, map, filter, isString } from 'lodash';
+import { computed, reactive, toRaw } from 'vue';
 import type { Theme } from './Theme';
 
 export interface Field {
@@ -18,11 +18,14 @@ export interface Field {
     | 'checkbox'
     | 'date'
     | 'switch'
+    | 'markdown'
     | 'number';
 
   // valid when inputType is select, multiple-select, radio, checkbox
   readonly options?: Array<Readonly<{ label: string; value: string }>>;
 }
+
+export const MARKDOWN_CONTENT_PREFIX = 'markdown://';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Vars = Record<string, any>;
@@ -65,12 +68,40 @@ export class Page {
     fieldVars: Vars, // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
     private readonly themeConfig: Theme,
   ) {
-    this.fieldVars = reactive({
-      ...this.fields.reduce((result, filed) => {
+    this.fieldVars = reactive(
+      this.fields.reduce((result, filed) => {
         result[filed.name] = null;
         return result;
       }, {} as Vars),
-      ...fieldVars,
+    );
+
+    this.setValues(fieldVars);
+  }
+
+  get markdownFieldNames() {
+    return Page.getMarkdownFieldNames(this.fields);
+  }
+
+  setValues(values: Vars) {
+    Object.assign(
+      this.fieldVars,
+      mapValues(values, (value, key) => {
+        if (this.markdownFieldNames.includes(key) && isString(value)) {
+          return Page.trimMarkdownPrefix(value);
+        }
+
+        return value;
+      }),
+    );
+  }
+
+  outputValues() {
+    return mapValues(this.fieldVars, (value, key) => {
+      if (this.markdownFieldNames.includes(key) && isString(value)) {
+        return `${MARKDOWN_CONTENT_PREFIX}${value}`;
+      }
+
+      return toRaw(value);
     });
   }
 
@@ -81,4 +112,12 @@ export class Page {
 
     return `/${this.fieldVars.url || this.name}`;
   });
+
+  static getMarkdownFieldNames(field: Field[]) {
+    return map(filter(field, { inputType: 'markdown' }), 'name');
+  }
+
+  static trimMarkdownPrefix(content: string) {
+    return content.replace(new RegExp(`^${MARKDOWN_CONTENT_PREFIX}`, ''), '');
+  }
 }

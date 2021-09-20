@@ -97,7 +97,7 @@ export class MarkdownRenderer {
     isSupportedImageMimeType: () => true,
   };
 
-  async render(rawText: string, articlePageUrl: string) {
+  async render(rawText: string, articlePageUrl?: string) {
     if (!this.mdPluginOptions) {
       throw new Error('init failed');
     }
@@ -112,16 +112,18 @@ export class MarkdownRenderer {
       audioPlayerEnabled: this.mdPluginOptions[`${PLUGIN_SETTING_PREFIX}${AUDIO_PLAYER_PLUGIN}`],
       videoPlayerEnabled: this.mdPluginOptions[`${PLUGIN_SETTING_PREFIX}${VIDEO_PLAYER_PLUGIN}`],
       pdfViewerEnabled: this.mdPluginOptions[`${PLUGIN_SETTING_PREFIX}${PDF_VIEWER_PLUGIN}`],
-      itemIdToUrl: (resourceId: string) => {
-        const resourceInfo = this.getResourceInfo(resourceId);
-        if (!resourceInfo) {
-          // is note id
-          const article = find(this.articles, { noteId: resourceId });
-          return article ? `/${articlePageUrl}/${article.url}` : '';
-        }
-        resourceIds.push(resourceId);
-        return `/_resources/${resourceId}.${resourceInfo.extension}`;
-      },
+      itemIdToUrl: articlePageUrl
+        ? (resourceId: string) => {
+            const resourceInfo = this.getResourceInfo(resourceId);
+            if (!resourceInfo) {
+              // is note id
+              const article = find(this.articles, { noteId: resourceId });
+              return article ? `/${articlePageUrl}/${article.url}` : '';
+            }
+            resourceIds.push(resourceId);
+            return `/_resources/${resourceId}.${resourceInfo.extension}`;
+          }
+        : undefined,
     });
 
     const { sanitizedHtml, syntaxes } = sanitizeMarkdownHtml(html);

@@ -1,5 +1,5 @@
 import { container, singleton } from 'tsyringe';
-import { Ref, shallowRef, watchEffect, InjectionKey, toRaw, computed } from 'vue';
+import { Ref, shallowRef, watchEffect, InjectionKey, computed } from 'vue';
 import { find } from 'lodash';
 import isValidFilename from 'valid-filename';
 import { Page, Vars } from '../model/Page';
@@ -45,8 +45,8 @@ export class PageService {
       throw new Error('no theme name when save page');
     }
 
-    Object.assign(page.fieldVars, vars);
-    return this.pluginDataRepository.saveFieldVars(themeName, page.name, toRaw(vars));
+    page.setValues(vars);
+    return this.pluginDataRepository.saveFieldVars(themeName, page.name, page.outputValues());
   }
 
   isValidUrl(url: string, pageName: string) {

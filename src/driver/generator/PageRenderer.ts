@@ -8,7 +8,7 @@ import { Site, DEFAULT_SITE } from 'domain/model/Site';
 import type { GeneratingProgress } from 'domain/model/Publishing';
 import type { Article } from 'domain/model/Article';
 import type { Theme } from 'domain/model/Theme';
-import { ARTICLE_PAGE_NAME, INDEX_PAGE_NAME, PREDEFINED_FIELDS } from 'domain/model/Page';
+import { ARTICLE_PAGE_NAME, INDEX_PAGE_NAME, Page, PREDEFINED_FIELDS } from 'domain/model/Page';
 import {
   outputFile,
   readFileSync,
@@ -81,6 +81,7 @@ export class PageRenderer {
 
     site.articles = sortBy(filter(articles, { published: true }), ['createdAt']).reverse();
     site.generatedAt = Date.now();
+    // todo: default site fields value
     this.site = { ...DEFAULT_SITE, ...site } as Required<Site>;
   }
 
@@ -116,6 +117,7 @@ export class PageRenderer {
       !this.markdownRenderer ||
       !this.pageFieldValues ||
       !this.themeDir ||
+      !this.pages ||
       !this.outputDir
     ) {
       throw new Error('no site when rendering');
@@ -133,8 +135,17 @@ export class PageRenderer {
       ...pick(this.site, ['generatedAt', 'articles']),
       ...this.site.custom[themeName],
     };
-
     const env: RenderEnv = { $page: values, $site: siteData, _, _moment: moment };
+    const markdownFieldNames = Page.getMarkdownFieldNames(this.pages[pageName] || []);
+
+    for (const key of Object.keys(env.$page)) {
+      const value = env.$page[key];
+
+      if (markdownFieldNames.includes(key) && isString(value)) {
+        env.$page[key] = (await this.markdownRenderer.render(Page.trimMarkdownPrefix(value))).html;
+      }
+    }
+
     env.$page.url = pageName === INDEX_PAGE_NAME ? 'index' : values.url || pageName;
 
     if (pageName === ARTICLE_PAGE_NAME) {

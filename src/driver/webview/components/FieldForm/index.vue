@@ -76,8 +76,8 @@ export default defineComponent({
       :label="field.label || field.name"
       v-bind="validateInfos[field.name]"
     >
-      <template v-if="field.tip" #extra>
-        <span v-html="sanitizeHtml(field.tip)"></span>
+      <template v-if="field.tip || field.inputType === 'markdown'" #extra>
+        <span v-html="sanitizeHtml(field.tip || 'Markdown syntax is available')"></span>
       </template>
       <Select
         v-if="['select', 'multiple-select'].includes(field.inputType || '')"
@@ -87,7 +87,7 @@ export default defineComponent({
         :placeholder="field.placeholder"
       />
       <Textarea
-        v-else-if="field.inputType === 'textarea'"
+        v-else-if="['textarea', 'markdown'].includes(field.inputType || '')"
         v-model:value="model[field.name]"
         :placeholder="field.placeholder"
       />
