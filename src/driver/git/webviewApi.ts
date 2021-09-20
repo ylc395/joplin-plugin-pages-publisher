@@ -13,9 +13,9 @@ import {
   branch,
 } from 'isomorphic-git';
 import http from 'isomorphic-git/http/web';
-import fs from '../fs/webviewApi';
-import { gitClientToken, GitEvents } from '../../domain/service/PublishService';
-import { Github } from '../../domain/model/Publishing';
+import fs from 'driver/fs/webviewApi';
+import { gitClientToken, GitEvents } from 'domain/service/PublishService';
+import type { Github } from 'domain/model/Publishing';
 import { difference } from 'lodash';
 
 export interface GitRequest {

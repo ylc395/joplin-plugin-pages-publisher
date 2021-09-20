@@ -1,5 +1,5 @@
 import { container } from 'tsyringe';
-import { joplinToken } from '../../domain/service/AppService';
+import { joplinToken } from 'domain/service/AppService';
 export interface JoplinAction {
   event: 'quitApp' | 'openNote';
   payload?: any;

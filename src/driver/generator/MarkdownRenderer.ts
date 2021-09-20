@@ -1,11 +1,11 @@
 import { find } from 'lodash';
 import { MarkupToHtml } from '@joplin/renderer';
 import joplin from 'api';
-import type { Article } from '../../domain/model/Article';
-import type { Resource } from '../../domain/model/JoplinData';
-import { outputFile, copy } from '../fs/joplinPlugin';
-import type { File } from '../../domain/model/JoplinData';
-import { fetchData, fetchAllData } from '../joplinData/joplinPlugin';
+import type { Article } from 'domain/model/Article';
+import type { Resource } from 'domain/model/JoplinData';
+import type { File } from 'domain/model/JoplinData';
+import { outputFile, copy } from 'driver/fs/joplinPlugin';
+import { fetchData, fetchAllData } from 'driver/joplinData/joplinPlugin';
 import { getMarkdownPluginAssetsDir, getOutputDir } from './pathHelper';
 import type { RenderResultPluginAsset, ResourceMap } from './type';
 import { sanitizeMarkdownHtml } from './htmlProcess';

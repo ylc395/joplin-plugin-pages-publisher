@@ -8,6 +8,10 @@
     "baseUrl": ".",
     "lib": ["DOM", "ESNext"],
     "strict": true,
+    "paths": {
+      "domain/*": ["src/domain/*"],
+      "driver/*": ["src/driver/*"]
+    },
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,

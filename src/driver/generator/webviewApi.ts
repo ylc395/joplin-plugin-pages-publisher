@@ -1,7 +1,7 @@
 import { container } from 'tsyringe';
 import EventEmitter from 'eventemitter3';
-import type { GeneratingProgress } from '../../domain/model/Publishing';
-import { generatorToken, GeneratorEvents } from '../../domain/service/PublishService';
+import type { GeneratingProgress } from 'domain/model/Publishing';
+import { generatorToken, GeneratorEvents } from 'domain/service/PublishService';
 import { isEqual } from 'lodash';
 export interface GeneratorRequest {
   event: 'generateSite' | 'getGeneratingProgress' | 'getOutputDir';

@@ -2,7 +2,7 @@ import { container } from 'tsyringe';
 import {
   token as JoplinFetcherToken,
   JoplinGetParams,
-} from '../../domain/repository/JoplinDataRepository';
+} from 'domain/repository/JoplinDataRepository';
 
 export interface JoplinDataRequest {
   event: 'getJoplinData' | 'getJoplinDataAll';

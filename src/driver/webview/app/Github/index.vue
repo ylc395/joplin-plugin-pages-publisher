@@ -1,8 +1,8 @@
 <script lang="ts">
 import { defineComponent, inject, ref, watchEffect, computed } from 'vue';
 import { Form, Input, Alert, Button } from 'ant-design-vue';
-import { token as publishToken } from '../../../../domain/service/PublishService';
-import { token as appToken, FORBIDDEN } from '../../../../domain/service/AppService';
+import { token as publishToken } from 'domain/service/PublishService';
+import { token as appToken, FORBIDDEN } from 'domain/service/AppService';
 import { useDraftForm } from '../../composable/useDraftForm';
 
 export default defineComponent({

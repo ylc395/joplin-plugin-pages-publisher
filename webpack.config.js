@@ -35,6 +35,7 @@ const pluginArchiveFilePath = path.resolve(publishDir, `${manifest.id}.jpl`);
 const pluginInfoFilePath = path.resolve(publishDir, `${manifest.id}.json`);
 
 const webviewConfig = require('./webpack.webview.config');
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 function validatePackageJson() {
 	const content = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
@@ -135,13 +136,14 @@ const baseConfig = {
 const pluginConfig = Object.assign({}, baseConfig, {
 	entry: './src/index.ts',
 	resolve: {
+		plugins: [new TsconfigPathsPlugin()],
 		alias: {
 			api: path.resolve(__dirname, 'api'),
 		},
 		// JSON files can also be required from scripts so we include this.
 		// https://github.com/joplin/plugin-bibtex/pull/2
 		extensions: ['.js', '.tsx', '.ts', '.json'],
-		mainFields: ['main', 'module']
+		mainFields: ['main', 'module'],
 	},
 	output: {
 		filename: 'index.js',
@@ -179,6 +181,7 @@ const extraScriptConfig = Object.assign({}, baseConfig, webviewConfig, {
 			api: path.resolve(__dirname, 'api'),
 		},
 		extensions: ['.tsx', '.ts', '.js', '.json'],
+		plugins: [new TsconfigPathsPlugin()]
 	},
 });
 

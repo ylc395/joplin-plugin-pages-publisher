@@ -1,6 +1,6 @@
 import { without } from 'lodash';
 import { ref, watch, inject } from 'vue';
-import { token as articleToken } from '../../../../domain/service/ArticleService';
+import { token as articleToken } from 'domain/service/ArticleService';
 
 export function usePanel() {
   const {

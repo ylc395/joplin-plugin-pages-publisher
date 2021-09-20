@@ -1,6 +1,6 @@
 import { provide, ref, shallowRef, InjectionKey } from 'vue';
 import Diff, { diffChars } from 'diff';
-import type { Article } from '../../../../domain/model/Article';
+import type { Article } from 'domain/model/Article';
 
 export const token: InjectionKey<ReturnType<typeof useDiff>> = Symbol();
 export function useDiff() {

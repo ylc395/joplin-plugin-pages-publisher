@@ -1,5 +1,5 @@
 import joplin from 'api';
-import { JoplinGetParams } from '../../domain/repository/JoplinDataRepository';
+import { JoplinGetParams } from 'domain/repository/JoplinDataRepository';
 
 interface JoplinResponse<T> {
   items: T[];

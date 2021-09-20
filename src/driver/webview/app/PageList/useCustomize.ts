@@ -1,6 +1,6 @@
 import { computed, inject, InjectionKey, provide, Ref, ref, shallowRef } from 'vue';
-import { Page, Vars } from '../../../../domain/model/Page';
-import { token as pageToken } from '../../../../domain/service/PageService';
+import { Page, Vars } from 'domain/model/Page';
+import { token as pageToken } from 'domain/service/PageService';
 
 export const token: InjectionKey<ReturnType<typeof useCustomize>> = Symbol();
 export function useCustomize() {

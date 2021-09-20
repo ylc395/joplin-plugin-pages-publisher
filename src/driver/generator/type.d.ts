@@ -1,5 +1,5 @@
-import { Site } from '../../domain/model/Site';
-import { Article } from '../../domain/model/Article';
+import { Site } from 'domain/model/Site';
+import { Article } from 'domain/model/Article';
 import _ from 'lodash';
 import moment from 'moment';
 

@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent, inject, computed } from 'vue';
 import { Modal, Progress, Result, Button } from 'ant-design-vue';
-import { GitEvents, token as publishToken } from '../../../../domain/service/PublishService';
+import { GitEvents, token as publishToken } from 'domain/service/PublishService';
 import { useModalProps } from './composable';
 
 export default defineComponent({

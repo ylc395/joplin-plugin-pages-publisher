@@ -1,4 +1,4 @@
-import { DEFAULT_THEME_NAME } from '../../domain/model/Theme';
+import { DEFAULT_THEME_NAME } from 'domain/model/Theme';
 import joplin from 'api';
 
 export async function getThemeDir(themeName: string) {

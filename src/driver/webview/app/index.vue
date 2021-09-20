@@ -10,17 +10,19 @@ import {
   GithubOutlined,
 } from '@ant-design/icons-vue';
 import { container } from 'tsyringe';
+
+import { ArticleService, token as articleToken } from 'domain/service/ArticleService';
+import { SiteService, token as siteToken } from 'domain/service/SiteService';
+import { PageService, token as pageToken } from 'domain/service/PageService';
+import { NoteService, token as noteToken } from 'domain/service/NoteService';
+import { PublishService, token as publishToken } from 'domain/service/PublishService';
+import { AppService, token as appToken, FORBIDDEN } from 'domain/service/AppService';
+
 import ArticleList from './ArticleList/index.vue';
 import Site from './Site/index.vue';
 import PageList from './PageList/index.vue';
 import Github from './Github/index.vue';
 import Publisher from './Publisher/index.vue';
-import { ArticleService, token as articleToken } from '../../../domain/service/ArticleService';
-import { SiteService, token as siteToken } from '../../../domain/service/SiteService';
-import { PageService, token as pageToken } from '../../../domain/service/PageService';
-import { NoteService, token as noteToken } from '../../../domain/service/NoteService';
-import { PublishService, token as publishToken } from '../../../domain/service/PublishService';
-import { AppService, token as appToken, FORBIDDEN } from '../../../domain/service/AppService';
 import { selfish } from '../utils';
 import { useActiveTabPane } from './composable';
 

@@ -2,9 +2,9 @@ import { computed, Ref, watch, inject, watchEffect, ref } from 'vue';
 import type { validateInfos } from 'ant-design-vue/lib/form/useForm';
 import { Modal } from 'ant-design-vue';
 import { pick, mapKeys, cloneDeep, isEqual, pickBy, negate } from 'lodash';
-import { token as siteToken } from '../../../../domain/service/SiteService';
-import { token as appToken, FORBIDDEN } from '../../../../domain/service/AppService';
-import type { Site } from '../../../../domain/model/Site';
+import { token as siteToken } from 'domain/service/SiteService';
+import { token as appToken, FORBIDDEN } from 'domain/service/AppService';
+import type { Site } from 'domain/model/Site';
 import { isUnset } from '../../utils';
 
 export function useSiteEdit() {

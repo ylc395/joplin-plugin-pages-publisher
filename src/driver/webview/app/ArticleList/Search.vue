@@ -2,7 +2,7 @@
 import { defineComponent, inject, ref } from 'vue';
 import { debounce } from 'lodash';
 import { Select, Button, Tag } from 'ant-design-vue';
-import { token } from '../../../../domain/service/NoteService';
+import { token } from 'domain/service/NoteService';
 
 export default defineComponent({
   components: {

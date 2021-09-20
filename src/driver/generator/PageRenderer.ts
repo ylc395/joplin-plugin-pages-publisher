@@ -4,17 +4,11 @@ import moment from 'moment';
 import { container } from 'tsyringe';
 import { Feed } from 'feed';
 import Ajv from 'ajv';
-import { Site, DEFAULT_SITE } from '../../domain/model/Site';
-import type { GeneratingProgress } from '../../domain/model/Publishing';
-import type { Article } from '../../domain/model/Article';
-import type { Theme } from '../../domain/model/Theme';
-import { ARTICLE_PAGE_NAME, INDEX_PAGE_NAME, PREDEFINED_FIELDS } from '../../domain/model/Page';
-import {
-  getOutputDir,
-  getOutputThemeAssetsDir,
-  getThemeAssetsDir,
-  getThemeDir,
-} from './pathHelper';
+import { Site, DEFAULT_SITE } from 'domain/model/Site';
+import type { GeneratingProgress } from 'domain/model/Publishing';
+import type { Article } from 'domain/model/Article';
+import type { Theme } from 'domain/model/Theme';
+import { ARTICLE_PAGE_NAME, INDEX_PAGE_NAME, PREDEFINED_FIELDS } from 'domain/model/Page';
 import {
   outputFile,
   readFileSync,
@@ -23,14 +17,21 @@ import {
   remove,
   getAllFiles,
   pathExists,
-} from '../fs/joplinPlugin';
+} from 'driver/fs/joplinPlugin';
 import { MarkdownRenderer } from './MarkdownRenderer';
-import { loadTheme } from '../themeLoader/joplinPlugin';
-import { Db } from '../db/joplinPlugin';
-import { ARTICLE_SCHEMA } from '../db/schema';
+import { loadTheme } from 'driver/themeLoader/joplinPlugin';
+import { Db } from 'driver/db/joplinPlugin';
+import { ARTICLE_SCHEMA } from 'driver/db/schema';
+import { getValidator } from 'driver/utils';
+
 import { addScriptLinkStyleTags } from './htmlProcess';
 import type { RenderEnv } from './type';
-import { getValidator } from '../utils';
+import {
+  getOutputDir,
+  getOutputThemeAssetsDir,
+  getThemeAssetsDir,
+  getThemeDir,
+} from './pathHelper';
 
 ejs.fileLoader = readFileSync;
 

@@ -1,6 +1,6 @@
 import { inject, InjectionKey, Ref, computed, unref } from 'vue';
 import type { validateInfos } from 'ant-design-vue/lib/form/useForm';
-import type { Field } from '../../../../domain/model/Page';
+import type { Field } from 'domain/model/Page';
 
 interface FormData {
   readonly model: Ref<Record<string, unknown>>;

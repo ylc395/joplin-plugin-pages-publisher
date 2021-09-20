@@ -2,11 +2,11 @@ import joplin from 'api';
 import Ajv from 'ajv';
 import isValidFilename from 'valid-filename';
 import type { readJSON as IReadJSON, readdir as IReaddir } from 'fs-extra';
-import type { Theme } from '../../domain/model/Theme';
-import { DEFAULT_THEME_NAME } from '../../domain/model/Theme';
+import type { Theme } from 'domain/model/Theme';
+import { DEFAULT_THEME_NAME } from 'domain/model/Theme';
+import { getThemeDir } from 'driver/generator/pathHelper';
+import { getValidator } from 'driver/utils';
 import { THEME_SCHEMA } from './schema';
-import { getThemeDir } from '../generator/pathHelper';
-import { getValidator } from '../utils';
 
 const { readJson, readdir } = joplin.require('fs-extra') as {
   readJson: typeof IReadJSON;

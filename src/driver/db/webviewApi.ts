@@ -1,5 +1,5 @@
-import { pluginDataDbToken, PluginDataDb } from '../../domain/repository/PluginDataRepository';
 import { container } from 'tsyringe';
+import { pluginDataDbToken, PluginDataDb } from 'domain/repository/PluginDataRepository';
 
 export interface DbReadRequest {
   event: 'dbFetch';

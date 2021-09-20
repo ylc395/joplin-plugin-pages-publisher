@@ -10,10 +10,10 @@ import {
   FileSyncOutlined,
 } from '@ant-design/icons-vue';
 import { capitalize } from 'lodash';
-import { token as articleToken } from '../../../../domain/service/ArticleService';
-import { token as noteToken } from '../../../../domain/service/NoteService';
-import { token as appToken } from '../../../../domain/service/AppService';
-import type { Article } from '../../../../domain/model/Article';
+import { token as articleToken } from 'domain/service/ArticleService';
+import { token as noteToken } from 'domain/service/NoteService';
+import { token as appToken } from 'domain/service/AppService';
+import type { Article } from 'domain/model/Article';
 import { token as editToken } from './useEdit';
 import { token as diffToken } from './useDiff';
 

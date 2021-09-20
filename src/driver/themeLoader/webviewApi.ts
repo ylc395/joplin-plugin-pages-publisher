@@ -1,6 +1,6 @@
 import { container } from 'tsyringe';
-import { themeLoaderToken } from '../../domain/repository/PluginDataRepository';
-import type { Theme } from '../../domain/model/Theme';
+import { themeLoaderToken } from 'domain/repository/PluginDataRepository';
+import type { Theme } from 'domain/model/Theme';
 
 export interface ThemeConfigLoadRequest {
   event: 'loadThemeConfig';

@@ -2,8 +2,8 @@ import { ref, provide, InjectionKey, inject, computed } from 'vue';
 import { bytesToBase64 } from 'byte-base64';
 import { mapValues, IsEqualCustomizer } from 'lodash';
 import moment from 'moment';
-import type { Article } from '../../../../domain/model/Article';
-import { token as articleToken } from '../../../../domain/service/ArticleService';
+import type { Article } from 'domain/model/Article';
+import { token as articleToken } from 'domain/service/ArticleService';
 
 export const token: InjectionKey<ReturnType<typeof useEdit>> = Symbol();
 export function useEdit() {

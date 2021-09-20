@@ -3,7 +3,7 @@ import { defineComponent, inject } from 'vue';
 import { startCase } from 'lodash';
 import { Button, Modal } from 'ant-design-vue';
 import { SettingOutlined } from '@ant-design/icons-vue';
-import { token as pageToken } from '../../../../domain/service/PageService';
+import { token as pageToken } from 'domain/service/PageService';
 import { useCustomize } from './useCustomize';
 import Customize from './Customize.vue';
 

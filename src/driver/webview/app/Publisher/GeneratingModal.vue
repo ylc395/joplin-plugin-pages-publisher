@@ -1,7 +1,7 @@
 <script lang="ts">
 import { computed, defineComponent, inject } from 'vue';
 import { Modal, Progress, Result, Button } from 'ant-design-vue';
-import { token as publishToken } from '../../../../domain/service/PublishService';
+import { token as publishToken } from 'domain/service/PublishService';
 import { activeTabToken } from '../composable';
 import { useModalProps } from './composable';
 

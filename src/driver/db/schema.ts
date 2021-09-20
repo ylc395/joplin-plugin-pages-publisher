@@ -1,4 +1,4 @@
-import { REQUIRED_KEYS } from '../../domain/model/Article';
+import { REQUIRED_KEYS } from 'domain/model/Article';
 
 export const ARTICLE_SCHEMA = {
   type: 'object',

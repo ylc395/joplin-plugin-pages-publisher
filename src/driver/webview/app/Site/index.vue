@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent, inject, provide } from 'vue';
 import { Form, Select, Button, InputNumber, Switch } from 'ant-design-vue';
-import { token as siteToken } from '../../../../domain/service/SiteService';
+import { token as siteToken } from 'domain/service/SiteService';
 import { useDraftForm } from '../../composable/useDraftForm';
 import FieldForm from '../../components/FieldForm/index.vue';
 import { token as formToken } from '../../components/FieldForm/useFieldForm';

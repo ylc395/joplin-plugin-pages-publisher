@@ -1,9 +1,9 @@
 <script lang="ts">
 import { defineComponent, inject, computed } from 'vue';
 import { Form, Select, Input, DatePicker, Button, Alert, Image, Spin } from 'ant-design-vue';
+import { token as pageToken } from 'domain/service/PageService';
 import { token as editToken } from './useEdit';
 import { useDraftForm } from '../../composable/useDraftForm';
-import { token as pageToken } from '../../../../domain/service/PageService';
 
 export default defineComponent({
   components: {
