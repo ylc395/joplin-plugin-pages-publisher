@@ -81,8 +81,7 @@ export class PageRenderer {
 
     site.articles = sortBy(filter(articles, { published: true }), ['createdAt']).reverse();
     site.generatedAt = Date.now();
-    // todo: default site fields value
-    this.site = { ...DEFAULT_SITE, ...site } as Required<Site>;
+    this.site = defaultsDeep(site, DEFAULT_SITE) as Required<Site>;
   }
 
   private async getThemeData() {
@@ -101,7 +100,7 @@ export class PageRenderer {
     const defaultFieldVars = mapValues(themeConfig.pages, (fields, pageName) => {
       const allFields = [...(fields || []), ...(PREDEFINED_FIELDS[pageName] || [])];
       return allFields.reduce((vars, field) => {
-        vars[field.name] = field.defaultValue ?? '';
+        vars[field.name] = field.defaultValue ?? null;
 
         return vars;
       }, {} as Record<string, unknown>);
@@ -109,6 +108,14 @@ export class PageRenderer {
 
     this.pageFieldValues = defaultsDeep(pagesFieldVars, defaultFieldVars);
     this.pages = themeConfig.pages;
+    defaultsDeep(this.site, {
+      custom: {
+        [themeName]: themeConfig.siteFields?.reduce((result, { name, defaultValue }) => {
+          result[name] = defaultValue ?? null;
+          return result;
+        }, {} as NonNullable<Site['custom'][string]>),
+      },
+    });
   }
 
   private async outputPage(pageName: string) {
