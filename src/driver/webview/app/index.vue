@@ -67,20 +67,20 @@ export default defineComponent({
 });
 </script>
 <template>
-  <Tabs v-model:activeKey="activeKey" size="large">
-    <TabPane key="Site" class="panel">
-      <template #tab> <HomeOutlined /> Site </template>
+  <Tabs v-model:activeKey="activeKey">
+    <TabPane key="Site">
+      <template #tab><HomeOutlined />Site</template>
       <Site />
     </TabPane>
-    <TabPane key="Pages" class="panel">
-      <template #tab> <BuildOutlined /> Pages </template>
+    <TabPane key="Pages">
+      <template #tab><BuildOutlined />Pages</template>
       <PageList />
     </TabPane>
-    <TabPane key="Articles" class="panel">
+    <TabPane key="Articles">
       <template #tab><ContainerOutlined />Articles</template>
       <ArticleList />
     </TabPane>
-    <TabPane key="Github" class="panel">
+    <TabPane key="Github">
       <template #tab><GithubOutlined />Github</template>
       <Github />
     </TabPane>
@@ -103,7 +103,15 @@ export default defineComponent({
   overflow: auto;
 }
 
-.panel {
+:deep(.ant-tabs-nav .ant-tabs-tab) {
+  margin-right: 16px;
+}
+
+:deep(.anticon) {
+  vertical-align: 0.125em;
+}
+
+.ant-tabs-tabpane {
   padding: 10px;
 }
 </style>
