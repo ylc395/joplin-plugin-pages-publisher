@@ -77,7 +77,7 @@ export default defineComponent({
           <SelectOption v-for="{ name } of themes" :key="name">{{ name }}</SelectOption>
         </Select>
       </FormItem>
-      <FormItem label="Feed">
+      <FormItem label="Feed" extra="Whether to enable RSS Feed">
         <Switch v-model:checked="modelRef.feedEnabled" />
       </FormItem>
       <FormItem v-if="modelRef.feedEnabled" label="Feed Length">

@@ -114,6 +114,7 @@ export function useAppWarning(isModified: Ref<boolean>, isValid: Ref<boolean>) {
   const MODIFICATION_WARNING = 'Site modification has not been saved.';
   const INVALID_WARNING = 'Site field(s) has not been filled correctly.';
 
+  // todo: make invalid waring precede
   watch(isModified, () => {
     setWarning(FORBIDDEN.GENERATE, MODIFICATION_WARNING, isModified.value);
     setWarning(FORBIDDEN.TAB_SWITCH, MODIFICATION_WARNING, isModified.value);
