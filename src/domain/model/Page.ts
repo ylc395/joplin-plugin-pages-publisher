@@ -1,5 +1,5 @@
-import { compact, mapValues, map, filter, isString } from 'lodash';
-import { computed, reactive, toRaw } from 'vue';
+import { compact, map, filter } from 'lodash';
+import { computed, reactive } from 'vue';
 import type { Theme } from './Theme';
 
 export interface Field {
@@ -24,8 +24,6 @@ export interface Field {
   // valid when inputType is select, multiple-select, radio, checkbox
   readonly options?: Array<Readonly<{ label: string; value: string }>>;
 }
-
-export const MARKDOWN_CONTENT_PREFIX = 'markdown://';
 
 export type PageValues = Record<string, unknown>;
 
@@ -67,40 +65,12 @@ export class Page {
     values: PageValues, // provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
     private readonly themeConfig: Theme,
   ) {
-    this.values = reactive(
-      this.fields.reduce((result, filed) => {
+    this.values = reactive({
+      ...this.fields.reduce((result, filed) => {
         result[filed.name] = null;
         return result;
       }, {} as PageValues),
-    );
-
-    this.setValues(values);
-  }
-
-  get markdownFieldNames() {
-    return Page.getMarkdownFieldNames(this.fields);
-  }
-
-  setValues(values: PageValues) {
-    Object.assign(
-      this.values,
-      mapValues(values, (value, key) => {
-        if (this.markdownFieldNames.includes(key) && isString(value)) {
-          return Page.trimMarkdownPrefix(value);
-        }
-
-        return value;
-      }),
-    );
-  }
-
-  outputValues() {
-    return mapValues(this.values, (value, key) => {
-      if (this.markdownFieldNames.includes(key) && isString(value)) {
-        return `${MARKDOWN_CONTENT_PREFIX}${value}`;
-      }
-
-      return toRaw(value);
+      ...values,
     });
   }
 
@@ -114,9 +84,5 @@ export class Page {
 
   static getMarkdownFieldNames(field: Field[]) {
     return map(filter(field, { inputType: 'markdown' }), 'name');
-  }
-
-  static trimMarkdownPrefix(content: string) {
-    return content.replace(new RegExp(`^${MARKDOWN_CONTENT_PREFIX}`, ''), '');
   }
 }

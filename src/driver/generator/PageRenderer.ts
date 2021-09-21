@@ -147,7 +147,7 @@ export class PageRenderer {
       const value = env.$page[key];
 
       if (markdownFieldNames.includes(key) && isString(value)) {
-        env.$page[key] = (await this.markdownRenderer.render(Page.trimMarkdownPrefix(value))).html;
+        env.$page[key] = (await this.markdownRenderer.render(value)).html;
       }
     }
 
