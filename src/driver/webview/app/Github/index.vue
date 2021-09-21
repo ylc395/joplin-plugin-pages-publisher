@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, inject, ref, watchEffect, computed } from 'vue';
+import { defineComponent, inject, ref, computed, watch } from 'vue';
 import { Form, Input, Alert, Button } from 'ant-design-vue';
 import { token as publishToken } from 'domain/service/PublishService';
 import { token as appToken, FORBIDDEN } from 'domain/service/AppService';
@@ -24,7 +24,7 @@ export default defineComponent({
 
     const MODIFICATION_WARNING = 'Github modification has not been saved.';
 
-    watchEffect(() => {
+    watch(isModified, () => {
       setWarning(FORBIDDEN.TAB_SWITCH, MODIFICATION_WARNING, isModified.value);
       setWarning(FORBIDDEN.GENERATE, MODIFICATION_WARNING, isModified.value);
     });
@@ -69,6 +69,17 @@ export default defineComponent({
       </FormItem>
       <FormItem label="Branch">
         <Input v-model:value="modelRef.branch" placeholder="Default value is master" />
+      </FormItem>
+      <FormItem label="CNAME">
+        <template #extra
+          >Use for custom domain site. See
+          <a
+            target="_blank"
+            href="https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site"
+            >this Github docs</a
+          ></template
+        >
+        <Input v-model:value="modelRef.cname" />
       </FormItem>
     </Form>
     <div class="text-right">

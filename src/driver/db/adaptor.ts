@@ -15,7 +15,12 @@ export class JSONFile<T> implements Adapter<T> {
       throw e;
     }
 
-    return JSON.parse(data) as T;
+    try {
+      // todo: handle invalid parsing
+      return JSON.parse(data) as T;
+    } catch {
+      return {} as T;
+    }
   }
 
   write(data: T): Promise<void> {

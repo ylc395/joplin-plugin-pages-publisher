@@ -4,6 +4,7 @@ export interface Github {
   email: string;
   branch?: string;
   token?: string;
+  cname?: string;
 }
 
 export interface GeneratingProgress {

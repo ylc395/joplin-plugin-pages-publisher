@@ -5,19 +5,11 @@ import { container } from 'tsyringe';
 import { Feed } from 'feed';
 import Ajv from 'ajv';
 import { Site, DEFAULT_SITE } from 'domain/model/Site';
-import type { GeneratingProgress } from 'domain/model/Publishing';
+import type { GeneratingProgress, Github } from 'domain/model/Publishing';
 import type { Article } from 'domain/model/Article';
 import type { Theme } from 'domain/model/Theme';
 import { ARTICLE_PAGE_NAME, INDEX_PAGE_NAME, Page, PREDEFINED_FIELDS } from 'domain/model/Page';
-import {
-  outputFile,
-  readFileSync,
-  copy,
-  move,
-  remove,
-  getAllFiles,
-  pathExists,
-} from 'driver/fs/joplinPlugin';
+import { outputFile, readFileSync, copy, getAllFiles, remove } from 'driver/fs/joplinPlugin';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { loadTheme } from 'driver/themeLoader/joplinPlugin';
 import { Db } from 'driver/db/joplinPlugin';
@@ -82,6 +74,12 @@ export class PageRenderer {
     site.articles = sortBy(filter(articles, { published: true }), ['createdAt']).reverse();
     site.generatedAt = Date.now();
     this.site = defaultsDeep(site, DEFAULT_SITE) as Required<Site>;
+  }
+
+  private async getCname() {
+    const githubInfo = await db.fetch<Github>(['github']);
+
+    return githubInfo?.cname;
   }
 
   private async getThemeData() {
@@ -246,24 +244,26 @@ export class PageRenderer {
     const pageNames = Object.keys(this.pages);
     this.progress.totalPages = pageNames.length + this.site.articles.length - 1;
 
-    const backupDir = `${this.outputDir}_backup`;
-    try {
-      if (await pathExists(this.outputDir)) {
-        await move(this.outputDir, backupDir, { overwrite: true });
-      }
+    await remove(this.outputDir);
 
-      for (const pageName of pageNames) {
-        await this.outputPage(pageName);
-      }
+    for (const pageName of pageNames) {
+      await this.outputPage(pageName);
+    }
 
-      await this.copyAssets();
-      await remove(backupDir);
-      return await getAllFiles(this.outputDir);
-    } catch (error) {
-      if (await pathExists(backupDir)) {
-        await move(backupDir, this.outputDir);
-      }
-      throw error;
+    await this.copyAssets();
+    await this.outputCname();
+    return await getAllFiles(this.outputDir);
+  }
+
+  private async outputCname() {
+    if (!this.outputDir) {
+      throw new Error('pageRenderer is not initialized');
+    }
+
+    const cname = await this.getCname();
+
+    if (cname) {
+      await outputFile(`${this.outputDir}/CNAME`, cname);
     }
   }
 
