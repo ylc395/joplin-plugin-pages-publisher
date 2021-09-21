@@ -13,8 +13,8 @@ export default defineComponent({
   },
   setup() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const { fields, filedVars, savePage, stopCustomize, rules } = inject(customizeToken)!;
-    const { save, canSave, modelRef, validateInfos } = useDraftForm(filedVars, savePage, rules);
+    const { fields, pageValues, savePage, stopCustomize, rules } = inject(customizeToken)!;
+    const { save, canSave, modelRef, validateInfos } = useDraftForm(pageValues, savePage, rules);
 
     provide(token, { fields, validateInfos, model: modelRef });
 

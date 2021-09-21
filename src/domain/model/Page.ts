@@ -27,8 +27,7 @@ export interface Field {
 
 export const MARKDOWN_CONTENT_PREFIX = 'markdown://';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Vars = Record<string, any>;
+export type PageValues = Record<string, unknown>;
 
 // page with these names will be handled in some special ways
 export const INDEX_PAGE_NAME = 'index';
@@ -47,7 +46,7 @@ export const PREDEFINED_FIELDS: Record<string, Field[] | undefined> = {
 };
 
 export class Page {
-  readonly fieldVars: Vars; // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
+  readonly values: PageValues; // provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
 
   readonly fields = compact([
     this.name === INDEX_PAGE_NAME
@@ -65,26 +64,26 @@ export class Page {
 
   constructor(
     readonly name: string,
-    fieldVars: Vars, // vars provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
+    values: PageValues, // provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
     private readonly themeConfig: Theme,
   ) {
-    this.fieldVars = reactive(
+    this.values = reactive(
       this.fields.reduce((result, filed) => {
         result[filed.name] = null;
         return result;
-      }, {} as Vars),
+      }, {} as PageValues),
     );
 
-    this.setValues(fieldVars);
+    this.setValues(values);
   }
 
   get markdownFieldNames() {
     return Page.getMarkdownFieldNames(this.fields);
   }
 
-  setValues(values: Vars) {
+  setValues(values: PageValues) {
     Object.assign(
-      this.fieldVars,
+      this.values,
       mapValues(values, (value, key) => {
         if (this.markdownFieldNames.includes(key) && isString(value)) {
           return Page.trimMarkdownPrefix(value);
@@ -96,7 +95,7 @@ export class Page {
   }
 
   outputValues() {
-    return mapValues(this.fieldVars, (value, key) => {
+    return mapValues(this.values, (value, key) => {
       if (this.markdownFieldNames.includes(key) && isString(value)) {
         return `${MARKDOWN_CONTENT_PREFIX}${value}`;
       }
@@ -110,7 +109,7 @@ export class Page {
       return '/';
     }
 
-    return `/${this.fieldVars.url || this.name}`;
+    return `/${this.values.url || this.name}`;
   });
 
   static getMarkdownFieldNames(field: Field[]) {

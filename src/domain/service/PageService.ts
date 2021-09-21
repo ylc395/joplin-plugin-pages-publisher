@@ -2,12 +2,12 @@ import { container, singleton } from 'tsyringe';
 import { Ref, shallowRef, watchEffect, InjectionKey, computed } from 'vue';
 import { find } from 'lodash';
 import isValidFilename from 'valid-filename';
-import { Page, Vars } from '../model/Page';
+import { Page, PageValues } from '../model/Page';
 import { SiteService } from './SiteService';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 
 export const token: InjectionKey<PageService> = Symbol('pageService');
-export type PagesFieldVars = Record<string, Vars | undefined>;
+export type PagesValues = Record<string, PageValues | undefined>;
 
 @singleton()
 export class PageService {
@@ -30,23 +30,23 @@ export class PageService {
     }
 
     const themeName = site.value.themeName;
-    const pagesVars = (await this.pluginDataRepository.getFieldVarsOfTheme(themeName)) || {};
+    const pagesValues = (await this.pluginDataRepository.getPagesValuesOfTheme(themeName)) || {};
 
     this.pages.value = Object.keys(themeConfig.value.pages).map(
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      (pageName) => new Page(pageName, pagesVars[pageName] || {}, themeConfig.value!),
+      (pageName) => new Page(pageName, pagesValues[pageName] || {}, themeConfig.value!),
     );
   }
 
-  savePage(page: Page, vars: Vars) {
+  savePage(page: Page, values: PageValues) {
     const themeName = this.siteService.site.value?.themeName;
 
     if (!themeName) {
       throw new Error('no theme name when save page');
     }
 
-    page.setValues(vars);
-    return this.pluginDataRepository.saveFieldVars(themeName, page.name, page.outputValues());
+    page.setValues(values);
+    return this.pluginDataRepository.savePageValues(themeName, page.name, page.outputValues());
   }
 
   isValidUrl(url: string, pageName: string) {

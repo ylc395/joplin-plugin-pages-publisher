@@ -1,5 +1,5 @@
 import { computed, inject, InjectionKey, provide, Ref, ref, shallowRef } from 'vue';
-import { Page, Vars } from 'domain/model/Page';
+import type { Page, PageValues } from 'domain/model/Page';
 import { token as pageToken } from 'domain/service/PageService';
 
 export const token: InjectionKey<ReturnType<typeof useCustomize>> = Symbol();
@@ -9,7 +9,7 @@ export function useCustomize() {
   const isCustomizing = ref(false);
   const page: Ref<null | Page> = shallowRef(null);
   const fields = computed(() => page.value?.fields || []);
-  const filedVars: Ref<null | Vars> = ref(null);
+  const pageValues: Ref<null | PageValues> = ref(null);
   const rules = computed(() => {
     if (!page.value) {
       return {};
@@ -37,16 +37,16 @@ export function useCustomize() {
   const customize = (_page: Page) => {
     isCustomizing.value = true;
     page.value = _page;
-    filedVars.value = _page.fieldVars;
+    pageValues.value = _page.values;
   };
 
   const stopCustomize = () => {
     isCustomizing.value = false;
     page.value = null;
-    filedVars.value = null;
+    pageValues.value = null;
   };
 
-  const save = async (data: Vars) => {
+  const save = async (data: PageValues) => {
     if (!page.value) {
       throw new Error('no page to save');
     }
@@ -60,7 +60,7 @@ export function useCustomize() {
     isCustomizing,
     customize,
     fields,
-    filedVars,
+    pageValues,
     stopCustomize,
     rules,
   };

@@ -1,10 +1,10 @@
 import { container, InjectionToken } from 'tsyringe';
 import type { Article } from '../model/Article';
 import type { Github } from '../model/Publishing';
-import type { Vars } from '../model/Page';
+import type { PageValues } from '../model/Page';
 import { Site } from '../model/Site';
 import type { Theme } from '../model/Theme';
-import type { PagesFieldVars } from '../service/PageService';
+import type { PagesValues } from '../service/PageService';
 
 export interface PluginDataDb {
   fetch: <T>(path: string[]) => Promise<T | null>;
@@ -24,12 +24,12 @@ export class PluginDataRepository {
   private readonly pluginDataLoader = container.resolve(pluginDataDbToken);
   private readonly themeLoader = container.resolve(themeLoaderToken);
 
-  getFieldVarsOfTheme(themeName: string) {
-    return this.pluginDataLoader.fetch<PagesFieldVars>(['pagesFieldVars', themeName]);
+  getPagesValuesOfTheme(themeName: string) {
+    return this.pluginDataLoader.fetch<PagesValues>(['pagesValues', themeName]);
   }
 
-  saveFieldVars(themeName: string, pageName: string, vars: Vars) {
-    return this.pluginDataLoader.save(['pagesFieldVars', themeName, pageName], vars);
+  savePageValues(themeName: string, pageName: string, values: PageValues) {
+    return this.pluginDataLoader.save(['pagesValues', themeName, pageName], values);
   }
 
   getArticles() {

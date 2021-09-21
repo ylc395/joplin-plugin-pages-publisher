@@ -44,7 +44,7 @@ type Data = Readonly<Record<string, unknown>>;
 export class PageRenderer {
   private site?: Required<Site>;
   private markdownRenderer?: MarkdownRenderer;
-  private pageFieldValues?: Record<string, Record<string, unknown> | undefined>;
+  private pagesValues?: Record<string, Record<string, unknown> | undefined>;
   private themeDir?: string;
   private outputDir?: string;
   private pages?: Theme['pages'];
@@ -96,17 +96,17 @@ export class PageRenderer {
       throw new Error(`fail to load theme config: ${themeName}`);
     }
 
-    const pagesFieldVars = (await db.fetch<Data>(['pagesFieldVars', themeName])) || {};
-    const defaultFieldVars = mapValues(themeConfig.pages, (fields, pageName) => {
+    const pagesValues = (await db.fetch<Data>(['pagesValues', themeName])) || {};
+    const defaultPagesValues = mapValues(themeConfig.pages, (fields, pageName) => {
       const allFields = [...(fields || []), ...(PREDEFINED_FIELDS[pageName] || [])];
-      return allFields.reduce((vars, field) => {
-        vars[field.name] = field.defaultValue ?? null;
+      return allFields.reduce((values, field) => {
+        values[field.name] = field.defaultValue ?? null;
 
-        return vars;
+        return values;
       }, {} as Record<string, unknown>);
     });
 
-    this.pageFieldValues = defaultsDeep(pagesFieldVars, defaultFieldVars);
+    this.pagesValues = defaultsDeep(pagesValues, defaultPagesValues);
     this.pages = themeConfig.pages;
     defaultsDeep(this.site, {
       custom: {
@@ -122,7 +122,7 @@ export class PageRenderer {
     if (
       !this.site ||
       !this.markdownRenderer ||
-      !this.pageFieldValues ||
+      !this.pagesValues ||
       !this.themeDir ||
       !this.pages ||
       !this.outputDir
@@ -130,7 +130,7 @@ export class PageRenderer {
       throw new Error('no site when rendering');
     }
 
-    const values = this.pageFieldValues[pageName];
+    const values = this.pagesValues[pageName];
 
     if (!values) {
       throw new Error(`no field values in ${pageName}`);
