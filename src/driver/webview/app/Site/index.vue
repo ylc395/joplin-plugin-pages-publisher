@@ -29,15 +29,20 @@ export default defineComponent({
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(siteToken)!;
 
-    const { customFieldRules, customFields } = useSiteEdit();
+    const { customFieldRules, customFields, customEqual } = useSiteEdit();
 
     const { modelRef, validateInfos, save, canSave, isModified, isValid, resetFields } =
-      useDraftForm(site, saveSite, (data) => ({
-        themeName: [{ required: true }],
-        feedEnabled: [{ required: true }],
-        feedLength: [{ required: data.feedEnabled }],
-        ...customFieldRules.value,
-      }));
+      useDraftForm(
+        site,
+        saveSite,
+        (data) => ({
+          themeName: [{ required: true }],
+          feedEnabled: [{ required: true }],
+          feedLength: [{ required: data.feedEnabled }],
+          ...customFieldRules.value,
+        }),
+        customEqual,
+      );
 
     useAppWarning(isModified, isValid);
     const { handleSelect, selectedThemeName } = useSelectTheme(modelRef);

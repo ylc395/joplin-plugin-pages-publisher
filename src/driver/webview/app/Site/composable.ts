@@ -1,7 +1,18 @@
 import { computed, Ref, watch, inject, watchEffect, ref } from 'vue';
 import type { validateInfos } from 'ant-design-vue/lib/form/useForm';
 import { Modal } from 'ant-design-vue';
-import { pick, mapKeys, cloneDeep, isEqual, pickBy, negate } from 'lodash';
+import {
+  pick,
+  mapKeys,
+  cloneDeep,
+  isEqual,
+  pickBy,
+  negate,
+  isEqualWith,
+  omitBy,
+  isEmpty,
+  IsEqualCustomizer,
+} from 'lodash';
 import { token as siteToken } from 'domain/service/SiteService';
 import { token as appToken, FORBIDDEN } from 'domain/service/AppService';
 import type { Site } from 'domain/model/Site';
@@ -29,9 +40,19 @@ export function useSiteEdit() {
     }, {} as Record<string, unknown>);
   });
 
+  const customEqual: IsEqualCustomizer = (_1, _2, key, _3, _4, stack) => {
+    if (key === 'custom' && stack?.size === 2) {
+      return isEqualWith(omitBy(_1, isEmpty), omitBy(_2, isEmpty), (__1, __2) => {
+        if (isUnset(__1) && isUnset(__2)) {
+          return true;
+        }
+      });
+    }
+  };
   return {
     customFieldRules,
     customFields,
+    customEqual,
   };
 }
 
