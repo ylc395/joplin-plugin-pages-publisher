@@ -1,4 +1,4 @@
-import fsExtra from 'fs-extra';
+import type fsExtra from 'fs-extra';
 
 import { constant, isTypedArray, isObjectLike, isString, mapValues } from 'lodash';
 import type { MockNodeFsCallResult } from './type';
