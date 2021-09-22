@@ -13,6 +13,7 @@ import {
 } from 'ant-design-vue';
 import _sanitizeHtml from 'sanitize-html';
 import { useFieldForm, useLabelSpan } from './useFieldForm';
+import MenuField from './MenuField.vue';
 
 const sanitizeHtml = (html: string) =>
   _sanitizeHtml(html, {
@@ -57,6 +58,7 @@ export default defineComponent({
     CheckboxGroup: Checkbox.Group,
     DatePicker,
     Input,
+    MenuField,
   },
   setup() {
     return {
@@ -104,6 +106,7 @@ export default defineComponent({
         :options="field.options"
       />
       <DatePicker v-else-if="field.inputType === 'date'" v-model:value="model[field.name]" />
+      <MenuField v-else-if="field.inputType === 'menu'" v-model:value="model[field.name]" />
       <Input v-else v-model:value="model[field.name]" :placeholder="field.placeholder" />
     </FormItem>
   </Form>

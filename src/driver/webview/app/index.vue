@@ -106,12 +106,12 @@ export default defineComponent({
   overflow: auto;
 }
 
-:deep(.ant-tabs-nav .ant-tabs-tab) {
-  margin-right: 16px;
+:global(.anticon) {
+  vertical-align: 0.125em;
 }
 
-:deep(.anticon) {
-  vertical-align: 0.125em;
+:deep(.ant-tabs-nav .ant-tabs-tab) {
+  margin-right: 16px;
 }
 
 .ant-tabs-tabpane {

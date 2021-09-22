@@ -51,6 +51,7 @@ class Git extends EventEmitter<GitEvents> {
     return this.initPromise;
   }
 
+  //todo: how to stop init process?
   private async initRepo({
     branch: branchName = 'master',
     userName,
@@ -72,6 +73,7 @@ class Git extends EventEmitter<GitEvents> {
       this.githubInfo?.token !== token ||
       this.githubInfo?.repositoryName !== repositoryName
     ) {
+      // todo: handle clone fail
       await clone({
         fs,
         http,

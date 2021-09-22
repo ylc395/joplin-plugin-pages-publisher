@@ -8,6 +8,7 @@ const FIELD_SCHEMA = {
     inputType: {
       enum: [
         'input',
+        'menu',
         'select',
         'multiple-select',
         'textarea',

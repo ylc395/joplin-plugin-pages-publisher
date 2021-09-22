@@ -1,6 +1,5 @@
 <script lang="ts">
 import { defineComponent, inject } from 'vue';
-import { startCase } from 'lodash';
 import { Button, Modal } from 'ant-design-vue';
 import { SettingOutlined } from '@ant-design/icons-vue';
 import { token as pageToken } from 'domain/service/PageService';
@@ -16,7 +15,6 @@ export default defineComponent({
 
     return {
       pages,
-      startCase,
       isCustomizing,
       customize,
       getModalContainer: () => document.querySelector('#joplin-plugin-content'),
@@ -32,7 +30,7 @@ export default defineComponent({
       class="flex justify-between border border-solid border-gray-300 mb-3 py-3 px-4"
     >
       <div>
-        <h2 class="font-normal text-base mb-2">{{ startCase(page.name) }} Page</h2>
+        <h2 class="font-normal text-base mb-2">{{ page.readableName }}</h2>
         <div class="text-gray-500">
           {{ `${page.url.value}${page.isArticlePage ? '/:articleUrl' : ''}` }}
         </div>

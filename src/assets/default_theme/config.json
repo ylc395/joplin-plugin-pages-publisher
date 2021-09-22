@@ -3,7 +3,7 @@
   "author": "ylc395",
   "version": "0.0.1",
   "pages": {
-    "index": [],
+    "index": [{ "name": "menu", "label": "Menu", "inputType": "menu" }],
     "article": [],
     "archives": [],
     "about": [

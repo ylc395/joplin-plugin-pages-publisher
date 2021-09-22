@@ -1,4 +1,4 @@
-import { compact, map, filter } from 'lodash';
+import { compact, map, filter, startCase } from 'lodash';
 import { computed, reactive } from 'vue';
 import type { Theme } from './Theme';
 
@@ -19,11 +19,17 @@ export interface Field {
     | 'date'
     | 'switch'
     | 'markdown'
+    | 'menu'
     | 'number';
 
   // valid when inputType is select, multiple-select, radio, checkbox
   readonly options?: Array<Readonly<{ label: string; value: string }>>;
 }
+
+export type Menu = Array<{
+  label: string;
+  link: string;
+}>;
 
 export type PageValues = Record<string, unknown>;
 
@@ -72,6 +78,10 @@ export class Page {
       }, {} as PageValues),
       ...values,
     });
+  }
+
+  get readableName() {
+    return `${startCase(this.name)} Page`;
   }
 
   readonly url = computed(() => {
