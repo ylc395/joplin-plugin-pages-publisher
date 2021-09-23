@@ -21,11 +21,13 @@ export enum GitEvents {
   PROGRESS = 'PROGRESS',
   MESSAGE = 'MESSAGE',
   AUTH_FAIL = 'AUTH_FAIL',
+  START_PUSHING = 'START_PUSHING',
+  TERMINATED = 'TERMINATED',
 }
 
 export interface Git extends EventEmitter<GitEvents> {
   init: (githubInfo: Github, dir: string) => Promise<void>;
-  push: (files: string[]) => Promise<void>;
+  push: (files: string[], init: boolean) => Promise<void>;
   terminate: () => void;
 }
 
@@ -66,11 +68,11 @@ export class PublishService {
     this.git.on(GitEvents.AUTH_FAIL, () => {
       this.publishingProgress.message = GitEvents.AUTH_FAIL;
     });
+    this.git.on(GitEvents.PROGRESS, (e) => this.refreshPublishingProgress(e));
+    this.git.on(GitEvents.MESSAGE, (e) => (this.publishingProgress.message = e));
+    this.git.on(GitEvents.START_PUSHING, () => this.refreshPublishingProgress());
+    this.git.on(GitEvents.TERMINATED, () => this.refreshPublishingProgress());
 
-    this.git.on(GitEvents.PROGRESS, this.refreshPublishingProgress.bind(this));
-    this.git.on(GitEvents.MESSAGE, (e) => {
-      this.publishingProgress.message = e;
-    });
     this.generator.on(GeneratorEvents.PAGE_GENERATED, this.refreshGeneratingProgress.bind(this));
 
     this.githubInfo.value = {
@@ -139,11 +141,10 @@ export class PublishService {
 
   stopPublishing() {
     this.isPublishing.value = false;
-    this.refreshPublishingProgress();
     this.git.terminate();
   }
 
-  async publish() {
+  async publish(initGit = false) {
     if (this.isPublishing.value) {
       return;
     }
@@ -152,11 +153,10 @@ export class PublishService {
       throw new Error('invalid github info');
     }
 
-    this.refreshPublishingProgress();
     this.isPublishing.value = true;
 
     try {
-      await this.git.push(this.files);
+      await this.git.push(this.files, initGit);
       this.publishingProgress.result = 'success';
     } catch (error) {
       this.publishingProgress.result = 'fail';

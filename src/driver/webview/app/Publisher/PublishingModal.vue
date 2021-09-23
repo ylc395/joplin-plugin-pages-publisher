@@ -81,7 +81,10 @@ export default defineComponent({
         </template>
         <template #extra>
           <Button v-if="progress.result" @click="reset">Confirm</Button>
-          <Button v-if="progress.result === 'fail' && !isAuthError" type="primary" @click="publish"
+          <Button
+            v-if="progress.result === 'fail' && !isAuthError"
+            type="primary"
+            @click="publish(true)"
             >Retry</Button
           >
         </template>

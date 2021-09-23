@@ -39,7 +39,6 @@ export interface GitWorkerProgressRequest {
 
 export interface GitWorkerAuthFailRequest {
   event: 'authFail';
-  payload: string;
 }
 
 export type GitWorkerRequest =

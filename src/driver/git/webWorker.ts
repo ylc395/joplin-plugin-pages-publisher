@@ -33,9 +33,8 @@ const onMessage: MessageCallback = (payload) =>
 const onProgress: ProgressCallback = (payload) =>
   self.postMessage({ event: 'progress', payload } as GitWorkerProgressRequest);
 
-const onAuthFailure: AuthFailureCallback = (payload) => {
-  self.postMessage({ event: 'authFail', payload } as GitWorkerAuthFailRequest);
-  return { cancel: true };
+const onAuthFailure: AuthFailureCallback = () => {
+  self.postMessage({ event: 'authFail' } as GitWorkerAuthFailRequest);
 };
 
 const reportError = (action: WorkerCallResult['action']) => (e: Error) =>

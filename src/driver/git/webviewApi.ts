@@ -63,19 +63,30 @@ class Git extends EventEmitter<GitEvents> {
 
     // stop initializing! by terminating and reset worker
     if (this.initPromise) {
-      this.worker?.terminate();
-      this.rejectInitPromise?.('terminated');
-      this.worker = null;
+      this.terminate();
     }
 
     if (!this.worker) {
       this.initWorker();
     }
 
-    const worker = this.worker;
+    return this.initRepo({
+      needSetUserEmail: oldGithubInfo?.email !== githubInfo.email,
+      needSetUserName: oldGithubInfo?.userName !== githubInfo.userName,
+    });
+  }
 
-    if (!worker) {
-      throw new Error('no worker');
+  private initRepo({
+    needSetUserEmail,
+    needSetUserName,
+  }: {
+    needSetUserEmail: boolean;
+    needSetUserName: boolean;
+  }) {
+    const { worker, gitdir, githubInfo, dir } = this;
+
+    if (!worker || !gitdir || !githubInfo || !dir) {
+      throw new Error('cannot init repo');
     }
 
     const initPromise = new Promise<void>((resolve, reject) => {
@@ -101,11 +112,11 @@ class Git extends EventEmitter<GitEvents> {
       event: 'init',
       payload: {
         githubInfo,
-        needSetUserEmail: oldGithubInfo?.email !== githubInfo.email,
-        needSetUserName: oldGithubInfo?.userName !== githubInfo.userName,
+        needSetUserEmail,
+        needSetUserName,
         gitInfo: {
-          dir: this.dir,
-          gitdir: this.gitdir,
+          dir,
+          gitdir,
           url: Git.getRemoteUrl(githubInfo.userName, githubInfo.repositoryName),
           remote: Git.remote,
         },
@@ -151,7 +162,7 @@ class Git extends EventEmitter<GitEvents> {
     );
   }
 
-  async push(files: string[]) {
+  async push(files: string[], init: boolean) {
     if (this.isPushing) {
       throw new Error('pushing!');
     }
@@ -165,7 +176,20 @@ class Git extends EventEmitter<GitEvents> {
     }
 
     this.isPushing = true;
-    await this.initPromise;
+
+    try {
+      if (init) {
+        this.terminate();
+        await this.initRepo({ needSetUserEmail: false, needSetUserName: false });
+      } else {
+        await this.initPromise;
+      }
+    } catch (error) {
+      this.isPushing = false;
+      throw error;
+    }
+
+    this.emit(GitEvents.START_PUSHING);
 
     const request: WorkerPushRequest = {
       event: 'push',
@@ -190,7 +214,6 @@ class Git extends EventEmitter<GitEvents> {
       });
     });
     resultPromise.finally(() => (this.isPushing = false));
-
     this.worker.postMessage(request);
 
     return resultPromise;
@@ -198,6 +221,9 @@ class Git extends EventEmitter<GitEvents> {
 
   terminate() {
     this.worker?.terminate();
+    // todo: this crash app. why ???
+    this.rejectInitPromise?.('terminated');
+    this.emit(GitEvents.TERMINATED);
     this.initWorker();
   }
 
@@ -237,7 +263,6 @@ class Git extends EventEmitter<GitEvents> {
 
   private handleAuthFail = () => {
     this.emit(GitEvents.AUTH_FAIL);
-    return { cancel: true };
   };
 }
 
