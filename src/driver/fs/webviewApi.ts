@@ -1,6 +1,6 @@
 import type fsExtra from 'fs-extra';
 
-import { constant, isTypedArray, isObjectLike, isString, mapValues } from 'lodash';
+import { constant, isString, mapValues, isEmpty } from 'lodash';
 import type { MockNodeFsCallResult } from './type';
 
 export interface FsRequest {
@@ -34,8 +34,7 @@ const fs = {
                   throw result;
                 }
 
-                // buffer here is Unit8Array
-                if (!isObjectLike(result) || isTypedArray(result) || Array.isArray(result)) {
+                if (isEmpty(methodsResult)) {
                   return result;
                 }
 

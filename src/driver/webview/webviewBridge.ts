@@ -48,8 +48,9 @@ export default (panelId: string) => {
       case 'loadThemeConfigs':
         return loadThemes();
       case 'quitApp':
-        joplin.views.panels.hide(panelId);
-        return;
+        return joplin.views.panels.hide(panelId);
+      case 'installationDir':
+        return joplin.plugins.installationDir();
       case 'generateSite':
         return generateSite();
       case 'getGeneratingProgress':

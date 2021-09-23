@@ -17,7 +17,6 @@ joplin.plugins.register({
         if (!mainWindow) {
           mainWindow = await panels.create('mainWindow');
           panels.onMessage(mainWindow, webviewBridge(mainWindow));
-          await panels.addScript(mainWindow, './driver/webview/module-polyfill.js');
           await panels.addScript(mainWindow, './driver/webview/index.js');
         }
         await panels.show(mainWindow);

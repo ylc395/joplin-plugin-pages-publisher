@@ -15,6 +15,7 @@ export interface Modal {
 export interface JoplinApp {
   quitApp: () => never;
   openNote: (noteId: string) => Promise<void>;
+  installationDir: () => Promise<string>;
 }
 
 export enum FORBIDDEN {

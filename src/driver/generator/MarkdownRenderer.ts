@@ -103,7 +103,9 @@ export class MarkdownRenderer {
     }
 
     const resourceIds: string[] = [];
-    const markupToHtml = new MarkupToHtml({ ResourceModel: this.resourceModel });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const markupToHtml = new MarkupToHtml({ ResourceModel: this.resourceModel } as any); // something wrong with MarkupToHtml constructor
 
     const { html, pluginAssets, cssStrings } = await markupToHtml.render(1, rawText, null, {
       pluginOptions: this.mdPluginOptions,

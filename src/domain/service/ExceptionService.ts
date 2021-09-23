@@ -9,16 +9,19 @@ interface ErrorDesc {
 export class ExceptionService {
   private readonly appService = container.resolve(AppService);
   constructor() {
-    window.addEventListener('error', (e) => this.reportError(e.error));
+    window.addEventListener('error', (e) => this.reportError(e.error || e));
     window.addEventListener('unhandledrejection', (e) => this.reportError(Error(e.reason)));
   }
 
-  reportError(err: Error, desc?: ErrorDesc) {
+  reportError(err: any, desc?: ErrorDesc) {
     console.error(err);
-    this.appService.openModal({
-      type: 'error',
-      title: desc?.title ?? err.name,
-      content: desc?.message ?? err.message,
-    });
+
+    if (err) {
+      this.appService.openModal({
+        type: 'error',
+        title: desc?.title ?? err.name,
+        content: desc?.message ?? err.message,
+      });
+    }
   }
 }

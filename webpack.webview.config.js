@@ -2,7 +2,6 @@
 const { VueLoaderPlugin } = require('vue-loader');
 
 module.exports = {
-  target: 'web',
   module: {
     rules: [
       {

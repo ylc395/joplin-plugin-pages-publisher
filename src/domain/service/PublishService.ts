@@ -11,7 +11,7 @@ import {
   initialPublishProgress,
 } from '../model/Publishing';
 import { AppService, FORBIDDEN } from './AppService';
-import { isEmpty, omit, pick, some } from 'lodash';
+import { isEmpty, noop, omit, pick, some } from 'lodash';
 
 export enum GeneratorEvents {
   PAGE_GENERATED = 'PAGE_GENERATED',
@@ -82,7 +82,7 @@ export class PublishService {
     this.outputDir.value = await this.generator.getOutputDir();
 
     if (this.isGithubInfoValid.value) {
-      this.git.init(this.githubInfo.value, this.outputDir.value);
+      this.git.init(this.githubInfo.value, this.outputDir.value).catch(noop);
     }
   }
 

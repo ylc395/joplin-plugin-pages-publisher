@@ -162,7 +162,8 @@ const pluginConfig = Object.assign({}, baseConfig, {
 							// already copied into /dist so we don't copy them.
 							'**/*.ts',
 							'**/*.tsx',
-							'**/*.vue'
+							'**/*.vue',
+							'**/*.config.js',
 						],
 					},
 				},
@@ -213,9 +214,6 @@ function resolveExtraScriptPath(name) {
 		output: {
 			filename: `${nameNoExt}.js`,
 			path: distDir,
-			library: 'default',
-			libraryTarget: 'commonjs',
-			libraryExport: 'default',
 		},
 	};
 }
@@ -230,6 +228,7 @@ function buildExtraScriptConfigs(userConfig) {
 		output.push(Object.assign({}, extraScriptConfig, {
 			entry: scriptPaths.entry,
 			output: scriptPaths.output,
+			target: scriptName.toLowerCase().includes('worker') ? 'webworker' : 'web',
 		}));
 	}
 

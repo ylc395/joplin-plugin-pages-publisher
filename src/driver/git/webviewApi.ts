@@ -1,22 +1,23 @@
 import { container } from 'tsyringe';
 import EventEmitter from 'eventemitter3';
+import { GitProgressEvent, push, add, commit, listFiles, remove } from 'isomorphic-git';
 import {
-  GitProgressEvent,
-  push,
-  add,
-  commit,
-  setConfig,
-  listFiles,
-  clone,
-  remove,
-  listBranches,
-  branch,
-} from 'isomorphic-git';
+  difference,
+  isFunction,
+  mapValues,
+  omitBy,
+  pickBy,
+  isTypedArray,
+  isObjectLike,
+  noop,
+} from 'lodash';
 import http from 'isomorphic-git/http/web';
 import fs from 'driver/fs/webviewApi';
+import type { FsWorkerCallRequest, FsWorkerCallResponse } from 'driver/fs/type';
 import { gitClientToken, GitEvents } from 'domain/service/PublishService';
 import type { Github } from 'domain/model/Publishing';
-import { difference } from 'lodash';
+import { joplinToken } from 'domain/service/AppService';
+import type { WorkerInitRequest, GitWorkerRequest } from './type';
 
 export interface GitRequest {
   event: 'getGitRepositoryDir';
@@ -26,6 +27,7 @@ declare const webviewApi: {
 };
 
 class Git extends EventEmitter<GitEvents> {
+  private readonly joplin = container.resolve(joplinToken);
   private static readonly remote = 'github';
   private static getRemoteUrl(userName: string, repoName: string) {
     return `https://github.com/${userName}/${repoName}.git`;
@@ -36,7 +38,9 @@ class Git extends EventEmitter<GitEvents> {
   private getGitRepositoryDir() {
     return webviewApi.postMessage<string>({ event: 'getGitRepositoryDir' });
   }
-  private initPromise: Promise<void> = Promise.resolve();
+  private worker: Worker | null = null;
+  private isPushing = false;
+  private initRepoPromise?: Promise<void>;
 
   async init(githubInfo: Github, dir: string) {
     if (dir) {
@@ -47,8 +51,7 @@ class Git extends EventEmitter<GitEvents> {
       this.gitdir = await this.getGitRepositoryDir();
     }
 
-    this.initPromise = this.initPromise.then(() => this.initRepo(githubInfo));
-    return this.initPromise;
+    return this.initRepo(githubInfo);
   }
 
   //todo: how to stop init process?
@@ -64,51 +67,92 @@ class Git extends EventEmitter<GitEvents> {
     }
 
     const { dir, gitdir } = this;
-
-    await fs.promises.emptyDir(gitdir);
-    await fs.promises.emptyDir(dir);
+    const installDir = await this.joplin.installationDir();
 
     if (
-      this.githubInfo?.userName !== userName ||
-      this.githubInfo?.token !== token ||
-      this.githubInfo?.repositoryName !== repositoryName
+      this.githubInfo?.userName === userName &&
+      this.githubInfo?.token === token &&
+      this.githubInfo?.repositoryName === repositoryName
     ) {
-      // todo: handle clone fail
-      await clone({
-        fs,
-        http,
-        dir,
-        gitdir,
-        url: Git.getRemoteUrl(userName, repositoryName),
-        remote: Git.remote,
-        depth: 1,
-        noCheckout: true,
-        onAuth: () => ({ username: userName, password: token }),
-        onMessage: this.handleMessage,
-        onProgress: this.handleProgress,
-        onAuthFailure: this.handleAuthFail,
+      return;
+    }
+
+    if (this.worker) {
+      this.worker.terminate();
+    }
+
+    this.initRepoPromise = new Promise<void>((resolve, reject) => {
+      this.worker = new Worker(`${installDir}/driver/git/webWorker.js`);
+      const githubInfo = { branch: branchName, email, userName, repositoryName, token };
+      this.worker.addEventListener(
+        'message',
+        async ({ data }: MessageEvent<FsWorkerCallRequest | GitWorkerRequest>) => {
+          if (!data) {
+            return;
+          }
+
+          const { event } = data;
+
+          switch (event) {
+            case 'finished':
+              this.worker?.terminate();
+              this.worker = null;
+              this.githubInfo = githubInfo;
+              resolve();
+              break;
+            case 'message':
+              this.handleMessage(data.payload);
+              break;
+            case 'progress':
+              this.handleProgress(data.payload);
+              break;
+            case 'authFail':
+              this.handleAuthFail();
+              break;
+            case 'fsCall':
+              this.handleFsCall(data.payload);
+              break;
+            default:
+              break;
+          }
+        },
+      );
+
+      this.worker.addEventListener('error', (e) => {
+        this.worker?.terminate();
+        this.worker = null;
+        reject(e);
+        e.preventDefault();
       });
-    }
 
-    const branches = await listBranches({ fs, dir, gitdir });
+      const request: WorkerInitRequest = {
+        event: 'init',
+        payload: {
+          needSetUserName: this.githubInfo?.userName !== userName,
+          needSetUserEmail: this.githubInfo?.email !== email,
+          githubInfo,
+          gitInfo: {
+            dir,
+            gitdir,
+            url: Git.getRemoteUrl(userName, repositoryName),
+            remote: Git.remote,
+          },
+        },
+      };
 
-    if (!branches.includes(branchName)) {
-      await branch({ fs, dir, gitdir, ref: branchName });
-    }
+      this.worker.postMessage(request);
+    });
 
-    if (this.githubInfo?.userName !== userName) {
-      await setConfig({ fs, gitdir, path: 'user.name', value: userName });
-    }
-
-    if (this.githubInfo?.email !== email) {
-      await setConfig({ fs, gitdir, path: 'user.email', value: email });
-    }
-
-    this.githubInfo = { branch: branchName, email, userName, repositoryName, token };
+    return this.initRepoPromise;
   }
 
   async push(files: string[], force: boolean) {
-    await this.initPromise;
+    if (this.isPushing) {
+      throw new Error('git is pushing');
+    }
+    this.isPushing = true;
+    await this.initRepoPromise;
+
     const { dir, gitdir, githubInfo } = this;
 
     if (!dir || !gitdir || !githubInfo) {
@@ -141,6 +185,33 @@ class Git extends EventEmitter<GitEvents> {
       onProgress: this.handleProgress,
       onAuthFailure: this.handleAuthFail,
     });
+    this.isPushing = false;
+  }
+
+  private async handleFsCall({ args, callId, funcName }: FsWorkerCallRequest['payload']) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (fs.promises[funcName] as any)(...args);
+      const needTransform = isObjectLike(result) && !isTypedArray(result) && !Array.isArray(result);
+      const response: FsWorkerCallResponse = {
+        event: 'fsCallResponse',
+        payload: {
+          isError: false,
+          result: needTransform ? omitBy(result, isFunction) : result,
+          methodsResult: needTransform
+            ? mapValues(pickBy(result, isFunction), (value) => value())
+            : {},
+          callId,
+        },
+      };
+      this.worker?.postMessage(response);
+    } catch (error) {
+      const response: FsWorkerCallResponse = {
+        event: 'fsCallResponse',
+        payload: { isError: true, result: error, methodsResult: {}, callId },
+      };
+      this.worker?.postMessage(response);
+    }
   }
 
   private handleProgress = (e: GitProgressEvent) => {
