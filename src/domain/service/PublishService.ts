@@ -26,6 +26,7 @@ export enum GitEvents {
 export interface Git extends EventEmitter<GitEvents> {
   init: (githubInfo: Github, dir: string) => Promise<void>;
   push: (files: string[], force: boolean) => Promise<void>;
+  terminate: () => void;
 }
 
 export interface Generator extends EventEmitter<GeneratorEvents> {
@@ -82,7 +83,7 @@ export class PublishService {
     this.outputDir.value = await this.generator.getOutputDir();
 
     if (this.isGithubInfoValid.value) {
-      this.git.init(this.githubInfo.value, this.outputDir.value).catch(noop);
+      this.git.init(toRaw(this.githubInfo.value), this.outputDir.value).catch(noop);
     }
   }
 
@@ -136,6 +137,12 @@ export class PublishService {
     Object.assign(this.publishingProgress, progress);
   }
 
+  stopPublishing() {
+    this.isPublishing.value = false;
+    this.refreshPublishingProgress();
+    this.git.terminate();
+  }
+
   async publish(force = false) {
     if (this.isPublishing.value) {
       return;
@@ -163,7 +170,6 @@ export class PublishService {
       }
     }
 
-    this.refreshGeneratingProgress();
     this.refreshPublishingProgress();
     this.isPublishing.value = true;
 

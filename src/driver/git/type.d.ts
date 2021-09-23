@@ -1,21 +1,31 @@
 import type { Github } from 'domain/model/Publishing';
 import type { GitProgressEvent } from 'isomorphic-git';
 
-interface WorkerInitRepoParams {
-  gitInfo: {
-    dir: string;
-    gitdir: string;
-    url: string;
-    remote: string;
-  };
-  githubInfo: Github;
-  needSetUserName: boolean;
-  needSetUserEmail: boolean;
+interface GitInfo {
+  dir: string;
+  gitdir: string;
+  url: string;
+  remote: string;
 }
 
-export interface WorkerInitRequest {
+export interface WorkerInitRepoRequest {
   event: 'init';
-  payload: WorkerInitRepoParams;
+  payload: {
+    gitInfo: GitInfo;
+    githubInfo: Github;
+    needSetUserName: boolean;
+    needSetUserEmail: boolean;
+  };
+}
+
+export interface WorkerPushRequest {
+  event: 'push';
+  payload: {
+    gitInfo: GitInfo;
+    githubInfo: Github;
+    files: string[];
+    force: boolean;
+  };
 }
 
 export interface GitWorkerMessageRequest {
@@ -30,13 +40,16 @@ export interface GitWorkerProgressRequest {
 
 export interface GitWorkerAuthFailRequest {
   event: 'authFail';
+  payload: string;
 }
 
-export interface GitWorkerFinishedRequest {
-  event: 'finished';
-}
 export type GitWorkerRequest =
   | GitWorkerAuthFailRequest
-  | GitWorkerFinishedRequest
   | GitWorkerMessageRequest
   | GitWorkerProgressRequest;
+
+export interface WorkerCallResult {
+  action: 'init' | 'push';
+  result: 'success' | 'error';
+  error?: Error;
+}

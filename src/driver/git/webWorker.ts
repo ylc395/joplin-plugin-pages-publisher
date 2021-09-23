@@ -2,25 +2,55 @@
 /// <reference lib="WebWorker" />
 import http from 'isomorphic-git/http/web';
 import fs from 'driver/fs/webWorker';
-import { setConfig, clone, listBranches, branch } from 'isomorphic-git';
+import { difference } from 'lodash';
+import {
+  setConfig,
+  clone,
+  listBranches,
+  branch,
+  add,
+  listFiles,
+  remove,
+  commit,
+  push,
+  MessageCallback,
+  ProgressCallback,
+  AuthFailureCallback,
+} from 'isomorphic-git';
+
 import type {
-  WorkerInitRequest,
+  WorkerInitRepoRequest,
+  WorkerPushRequest,
   GitWorkerAuthFailRequest,
-  GitWorkerFinishedRequest,
   GitWorkerMessageRequest,
   GitWorkerProgressRequest,
+  WorkerCallResult,
 } from './type';
 
-self.addEventListener('message', async (e: MessageEvent<WorkerInitRequest>) => {
-  if (e.data?.event === 'init') {
-    try {
-      await initRepo(e.data.payload);
-      self.postMessage({ event: 'finished' });
-    } catch (error) {
-      setTimeout(() => {
-        throw error;
-      });
-    }
+const onMessage: MessageCallback = (payload) =>
+  self.postMessage({ event: 'message', payload } as GitWorkerMessageRequest);
+
+const onProgress: ProgressCallback = (payload) =>
+  self.postMessage({ event: 'progress', payload } as GitWorkerProgressRequest);
+
+const onAuthFailure: AuthFailureCallback = (payload) => {
+  self.postMessage({ event: 'authFail', payload } as GitWorkerAuthFailRequest);
+  return { cancel: true };
+};
+
+const reportError = (action: WorkerCallResult['action']) => (e: Error) =>
+  self.postMessage({ action, result: 'error', error: e } as WorkerCallResult);
+
+self.addEventListener('message', (e: MessageEvent<WorkerInitRepoRequest | WorkerPushRequest>) => {
+  switch (e.data?.event) {
+    case 'init':
+      initRepo(e.data.payload).catch(reportError('init'));
+      break;
+    case 'push':
+      publish(e.data.payload).catch(reportError('push'));
+      break;
+    default:
+      break;
   }
 });
 
@@ -29,7 +59,7 @@ async function initRepo({
   githubInfo,
   needSetUserEmail,
   needSetUserName,
-}: WorkerInitRequest['payload']) {
+}: WorkerInitRepoRequest['payload']) {
   const { userName, token, branch: branchName = 'master', email } = githubInfo;
   const { dir, gitdir, url, remote } = gitInfo;
 
@@ -46,12 +76,9 @@ async function initRepo({
     depth: 1,
     noCheckout: true,
     onAuth: () => ({ username: userName, password: token }),
-    onMessage: (payload) =>
-      self.postMessage({ event: 'message', payload } as GitWorkerMessageRequest),
-    onProgress: (payload) =>
-      self.postMessage({ event: 'progress', payload } as GitWorkerProgressRequest),
-    onAuthFailure: (payload) =>
-      self.postMessage({ event: 'authFail', payload } as GitWorkerAuthFailRequest),
+    onAuthFailure,
+    onMessage,
+    onProgress,
   });
 
   const branches = await listBranches({ fs, dir, gitdir });
@@ -68,5 +95,40 @@ async function initRepo({
     await setConfig({ fs, gitdir, path: 'user.email', value: email });
   }
 
-  self.postMessage({ event: 'finished' } as GitWorkerFinishedRequest);
+  self.postMessage({ action: 'init', result: 'success' } as WorkerCallResult);
+}
+
+async function publish({
+  gitInfo: { dir, gitdir, remote, url },
+  githubInfo,
+  files,
+  force,
+}: WorkerPushRequest['payload']) {
+  await add({ fs, gitdir, dir, filepath: '.' });
+
+  const filesExisted = await listFiles({ fs, gitdir, dir, ref: githubInfo.branch });
+  const files_ = files.map((path) => path.replace(`${dir}/`, ''));
+  const deletedFiles = difference(filesExisted, files_);
+
+  for (const deletedFile of deletedFiles) {
+    await remove({ fs, dir, gitdir, filepath: deletedFile });
+  }
+
+  await commit({ fs, gitdir, message: 'test', ref: githubInfo.branch });
+  await push({
+    fs,
+    http,
+    gitdir,
+    dir,
+    force,
+    ref: githubInfo.branch,
+    remoteRef: githubInfo.branch,
+    remote,
+    url,
+    onAuth: () => ({ username: githubInfo.userName, password: githubInfo.token }),
+    onAuthFailure,
+    onMessage,
+    onProgress,
+  });
+  self.postMessage({ action: 'push', result: 'success' } as WorkerCallResult);
 }

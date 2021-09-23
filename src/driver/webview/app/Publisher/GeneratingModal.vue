@@ -29,7 +29,10 @@ export default defineComponent({
       modalProps: useModalProps(),
       outputDir,
       reset,
-      publish: () => publish(),
+      publish: async () => {
+        await reset();
+        await publish();
+      },
       isGithubInfoValid,
       switchToGithubTab: async () => {
         await reset();

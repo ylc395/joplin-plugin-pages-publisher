@@ -13,6 +13,7 @@ export default defineComponent({
       publish,
       refreshPublishingProgress,
       githubInfo,
+      stopPublishing,
     } =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(publishToken)!;
@@ -20,6 +21,7 @@ export default defineComponent({
     return {
       visible: computed(() => isPublishing.value || !!progress.result),
       isPublishing,
+      stopPublishing,
       progress,
       modalProps: useModalProps(),
       publish: () => publish(false),
@@ -44,7 +46,10 @@ export default defineComponent({
     <template v-if="isPublishing">
       <div>{{ progress.phase || 'Publishing...' }}</div>
       <Progress :percent="(progress.loaded / progress.total) * 100" :showInfo="false" />
-      <div>{{ progress.message }}</div>
+      <p>{{ progress.message }}</p>
+      <div class="text-right">
+        <Button @click="stopPublishing">Stop</Button>
+      </div>
     </template>
     <div v-if="progress.result">
       <Result
