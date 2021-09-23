@@ -102,7 +102,6 @@ async function publish({
   gitInfo: { dir, gitdir, remote, url },
   githubInfo,
   files,
-  force,
 }: WorkerPushRequest['payload']) {
   await add({ fs, gitdir, dir, filepath: '.' });
 
@@ -120,7 +119,6 @@ async function publish({
     http,
     gitdir,
     dir,
-    force,
     ref: githubInfo.branch,
     remoteRef: githubInfo.branch,
     remote,

@@ -25,7 +25,7 @@ export enum GitEvents {
 
 export interface Git extends EventEmitter<GitEvents> {
   init: (githubInfo: Github, dir: string) => Promise<void>;
-  push: (files: string[], force: boolean) => Promise<void>;
+  push: (files: string[]) => Promise<void>;
   terminate: () => void;
 }
 
@@ -110,7 +110,7 @@ export class PublishService {
 
   async generateSite() {
     if (this.isGenerating.value || this.appService.getLatestWarning(FORBIDDEN.GENERATE)) {
-      return;
+      throw new Error('generating!');
     }
 
     this.isGenerating.value = true;
@@ -143,7 +143,7 @@ export class PublishService {
     this.git.terminate();
   }
 
-  async publish(force = false) {
+  async publish() {
     if (this.isPublishing.value) {
       return;
     }
@@ -152,29 +152,11 @@ export class PublishService {
       throw new Error('invalid github info');
     }
 
-    if (force) {
-      const branch = this.githubInfo.value?.branch || 'master';
-      const confirmed = await new Promise<boolean>((resolve) => {
-        this.appService.openModal({
-          type: 'confirm',
-          title: 'Are you sure?',
-          content: `Force Push will replace the ${branch} branch's all commits on Github with commits of ${branch} branch in this machine. Be sure that you do know what you are doing.`,
-          onOk: () => resolve(true),
-          onCancel: () => resolve(false),
-          okButtonProps: { danger: true, type: 'primary' },
-        });
-      });
-
-      if (!confirmed) {
-        return;
-      }
-    }
-
     this.refreshPublishingProgress();
     this.isPublishing.value = true;
 
     try {
-      await this.git.push(this.files, force);
+      await this.git.push(this.files);
       this.publishingProgress.result = 'success';
     } catch (error) {
       this.publishingProgress.result = 'fail';

@@ -24,7 +24,6 @@ export interface WorkerPushRequest {
     gitInfo: GitInfo;
     githubInfo: Github;
     files: string[];
-    force: boolean;
   };
 }
 

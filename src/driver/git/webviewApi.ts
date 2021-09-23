@@ -151,7 +151,7 @@ class Git extends EventEmitter<GitEvents> {
     );
   }
 
-  async push(files: string[], force: boolean) {
+  async push(files: string[]) {
     if (this.isPushing) {
       throw new Error('pushing!');
     }
@@ -171,7 +171,6 @@ class Git extends EventEmitter<GitEvents> {
       event: 'push',
       payload: {
         files,
-        force,
         githubInfo: this.githubInfo,
         gitInfo: {
           dir: this.dir,

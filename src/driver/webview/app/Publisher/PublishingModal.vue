@@ -24,11 +24,9 @@ export default defineComponent({
       stopPublishing,
       progress,
       modalProps: useModalProps(),
-      publish: () => publish(false),
-      gitPushForce: () => publish(true),
+      publish,
       githubInfo,
       reset: () => refreshPublishingProgress(),
-      needForce: computed(() => progress.message.includes('not a simple fast-forward')),
       isAuthError: computed(() => progress.message === GitEvents.AUTH_FAIL),
       message: computed(() => {
         const prefix = progress.phase ? `${progress.phase}: ` : '';
@@ -83,12 +81,9 @@ export default defineComponent({
         </template>
         <template #extra>
           <Button v-if="progress.result" @click="reset">Confirm</Button>
-          <template v-if="progress.result === 'fail'">
-            <Button v-if="!needForce && !isAuthError" type="primary" @click="publish">Retry</Button>
-            <Button v-if="needForce" type="primary" danger @click="gitPushForce"
-              >Retry FORCE PUSH</Button
-            >
-          </template>
+          <Button v-if="progress.result === 'fail' && !isAuthError" type="primary" @click="publish"
+            >Retry</Button
+          >
         </template>
       </Result>
     </div>
