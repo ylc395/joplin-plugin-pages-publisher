@@ -4,7 +4,7 @@ import isValidFilename from 'valid-filename';
 import type { readJSON as IReadJSON, readdir as IReaddir } from 'fs-extra';
 import type { Theme } from 'domain/model/Theme';
 import { DEFAULT_THEME_NAME } from 'domain/model/Theme';
-import { getThemeDir } from 'driver/generator/pathHelper';
+import { getThemeDir } from 'driver/generator/joplinPlugin/pathHelper';
 import { getValidator } from 'driver/utils';
 import { THEME_SCHEMA } from './schema';
 

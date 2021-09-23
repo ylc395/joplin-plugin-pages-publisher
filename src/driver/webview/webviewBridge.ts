@@ -13,8 +13,8 @@ import type {
 } from 'driver/themeLoader/webviewApi';
 
 import { loadTheme, loadThemes } from 'driver/themeLoader/joplinPlugin';
-import { generateSite, getProgress } from 'driver/generator';
-import { getOutputDir, getGitRepositoryDir } from 'driver/generator/pathHelper';
+import { generateSite, getProgress } from 'driver/generator/joplinPlugin';
+import { getOutputDir, getGitRepositoryDir } from 'driver/generator/joplinPlugin/pathHelper';
 import { fetchData, fetchAllData } from 'driver/joplinData/joplinPlugin';
 import { mockNodeFsCall } from 'driver/fs/joplinPlugin';
 

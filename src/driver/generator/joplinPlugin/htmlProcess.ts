@@ -1,6 +1,6 @@
 import _sanitizeHtml, { Attributes } from 'sanitize-html';
 import { omitBy, difference } from 'lodash';
-import type { RenderResultPluginAsset } from './type';
+import type { RenderResultPluginAsset } from '../type';
 export function sanitizeMarkdownHtml(html: string) {
   const allSyntaxes = ['mermaid', 'fountain', 'katex', 'hljs'] as const;
   const syntaxes = new Set<string>();

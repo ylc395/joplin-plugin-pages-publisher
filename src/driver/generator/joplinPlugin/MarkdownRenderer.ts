@@ -7,7 +7,7 @@ import type { File } from 'domain/model/JoplinData';
 import { outputFile, copy } from 'driver/fs/joplinPlugin';
 import { fetchData, fetchAllData } from 'driver/joplinData/joplinPlugin';
 import { getMarkdownPluginAssetsDir, getOutputDir } from './pathHelper';
-import type { RenderResultPluginAsset, ResourceMap } from './type';
+import type { RenderResultPluginAsset, ResourceMap } from '../type';
 import { sanitizeMarkdownHtml } from './htmlProcess';
 
 const PLUGIN_SETTING_PREFIX = 'markdown.plugin.';

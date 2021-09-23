@@ -17,7 +17,7 @@ import { ARTICLE_SCHEMA } from 'driver/db/schema';
 import { getValidator } from 'driver/utils';
 
 import { addScriptLinkStyleTags } from './htmlProcess';
-import type { RenderEnv } from './type';
+import type { RenderEnv } from '../type';
 import {
   getOutputDir,
   getOutputThemeAssetsDir,
