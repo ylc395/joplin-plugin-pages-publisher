@@ -1,23 +1,32 @@
 import joplin from 'api';
 import { cloneDeep, get, set } from 'lodash';
 import { Low } from 'lowdb/lib';
+import { resolve } from 'path';
 import { singleton } from 'tsyringe';
 import { JSONFile } from './adaptor';
 
 @singleton()
 export class Db {
   private db: Low<Record<string, unknown>> | null = null;
-  private ready = new Promise((resolve) => {
-    this.init().then(resolve);
-  });
-  private async init() {
+  private ready = this.init();
+  async init(overwriteReady = false) {
     const pluginDir = await joplin.plugins.dataDir();
     this.db = new Low(new JSONFile(`${pluginDir}/db.json`));
     await this.db.read();
 
-    if (this.db.data === null) {
-      this.db.data = {};
+    const db = this.db;
+    const ready = new Promise<void>((resolve) => {
+      if (db.data === null) {
+        db.data = {};
+      }
+      resolve();
+    });
+
+    if (overwriteReady) {
+      this.ready = ready;
     }
+
+    return ready;
   }
 
   fetch<T>(path: string[]) {

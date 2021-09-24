@@ -23,6 +23,9 @@ export const themeLoaderToken: InjectionToken<ThemeLoader> = Symbol('themeFetche
 export class PluginDataRepository {
   private readonly pluginDataLoader = container.resolve(pluginDataDbToken);
   private readonly themeLoader = container.resolve(themeLoaderToken);
+  async checkDb() {
+    return !(await this.pluginDataLoader.fetch<true>(['__broken']));
+  }
 
   getPagesValuesOfTheme(themeName: string) {
     return this.pluginDataLoader.fetch<PagesValues>(['pagesValues', themeName]);

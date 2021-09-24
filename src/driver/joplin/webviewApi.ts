@@ -1,7 +1,7 @@
 import { container } from 'tsyringe';
 import { joplinToken } from 'domain/service/AppService';
 export interface JoplinAction {
-  event: 'quitApp' | 'openNote' | 'installationDir';
+  event: 'quitApp' | 'openNote' | 'installationDir' | 'dataDir';
   payload?: any;
 }
 
@@ -16,6 +16,10 @@ container.registerInstance(joplinToken, {
 
   installationDir() {
     return webviewApi.postMessage({ event: 'installationDir' });
+  },
+
+  dataDir() {
+    return webviewApi.postMessage({ event: 'dataDir' });
   },
 
   openNote(noteId: string) {

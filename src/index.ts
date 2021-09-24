@@ -1,10 +1,13 @@
 import 'core-js/proposals/reflect-metadata';
 import joplin from 'api';
+import { container } from 'tsyringe';
+import { Db } from 'driver/db/joplinPlugin';
 import { SettingItemType } from 'api/types';
-import webviewBridge from './driver/webview/webviewBridge';
+import webviewBridge from 'driver/webview/webviewBridge';
 
 const OPEN_PAGES_PUBLISHER_COMMAND = 'openPagesPublisher';
 const panels = joplin.views.panels;
+const db = container.resolve(Db);
 let mainWindow: string;
 
 joplin.plugins.register({
@@ -19,6 +22,7 @@ joplin.plugins.register({
           panels.onMessage(mainWindow, webviewBridge(mainWindow));
           await panels.addScript(mainWindow, './driver/webview/index.js');
         }
+        await db.init(true);
         await panels.show(mainWindow);
       },
     });

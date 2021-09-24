@@ -51,6 +51,8 @@ export default (panelId: string) => {
         return joplin.views.panels.hide(panelId);
       case 'installationDir':
         return joplin.plugins.installationDir();
+      case 'dataDir':
+        return joplin.plugins.dataDir();
       case 'generateSite':
         return generateSite();
       case 'getGeneratingProgress':
@@ -66,7 +68,7 @@ export default (panelId: string) => {
       case 'getJoplinPluginSetting':
         return joplin.settings.value(request.key);
       default:
-        break;
+        throw new Error(`unknown bridge request: ${request}`);
     }
   };
 };

@@ -16,10 +16,9 @@ export class JSONFile<T> implements Adapter<T> {
     }
 
     try {
-      // todo: handle invalid parsing
       return JSON.parse(data) as T;
     } catch {
-      return {} as T;
+      return { __broken: true } as T & { __broken: true };
     }
   }
 
