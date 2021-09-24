@@ -34,7 +34,7 @@ export default defineComponent({
 });
 </script>
 <template>
-  <!-- there is a transition bug in Modal. disable transition -->
+  <!-- todo: there is a transition bug in Modal. disable transition -->
   <Modal :visible="visible" v-bind="modalProps" :transitionName="null">
     <template v-if="isPublishing">
       <div>{{ progress.phase || 'Publishing...' }}</div>

@@ -66,6 +66,7 @@ export function useDraftForm<T = Data>(
   const rules_ = isFunction(rules) ? computed(() => rules(draftModel.value)) : rules;
 
   // todo: if ant-design-vue support validating non-existed props, following code can be removed
+  // https://github.com/vueComponent/ant-design-vue/pull/4647
   if (rules_) {
     watch(
       rules_,
