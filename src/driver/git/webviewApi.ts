@@ -1,18 +1,14 @@
 import { container } from 'tsyringe';
 import EventEmitter from 'eventemitter3';
 import type { GitProgressEvent } from 'isomorphic-git';
-import { isFunction, mapValues, omitBy, pickBy, isTypedArray, isObjectLike, noop } from 'lodash';
+import { isFunction, mapValues, omitBy, pickBy, isTypedArray, isObjectLike, isError } from 'lodash';
+import { wrap, Remote, releaseProxy, expose } from 'comlink';
 import fs from 'driver/fs/webviewApi';
 import type { FsWorkerCallRequest, FsWorkerCallResponse } from 'driver/fs/type';
 import { gitClientToken, GitEvents } from 'domain/service/PublishService';
-import type { Github } from 'domain/model/Publishing';
+import { Github, PublishResults } from 'domain/model/Publishing';
 import { joplinToken } from 'domain/service/AppService';
-import type {
-  GitWorkerRequest,
-  WorkerCallResult,
-  WorkerInitRepoRequest,
-  WorkerPushRequest,
-} from './type';
+import type { GitEventHandler, WorkerGit } from './type';
 
 export interface GitRequest {
   event: 'getGitRepositoryDir';
@@ -27,17 +23,18 @@ class Git extends EventEmitter<GitEvents> {
   private static getRemoteUrl(userName: string, repoName: string) {
     return `https://github.com/${userName}/${repoName}.git`;
   }
+  private static getGitRepositoryDir() {
+    return webviewApi.postMessage<string>({ event: 'getGitRepositoryDir' });
+  }
   private dir?: string;
   private gitdir?: string;
   private installDir?: string;
   private githubInfo?: Github;
-  private getGitRepositoryDir() {
-    return webviewApi.postMessage<string>({ event: 'getGitRepositoryDir' });
-  }
-  private worker: Worker | null = null;
-  private initPromise: Promise<void> | null = null;
+  private worker?: Worker;
+  private workerGit?: Remote<WorkerGit>;
+  private initRepoPromise?: Promise<void>;
+  private stopInitRepo?: (reason: unknown) => void;
   private isPushing = false;
-  private rejectInitPromise: null | ((reason: unknown) => void) = null;
 
   async init(githubInfo: Github, dir: string) {
     this.dir = dir;
@@ -47,7 +44,7 @@ class Git extends EventEmitter<GitEvents> {
     }
 
     if (!this.gitdir) {
-      this.gitdir = await this.getGitRepositoryDir();
+      this.gitdir = await Git.getGitRepositoryDir();
     }
 
     const oldGithubInfo = this.githubInfo;
@@ -61,105 +58,81 @@ class Git extends EventEmitter<GitEvents> {
       return;
     }
 
-    // stop initializing! by terminating and reset worker
-    if (this.initPromise) {
-      this.terminate();
-    }
-
-    if (!this.worker) {
-      this.initWorker();
-    }
-
-    return this.initRepo({
-      needSetUserEmail: oldGithubInfo?.email !== githubInfo.email,
-      needSetUserName: oldGithubInfo?.userName !== githubInfo.userName,
-    });
+    return this.initRepo();
   }
 
-  private initRepo({
-    needSetUserEmail,
-    needSetUserName,
-  }: {
-    needSetUserEmail: boolean;
-    needSetUserName: boolean;
-  }) {
-    const { worker, gitdir, githubInfo, dir } = this;
+  private initRepo() {
+    // always init worker when init repo
+    this.initWorker();
 
-    if (!worker || !gitdir || !githubInfo || !dir) {
+    const { gitdir, githubInfo, dir, workerGit } = this;
+
+    if (!workerGit || !gitdir || !githubInfo || !dir) {
       throw new Error('cannot init repo');
     }
 
-    const initPromise = new Promise<void>((resolve, reject) => {
-      this.rejectInitPromise = reject;
-      worker.addEventListener('message', function handler(e: MessageEvent<WorkerCallResult>) {
-        if (e.data?.action === 'init') {
-          e.data.result === 'success' ? resolve() : reject(e.data.error);
-          this.removeEventListener('message', handler);
-        }
-      });
+    this.initRepoPromise = new Promise((resolve, reject) => {
+      const reject_ = (e: unknown) => {
+        reject(e);
+        this.emit(GitEvents.INIT_REPO_STATUS_CHANGED, 'fail');
+      };
+
+      const resolve_ = () => {
+        resolve();
+        this.emit(GitEvents.INIT_REPO_STATUS_CHANGED, 'ready');
+      };
+
+      this.stopInitRepo = reject_;
+      this.emit(GitEvents.INIT_REPO_STATUS_CHANGED, 'initializing');
+      workerGit
+        .initRepo({
+          githubInfo,
+          gitInfo: {
+            dir,
+            gitdir,
+            url: Git.getRemoteUrl(githubInfo.userName, githubInfo.repositoryName),
+            remote: Git.remote,
+          },
+        })
+        .then(resolve_, reject_);
     });
 
-    this.initPromise = initPromise;
-
-    this.initPromise.then(() => {
-      if (this.initPromise === initPromise) {
-        this.initPromise = null;
-        this.rejectInitPromise = null;
-      }
-    }, noop);
-
-    const request: WorkerInitRepoRequest = {
-      event: 'init',
-      payload: {
-        githubInfo,
-        needSetUserEmail,
-        needSetUserName,
-        gitInfo: {
-          dir,
-          gitdir,
-          url: Git.getRemoteUrl(githubInfo.userName, githubInfo.repositoryName),
-          remote: Git.remote,
-        },
-      },
-    };
-    worker.postMessage(request);
-
-    return this.initPromise;
+    return this.initRepoPromise;
   }
 
-  private initWorker() {
+  private initWorker(triggerTerminate = false) {
     if (!this.installDir) {
       throw new Error('no install dir');
     }
 
+    this.worker?.terminate();
+
+    if (triggerTerminate) {
+      this.emit(GitEvents.TERMINATED);
+    }
+
+    this.workerGit?.[releaseProxy]();
+    this.stopInitRepo?.('Repo Initialization has been terminated');
+    this.stopInitRepo = void 0;
+
     this.worker = new Worker(`${this.installDir}/driver/git/webWorker.js`);
-    this.worker.addEventListener(
-      'message',
-      ({ data }: MessageEvent<FsWorkerCallRequest | GitWorkerRequest>) => {
-        if (!data) {
+    this.workerGit = wrap(this.worker);
+
+    const eventHandler: GitEventHandler = {
+      onMessage: this.handleMessage,
+      onProgress: this.handleProgress,
+    };
+    expose(eventHandler, this.worker);
+
+    this.worker.addEventListener('message', ({ data }: MessageEvent<FsWorkerCallRequest>) => {
+      switch (data?.event) {
+        case 'fsCall':
+          this.handleFsCall(data.payload);
+          break;
+        default:
           return;
-        }
-
-        const { event } = data;
-
-        switch (event) {
-          case 'message':
-            this.handleMessage(data.payload);
-            break;
-          case 'progress':
-            this.handleProgress(data.payload);
-            break;
-          case 'authFail':
-            this.handleAuthFail();
-            break;
-          case 'fsCall':
-            this.handleFsCall(data.payload);
-            break;
-          default:
-            return;
-        }
-      },
-    );
+      }
+    });
   }
 
   async push(files: string[], init: boolean) {
@@ -167,7 +140,7 @@ class Git extends EventEmitter<GitEvents> {
       throw new Error('pushing!');
     }
 
-    if (!this.worker) {
+    if (!this.workerGit) {
       throw new Error('worker init failed');
     }
 
@@ -176,55 +149,43 @@ class Git extends EventEmitter<GitEvents> {
     }
 
     this.isPushing = true;
+    const terminatePromise = new Promise<never>((resolve, reject) => {
+      this.once(GitEvents.TERMINATED, () => reject(Error(PublishResults.TERMINATED)));
+    });
 
     try {
       if (init) {
-        this.terminate();
-        await this.initRepo({ needSetUserEmail: false, needSetUserName: false });
+        await Promise.race([this.initRepo(), terminatePromise]);
       } else {
-        await this.initPromise;
+        await Promise.race([this.initRepoPromise, terminatePromise]);
       }
     } catch (error) {
       this.isPushing = false;
-      throw error;
+
+      if (isError(error) && (error.message.includes('401') || error.message.includes('404'))) {
+        throw Error(PublishResults.GITHUB_INFO_ERROR);
+      } else {
+        throw error;
+      }
     }
 
-    this.emit(GitEvents.START_PUSHING);
-
-    const request: WorkerPushRequest = {
-      event: 'push',
-      payload: {
-        files,
-        githubInfo: this.githubInfo,
-        gitInfo: {
-          dir: this.dir,
-          gitdir: this.gitdir,
-          url: Git.getRemoteUrl(this.githubInfo.userName, this.githubInfo.repositoryName),
-          remote: Git.remote,
-        },
-      },
-    };
-
-    const resultPromise = new Promise<void>((resolve, reject) => {
-      this.worker?.addEventListener('message', function handler(e: MessageEvent<WorkerCallResult>) {
-        if (e.data?.action === 'push') {
-          e.data.result === 'success' ? resolve() : reject(e.data.error);
-          this.removeEventListener('message', handler);
-        }
-      });
-    });
-    resultPromise.finally(() => (this.isPushing = false));
-    this.worker.postMessage(request);
-
-    return resultPromise;
-  }
-
-  terminate() {
-    this.worker?.terminate();
-    // todo: this crash app. why ???
-    this.rejectInitPromise?.('terminated');
-    this.emit(GitEvents.TERMINATED);
-    this.initWorker();
+    try {
+      await Promise.race([
+        this.workerGit.publish({
+          files,
+          githubInfo: this.githubInfo,
+          gitInfo: {
+            dir: this.dir,
+            gitdir: this.gitdir,
+            url: Git.getRemoteUrl(this.githubInfo.userName, this.githubInfo.repositoryName),
+            remote: Git.remote,
+          },
+        }),
+        terminatePromise,
+      ]);
+    } finally {
+      this.isPushing = false;
+    }
   }
 
   private async handleFsCall({ args, callId, funcName }: FsWorkerCallRequest['payload']) {
@@ -261,9 +222,9 @@ class Git extends EventEmitter<GitEvents> {
     this.emit(GitEvents.MESSAGE, e);
   };
 
-  private handleAuthFail = () => {
-    this.emit(GitEvents.AUTH_FAIL);
-  };
+  terminate() {
+    this.initWorker(true);
+  }
 }
 
 container.registerSingleton(gitClientToken, Git);

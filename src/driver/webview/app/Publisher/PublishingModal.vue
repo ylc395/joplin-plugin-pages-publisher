@@ -1,7 +1,8 @@
 <script lang="ts">
 import { defineComponent, inject, computed } from 'vue';
 import { Modal, Progress, Result, Button } from 'ant-design-vue';
-import { GitEvents, token as publishToken } from 'domain/service/PublishService';
+import { token as publishToken } from 'domain/service/PublishService';
+import { PublishResults } from 'domain/model/Publishing';
 import { useModalProps } from './composable';
 
 export default defineComponent({
@@ -26,21 +27,15 @@ export default defineComponent({
       modalProps: useModalProps(),
       publish,
       githubInfo,
+      PublishResults,
       reset: () => refreshPublishingProgress(),
-      isAuthError: computed(() => progress.message === GitEvents.AUTH_FAIL),
-      message: computed(() => {
-        const prefix = progress.phase ? `${progress.phase}: ` : '';
-        if (progress.message === GitEvents.AUTH_FAIL) {
-          return `${prefix}${progress.message}. Probably your Github information, including token, is invalid.`;
-        }
-        return `${prefix}${progress.message}`;
-      }),
     };
   },
 });
 </script>
 <template>
-  <Modal :visible="visible" v-bind="modalProps">
+  <!-- there is a transition bug in Modal. disable transition -->
+  <Modal :visible="visible" v-bind="modalProps" :transitionName="null">
     <template v-if="isPublishing">
       <div>{{ progress.phase || 'Publishing...' }}</div>
       <Progress :percent="(progress.loaded / progress.total) * 100" :showInfo="false" />
@@ -52,16 +47,17 @@ export default defineComponent({
     <div v-if="progress.result">
       <Result
         class="py-3 px-4"
-        :status="progress.result === 'fail' ? 'error' : 'success'"
-        :title="progress.result === 'fail' ? 'Fail to publish' : 'Published Successfully'"
+        :status="progress.result !== PublishResults.SUCCESS ? 'error' : 'success'"
+        :title="
+          progress.result !== PublishResults.SUCCESS ? 'Fail to publish' : 'Published Successfully'
+        "
       >
         <template #subTitle>
-          <div v-if="progress.result === 'fail'" class="text-left">
-            <p>{{ message }}</p>
+          <div v-if="progress.result !== PublishResults.SUCCESS" class="text-left">
+            <p>{{ progress.message }}</p>
             <p>
-              <template v-if="!isAuthError"
-                >This is an unexpected error, you can report it as a Github issue. You may retry, or
-                restart Joplin and try publishing again.
+              <template v-if="progress.result === PublishResults.FAIL"
+                >This is an unexpected error, you can retry, and report it as a Github issue.
               </template>
               Or if you are a Git user, you can use Git manually to continue publishing.
               <a
@@ -82,7 +78,7 @@ export default defineComponent({
         <template #extra>
           <Button v-if="progress.result" @click="reset">Confirm</Button>
           <Button
-            v-if="progress.result === 'fail' && !isAuthError"
+            v-if="progress.result === PublishResults.FAIL"
             type="primary"
             @click="publish(true)"
             >Retry</Button

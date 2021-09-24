@@ -1,5 +1,5 @@
 import type { Github } from 'domain/model/Publishing';
-import type { GitProgressEvent } from 'isomorphic-git';
+import type { MessageCallback, ProgressCallback } from 'isomorphic-git';
 
 interface GitInfo {
   dir: string;
@@ -8,46 +8,13 @@ interface GitInfo {
   remote: string;
 }
 
-export interface WorkerInitRepoRequest {
-  event: 'init';
-  payload: {
-    gitInfo: GitInfo;
-    githubInfo: Github;
-    needSetUserName: boolean;
-    needSetUserEmail: boolean;
-  };
+export interface GitEventHandler {
+  onMessage: MessageCallback;
+  onProgress: ProgressCallback;
 }
 
-export interface WorkerPushRequest {
-  event: 'push';
-  payload: {
-    gitInfo: GitInfo;
-    githubInfo: Github;
-    files: string[];
-  };
-}
+export interface WorkerGit {
+  initRepo: (payload: { gitInfo: GitInfo; githubInfo: Github }) => Promise<void>;
 
-export interface GitWorkerMessageRequest {
-  event: 'message';
-  payload: string;
-}
-
-export interface GitWorkerProgressRequest {
-  event: 'progress';
-  payload: GitProgressEvent;
-}
-
-export interface GitWorkerAuthFailRequest {
-  event: 'authFail';
-}
-
-export type GitWorkerRequest =
-  | GitWorkerAuthFailRequest
-  | GitWorkerMessageRequest
-  | GitWorkerProgressRequest;
-
-export interface WorkerCallResult {
-  action: 'init' | 'push';
-  result: 'success' | 'error';
-  error?: Error;
+  publish: (payload: { gitInfo: GitInfo; githubInfo: Github; files: string[] }) => Promise<void>;
 }

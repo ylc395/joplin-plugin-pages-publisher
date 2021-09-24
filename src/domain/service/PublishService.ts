@@ -9,9 +9,10 @@ import {
   PublishingProgress,
   initialGeneratingProgress,
   initialPublishProgress,
+  PublishResults,
 } from '../model/Publishing';
 import { AppService, FORBIDDEN } from './AppService';
-import { isEmpty, noop, omit, pick, some } from 'lodash';
+import { isEmpty, isError, noop, omit, pick, some } from 'lodash';
 
 export enum GeneratorEvents {
   PAGE_GENERATED = 'PAGE_GENERATED',
@@ -20,10 +21,15 @@ export enum GeneratorEvents {
 export enum GitEvents {
   PROGRESS = 'PROGRESS',
   MESSAGE = 'MESSAGE',
-  AUTH_FAIL = 'AUTH_FAIL',
-  START_PUSHING = 'START_PUSHING',
   TERMINATED = 'TERMINATED',
+  INIT_REPO_STATUS_CHANGED = 'INIT_REPO_STATUS_CHANGED',
 }
+
+const MESSAGES: Record<string, string | undefined> = {
+  [PublishResults.GITHUB_INFO_ERROR]:
+    'Something wrong with your Github information(including token). Please check if you provided the correct information.',
+  [PublishResults.TERMINATED]: 'Publishing terminated.',
+};
 
 export interface Git extends EventEmitter<GitEvents> {
   init: (githubInfo: Github, dir: string) => Promise<void>;
@@ -48,6 +54,7 @@ export class PublishService {
   private readonly generator = container.resolve(generatorToken);
   private readonly git = container.resolve(gitClientToken);
   private files: string[] = [];
+  private gitRepoStatus: 'ready' | 'fail' | 'initializing' = 'initializing';
   readonly githubInfo: Ref<Github | null> = ref(null);
   readonly isGenerating = ref(false);
   readonly isPublishing = ref(false);
@@ -55,9 +62,8 @@ export class PublishService {
   readonly generatingProgress: Required<GeneratingProgress> = reactive({
     ...initialGeneratingProgress,
   });
-  readonly publishingProgress: Required<PublishingProgress> = reactive({
+  readonly publishingProgress: PublishingProgress = reactive({
     ...initialPublishProgress,
-    result: null,
   });
 
   constructor() {
@@ -65,13 +71,18 @@ export class PublishService {
   }
 
   private async init() {
-    this.git.on(GitEvents.AUTH_FAIL, () => {
-      this.publishingProgress.message = GitEvents.AUTH_FAIL;
-    });
     this.git.on(GitEvents.PROGRESS, (e) => this.refreshPublishingProgress(e));
-    this.git.on(GitEvents.MESSAGE, (e) => (this.publishingProgress.message = e));
-    this.git.on(GitEvents.START_PUSHING, () => this.refreshPublishingProgress());
-    this.git.on(GitEvents.TERMINATED, () => this.refreshPublishingProgress());
+    this.git.on(GitEvents.MESSAGE, (message) => this.refreshPublishingProgress({ message }));
+    this.git.on(GitEvents.INIT_REPO_STATUS_CHANGED, (e) => {
+      this.gitRepoStatus = e;
+
+      if (this.gitRepoStatus === 'initializing') {
+        this.refreshPublishingProgress({
+          phase: 'Repo initializing...',
+          message: '',
+        });
+      }
+    });
 
     this.generator.on(GeneratorEvents.PAGE_GENERATED, this.refreshGeneratingProgress.bind(this));
 
@@ -107,7 +118,7 @@ export class PublishService {
       throw new Error('invalid github info');
     }
 
-    this.git.init(this.githubInfo.value, this.outputDir.value);
+    this.git.init(toRaw(this.githubInfo.value), this.outputDir.value).catch(noop);
   }
 
   async generateSite() {
@@ -135,7 +146,7 @@ export class PublishService {
     Object.assign(this.generatingProgress, progress);
   }
 
-  async refreshPublishingProgress(progress: PublishingProgress = initialPublishProgress) {
+  async refreshPublishingProgress(progress: Partial<PublishingProgress> = initialPublishProgress) {
     Object.assign(this.publishingProgress, progress);
   }
 
@@ -152,15 +163,28 @@ export class PublishService {
     if (!this.isGithubInfoValid.value) {
       throw new Error('invalid github info');
     }
+    const initGit_ = initGit || this.gitRepoStatus === 'fail';
+
+    if (initGit_) {
+      this.refreshPublishingProgress();
+    }
 
     this.isPublishing.value = true;
 
     try {
-      await this.git.push(this.files, initGit);
-      this.publishingProgress.result = 'success';
+      await this.git.push(this.files, initGit_);
+      this.publishingProgress.result = PublishResults.SUCCESS;
     } catch (error) {
-      this.publishingProgress.result = 'fail';
-      this.publishingProgress.message = (error as Error).message;
+      if (!isError(error)) {
+        throw error;
+      }
+
+      const { message } = error;
+
+      this.publishingProgress.result =
+        message in MESSAGES ? (message as PublishResults) : PublishResults.FAIL;
+
+      this.publishingProgress.message = MESSAGES[message] || message;
     } finally {
       this.isPublishing.value = false;
     }

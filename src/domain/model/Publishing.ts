@@ -14,12 +14,19 @@ export interface GeneratingProgress {
   message?: string;
 }
 
+export enum PublishResults {
+  SUCCESS = 'SUCCESS',
+  GITHUB_INFO_ERROR = 'GITHUB_INFO_ERROR',
+  TERMINATED = 'TERMINATED',
+  FAIL = 'FAIL',
+}
+
 export interface PublishingProgress {
   phase: string;
   message: string;
   loaded: number;
   total: number;
-  result?: null | 'success' | 'fail';
+  result: null | PublishResults;
 }
 
 export const initialGeneratingProgress: Required<GeneratingProgress> = {
@@ -29,7 +36,7 @@ export const initialGeneratingProgress: Required<GeneratingProgress> = {
   message: '',
 } as const;
 
-export const initialPublishProgress: Required<PublishingProgress> = {
+export const initialPublishProgress: PublishingProgress = {
   phase: '',
   message: '',
   loaded: 0,
