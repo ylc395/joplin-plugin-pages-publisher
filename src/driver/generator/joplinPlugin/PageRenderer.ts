@@ -13,7 +13,7 @@ import { outputFile, readFileSync, copy, getAllFiles, remove } from 'driver/fs/j
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { loadTheme } from 'driver/themeLoader/joplinPlugin';
 import { Db } from 'driver/db/joplinPlugin';
-import { ARTICLE_SCHEMA } from 'driver/db/schema';
+import { ARTICLE_SCHEMA } from 'driver/db/joplinPlugin/schema';
 import { getValidator } from 'driver/utils';
 
 import { addScriptLinkStyleTags } from './htmlProcess';
@@ -33,6 +33,7 @@ const validateArticle = getValidator(articleValidator, 'Invalid article');
 
 type Data = Readonly<Record<string, unknown>>;
 
+// todo: copy favicon
 export class PageRenderer {
   private site?: Required<Site>;
   private markdownRenderer?: MarkdownRenderer;

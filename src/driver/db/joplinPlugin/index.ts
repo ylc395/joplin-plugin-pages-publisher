@@ -1,7 +1,6 @@
 import joplin from 'api';
 import { cloneDeep, get, set } from 'lodash';
 import { Low } from 'lowdb/lib';
-import { resolve } from 'path';
 import { singleton } from 'tsyringe';
 import { JSONFile } from './adaptor';
 
