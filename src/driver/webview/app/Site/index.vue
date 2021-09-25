@@ -1,6 +1,7 @@
 <script lang="ts">
 import { defineComponent, inject, provide } from 'vue';
-import { Form, Select, Button, InputNumber, Switch } from 'ant-design-vue';
+import { Form, Select, Button, InputNumber, Switch, Upload } from 'ant-design-vue';
+import { PlusOutlined } from '@ant-design/icons-vue';
 import { token as siteToken } from 'domain/service/SiteService';
 import { useDraftForm } from '../../composable/useDraftForm';
 import FieldForm from '../../components/FieldForm/index.vue';
@@ -11,6 +12,7 @@ import {
   useCustomFieldValidateInfo,
   useAppWarning,
   useSelectTheme,
+  useIcon,
 } from './composable';
 
 export default defineComponent({
@@ -22,6 +24,8 @@ export default defineComponent({
     Switch,
     Button,
     InputNumber,
+    Upload,
+    PlusOutlined,
     FieldForm,
   },
   setup() {
@@ -46,6 +50,7 @@ export default defineComponent({
 
     useAppWarning(isModified, isValid);
     const { handleSelect, selectedThemeName } = useSelectTheme(modelRef);
+    const { fileList, upload: uploadIcon, remove: removeIcon } = useIcon(modelRef);
 
     provide(formToken, {
       model: useCustomFieldModel(modelRef),
@@ -64,6 +69,9 @@ export default defineComponent({
       selectedThemeName,
       isModified,
       resetFields,
+      fileList,
+      uploadIcon,
+      removeIcon,
     };
   },
 });
@@ -76,6 +84,21 @@ export default defineComponent({
         <Select :value="selectedThemeName" @change="handleSelect">
           <SelectOption v-for="{ name } of themes" :key="name">{{ name }}</SelectOption>
         </Select>
+      </FormItem>
+      <FormItem label="Icon">
+        <Upload
+          listType="picture-card"
+          accept=".ico"
+          :showUploadList="{ showPreviewIcon: false }"
+          :beforeUpload="uploadIcon"
+          :remove="removeIcon"
+          :fileList="fileList"
+        >
+          <div v-if="fileList.length === 0">
+            <PlusOutlined />
+            <div class="ant-upload-text">Upload</div>
+          </div>
+        </Upload>
       </FormItem>
       <FormItem label="Feed" extra="Whether to enable RSS Feed">
         <Switch v-model:checked="modelRef.feedEnabled" />

@@ -1,5 +1,5 @@
 import { container, singleton } from 'tsyringe';
-import { merge, noop, set, defaults } from 'lodash';
+import { mergeWith, noop, set, defaults, isTypedArray } from 'lodash';
 import { Ref, shallowRef, InjectionKey, ref, toRaw } from 'vue';
 import { Theme, DEFAULT_THEME_NAME } from '../model/Theme';
 import { Site, DEFAULT_SITE } from '../model/Site';
@@ -75,7 +75,11 @@ export class SiteService {
   }
 
   async saveSite(site?: Partial<Site>) {
-    const siteData = merge(this.site.value, site);
+    const siteData = mergeWith(this.site.value, site, (objValue, sourceValue) => {
+      if (isTypedArray(sourceValue)) {
+        return sourceValue;
+      }
+    });
     await this.pluginDataRepository.saveSite(toRaw(siteData));
   }
 }

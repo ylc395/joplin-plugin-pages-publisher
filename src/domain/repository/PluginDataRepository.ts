@@ -5,11 +5,14 @@ import type { PageValues } from '../model/Page';
 import { Site } from '../model/Site';
 import type { Theme } from '../model/Theme';
 import type { PagesValues } from '../service/PageService';
+import { omit } from 'lodash';
 
 export interface PluginDataDb {
   fetch: <T>(path: string[]) => Promise<T | null>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   save: (path: string[], value: any) => Promise<void>;
+  fetchIcon: () => Promise<Uint8Array | null>;
+  saveIcon: (icon: Uint8Array | undefined | null) => Promise<void>;
 }
 
 export interface ThemeLoader {
@@ -43,12 +46,16 @@ export class PluginDataRepository {
     return this.pluginDataLoader.save(['articles'], articles);
   }
 
-  getSite() {
-    return this.pluginDataLoader.fetch<Site>(['site']);
+  async getSite() {
+    const siteData = await this.pluginDataLoader.fetch<Site>(['site']);
+    const icon = await this.pluginDataLoader.fetchIcon();
+
+    return { ...siteData, icon };
   }
 
   async saveSite(site: Site) {
-    await this.pluginDataLoader.save(['site'], site);
+    await this.pluginDataLoader.save(['site'], omit(site, ['icon']));
+    await this.pluginDataLoader.saveIcon(site.icon);
   }
 
   async getTheme(themeName: string) {

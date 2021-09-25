@@ -182,3 +182,30 @@ export function useSelectTheme(siteModelRef: Ref<Partial<Site>>) {
 
   return { handleSelect, selectedThemeName };
 }
+
+// copy from https://2x.antdv.com/components/upload/
+interface FileItem {
+  uid: string;
+  url?: string;
+  file: string | Blob;
+}
+
+export function useIcon(siteModelRef: Ref<Partial<Site>>) {
+  const fileList = computed<FileItem[]>(() => {
+    if (!siteModelRef.value.icon) {
+      return [];
+    }
+
+    const blob = new Blob([siteModelRef.value.icon]);
+    return [{ file: blob, uid: 'icon', url: window.URL.createObjectURL(blob) }];
+  });
+
+  const upload = async (file: File) => {
+    siteModelRef.value.icon = new Uint8Array(await file.arrayBuffer());
+  };
+
+  const remove = () => {
+    siteModelRef.value.icon = null;
+  };
+  return { fileList, upload, remove };
+}

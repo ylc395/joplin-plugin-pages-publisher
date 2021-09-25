@@ -1,5 +1,7 @@
 import { container } from 'tsyringe';
 import { pluginDataDbToken, PluginDataDb } from 'domain/repository/PluginDataRepository';
+import fs from 'driver/fs/webviewApi';
+import joplin from 'driver/joplin/webviewApi';
 
 export interface DbReadRequest {
   event: 'dbFetch';
@@ -16,10 +18,31 @@ declare const webviewApi: {
 };
 
 container.registerInstance(pluginDataDbToken, {
-  fetch<T>(path: string[]) {
+  async fetch<T>(path: string[]) {
     return webviewApi.postMessage<T>({ event: 'dbFetch', args: [path] });
   },
   save(path: string[], value: unknown) {
     return webviewApi.postMessage<void>({ event: 'dbSave', args: [path, value] });
+  },
+
+  async fetchIcon() {
+    const dataDir = await joplin.dataDir();
+    const iconDir = `${dataDir}/favicon.ico`;
+    try {
+      return (await fs.promises.readFile(iconDir)) as unknown as Uint8Array;
+    } catch {
+      return null;
+    }
+  },
+
+  async saveIcon(icon: Uint8Array | null | undefined) {
+    const dataDir = await joplin.dataDir();
+    const iconDir = `${dataDir}/favicon.ico`;
+
+    if (!icon) {
+      return await fs.promises.remove(iconDir);
+    }
+
+    return await fs.promises.writeFile(iconDir, icon);
   },
 });

@@ -13,7 +13,7 @@ import {
   noop,
   isFunction,
 } from 'lodash';
-import { Ref, computed, ref, nextTick, watch } from 'vue';
+import { Ref, computed, ref, nextTick, watch, readonly } from 'vue';
 import { isUnset } from '../utils';
 
 type Data = Record<string, unknown>;
@@ -21,7 +21,8 @@ type Rules = Record<string, unknown>;
 
 const customClone = (value: unknown) => {
   if (isTypedArray(value)) {
-    return null;
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    return readonly(value as object);
   }
 };
 

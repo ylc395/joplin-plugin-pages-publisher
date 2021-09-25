@@ -1,5 +1,4 @@
 import { ref, provide, InjectionKey, inject, computed } from 'vue';
-import { bytesToBase64 } from 'byte-base64';
 import { mapValues, IsEqualCustomizer } from 'lodash';
 import moment from 'moment';
 import type { Article } from 'domain/model/Article';
@@ -26,7 +25,7 @@ export function useEdit() {
     return (
       article.value?.images?.map((img) => ({
         name: img.attachmentFilename,
-        url: `data:${img.contentType};base64,${bytesToBase64(img.body)}`,
+        url: window.URL.createObjectURL(new Blob([img.body])),
       })) || []
     );
   });

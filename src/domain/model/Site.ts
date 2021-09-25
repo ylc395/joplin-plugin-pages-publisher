@@ -7,6 +7,7 @@ export interface Site {
   feedLength: number;
   generatedAt?: number;
   articles?: Article[]; // sorted by createdAt
+  icon?: Uint8Array | null;
   custom: Record<string, Record<string, unknown> | undefined>;
 }
 

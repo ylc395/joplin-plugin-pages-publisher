@@ -9,20 +9,24 @@ declare const webviewApi: {
   postMessage: <T = void>(payload: JoplinAction) => Promise<T>;
 };
 
-container.registerInstance(joplinToken, {
+const joplin = {
   quitApp() {
-    return webviewApi.postMessage({ event: 'quitApp' });
+    return webviewApi.postMessage({ event: 'quitApp' }) as never;
   },
 
   installationDir() {
-    return webviewApi.postMessage({ event: 'installationDir' });
+    return webviewApi.postMessage<string>({ event: 'installationDir' });
   },
 
   dataDir() {
-    return webviewApi.postMessage({ event: 'dataDir' });
+    return webviewApi.postMessage<string>({ event: 'dataDir' });
   },
 
   openNote(noteId: string) {
     return webviewApi.postMessage({ event: 'openNote', payload: noteId });
   },
-});
+} as const;
+
+container.registerInstance(joplinToken, joplin);
+
+export default joplin;
