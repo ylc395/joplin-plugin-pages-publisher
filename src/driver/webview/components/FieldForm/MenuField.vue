@@ -1,6 +1,7 @@
 <script lang="ts">
 import { defineComponent, PropType, Ref, watch, ref, inject, computed } from 'vue';
-import { Input, Select, Button } from 'ant-design-vue';
+import { Input, AutoComplete, Button, Select } from 'ant-design-vue';
+import { BuildOutlined, ContainerOutlined } from '@ant-design/icons-vue';
 import { PlusOutlined, UpOutlined, DownOutlined, DeleteOutlined } from '@ant-design/icons-vue';
 import { cloneDeep, reject } from 'lodash';
 import { ARTICLE_PAGE_NAME, Menu } from 'domain/model/Page';
@@ -8,7 +9,18 @@ import { token as articleToken } from 'domain/service/ArticleService';
 import { token as pageToken } from 'domain/service/PageService';
 
 export default defineComponent({
-  components: { Input, Select, Button, PlusOutlined, UpOutlined, DownOutlined, DeleteOutlined },
+  components: {
+    Input,
+    AutoComplete,
+    Button,
+    PlusOutlined,
+    UpOutlined,
+    DownOutlined,
+    DeleteOutlined,
+    SelectOption: Select.Option,
+    BuildOutlined,
+    ContainerOutlined,
+  },
   props: {
     value: {
       type: [Array, null] as PropType<Menu | null>,
@@ -26,10 +38,14 @@ export default defineComponent({
     const options = computed(() => {
       return [
         ...reject(
-          pages.value.map(({ name, readableName }) => ({ label: readableName, value: name })),
+          pages.value.map(({ name, readableName }) => ({
+            label: readableName,
+            value: name,
+            type: 'page',
+          })),
           { value: ARTICLE_PAGE_NAME },
         ),
-        ...articles.map(({ noteId, title }) => ({ label: title, value: noteId })),
+        ...articles.map(({ noteId, title }) => ({ label: title, value: noteId, type: 'article' })),
       ];
     });
     const add = () => menu.value.push({ label: '', link: '' });
@@ -64,13 +80,21 @@ export default defineComponent({
 </script>
 <template>
   <div v-for="(item, index) of menu" :key="index" class="flex flex-row mb-2 items-center">
-    <Input v-model:value="item.label" class="w-36 mr-2" placeholder="Menu item label" />
-    <Select
+    <Input v-model:value="item.label" class="w-28 mr-2" placeholder="Menu item label" />
+    <AutoComplete
       v-model:value="item.link"
-      class="w-36 mr-4"
-      placeholder="Select a target page for menu item"
-      :options="options"
-    ></Select>
+      class="w-52 mr-4"
+      placeholder="Input a url or select a target page for menu item"
+      :filterOption="false"
+    >
+      <template #options>
+        <SelectOption v-for="{ label, value, type } of options" :key="value">
+          <BuildOutlined v-if="type === 'page'" />
+          <ContainerOutlined v-if="type === 'article'" />
+          {{ label }}
+        </SelectOption>
+      </template>
+    </AutoComplete>
     <Button size="small" class="mr-2" @click="remove(index)"
       ><template #icon><DeleteOutlined /></template
     ></Button>
