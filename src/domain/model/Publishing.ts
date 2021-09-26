@@ -7,6 +7,14 @@ export interface Github {
   cname?: string;
 }
 
+export const DEFAULT_GITHUB: Github = {
+  userName: '',
+  repositoryName: '',
+  email: '',
+  branch: undefined,
+  cname: undefined,
+} as const;
+
 export interface GeneratingProgress {
   totalPages: number;
   generatedPages: number;

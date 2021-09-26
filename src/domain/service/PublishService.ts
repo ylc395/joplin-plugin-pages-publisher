@@ -10,6 +10,7 @@ import {
   initialGeneratingProgress,
   initialPublishProgress,
   PublishResults,
+  DEFAULT_GITHUB,
 } from '../model/Publishing';
 import { AppService, FORBIDDEN } from './AppService';
 import { isEmpty, isError, noop, omit, pick, some } from 'lodash';
@@ -87,9 +88,7 @@ export class PublishService {
     this.generator.on(GeneratorEvents.PAGE_GENERATED, this.refreshGeneratingProgress.bind(this));
 
     this.githubInfo.value = {
-      userName: '',
-      repositoryName: '',
-      email: '',
+      ...DEFAULT_GITHUB,
       token: (await this.joplinDataRepository.getGithubToken()) || '',
       ...(await this.pluginDataRepository.getGithubInfo()),
     };

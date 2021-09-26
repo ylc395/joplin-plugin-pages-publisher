@@ -7,7 +7,7 @@ import {
   cloneDeepWith,
   isTypedArray,
   isUndefined,
-  defaultsDeep,
+  mergeWith,
   has,
   set,
   noop,
@@ -51,8 +51,15 @@ export function useDraftForm<T = Data>(
   watch(
     origin,
     () => {
-      // todo: value of type TypedArray shouldn't be copy
-      defaultsDeep(draftModel.value, cloneDeepWith(origin.value, customClone));
+      mergeWith(
+        draftModel.value,
+        cloneDeepWith(origin.value, customClone),
+        (objValue, srcValue) => {
+          if (isTypedArray(srcValue) || Array.isArray(srcValue)) {
+            return srcValue;
+          }
+        },
+      );
     },
     { immediate: true, deep: true },
   );
@@ -79,7 +86,7 @@ export function useDraftForm<T = Data>(
 
         for (const name of Object.keys(rules_.value)) {
           if (!has(draftModel.value, name)) {
-            set(draftModel.value, name, null);
+            set(draftModel.value, name, undefined);
           }
         }
       },
@@ -98,6 +105,8 @@ export function useDraftForm<T = Data>(
 
   const resetFields = () => {
     _resetFields(cloneDeepWith(origin.value, customClone) || undefined);
+    // hack: wo need to do validate after reset, to refresh the `validateInfos`
+    // maybe a PR to ant-design-vue?
     nextTick(() => validate().catch(noop));
   };
 

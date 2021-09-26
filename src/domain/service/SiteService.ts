@@ -45,7 +45,7 @@ export class SiteService {
     const defaultCustom = {};
 
     for (const field of themeConfig.siteFields) {
-      set(defaultCustom, field.name, null);
+      set(defaultCustom, field.name, undefined);
     }
 
     defaults(this.site.value.custom[themeName], defaultCustom);
@@ -55,6 +55,10 @@ export class SiteService {
   async loadTheme(themeName: string) {
     if (!this.site.value) {
       throw new Error('site is not ready when load theme');
+    }
+
+    if (themeName === this.themeConfig.value?.name) {
+      return;
     }
 
     try {

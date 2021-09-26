@@ -11,7 +11,7 @@ import {
   useCustomFieldModel,
   useCustomFieldValidateInfo,
   useAppWarning,
-  useSelectTheme,
+  useTheme,
   useIcon,
 } from './composable';
 
@@ -49,7 +49,7 @@ export default defineComponent({
       );
 
     useAppWarning(isModified, isValid);
-    const { handleSelect, selectedThemeName } = useSelectTheme(modelRef);
+    const { handleSelect, selectedThemeName, resetAndLoadTheme } = useTheme(modelRef, resetFields);
     const { fileList, upload: uploadIcon, remove: removeIcon } = useIcon(modelRef);
 
     provide(formToken, {
@@ -68,7 +68,7 @@ export default defineComponent({
       handleSelect,
       selectedThemeName,
       isModified,
-      resetFields,
+      resetAndLoadTheme,
       fileList,
       uploadIcon,
       removeIcon,
@@ -112,7 +112,7 @@ export default defineComponent({
       <FieldForm />
     </template>
     <div class="text-right">
-      <Button v-if="isModified" class="mr-3" @click="resetFields">Reset</Button>
+      <Button v-if="isModified" class="mr-3" @click="resetAndLoadTheme">Reset</Button>
       <Button type="primary" :disabled="!canSave" @click="save">Save</Button>
     </div>
   </div>

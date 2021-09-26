@@ -6,8 +6,6 @@ import {
   mapKeys,
   cloneDeep,
   isEqual,
-  pickBy,
-  negate,
   isEqualWith,
   omitBy,
   isEmpty,
@@ -131,7 +129,7 @@ export function useAppWarning(isModified: Ref<boolean>, isValid: Ref<boolean>) {
   });
 }
 
-export function useSelectTheme(siteModelRef: Ref<Partial<Site>>) {
+export function useTheme(siteModelRef: Ref<Partial<Site>>, reset: () => void) {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { loadTheme, site } = inject(siteToken)!;
   const selectedThemeName = ref('');
@@ -159,8 +157,8 @@ export function useSelectTheme(siteModelRef: Ref<Partial<Site>>) {
     }
 
     const isModified = !isEqual(
-      pickBy(site.value.custom[currentThemeName], negate(isUnset)),
-      pickBy(siteModelRef.value.custom[currentThemeName], negate(isUnset)),
+      omitBy(site.value.custom[currentThemeName], isUnset),
+      omitBy(siteModelRef.value.custom[currentThemeName], isUnset),
     );
 
     const onSuccess = async () => {
@@ -185,7 +183,15 @@ export function useSelectTheme(siteModelRef: Ref<Partial<Site>>) {
     }
   };
 
-  return { handleSelect, selectedThemeName };
+  const resetAndLoadTheme = () => {
+    reset();
+    const themeName = siteModelRef.value.themeName;
+    if (themeName) {
+      loadTheme(themeName);
+    }
+  };
+
+  return { handleSelect, selectedThemeName, resetAndLoadTheme };
 }
 
 // copy from https://2x.antdv.com/components/upload/
