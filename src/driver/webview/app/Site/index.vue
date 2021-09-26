@@ -108,7 +108,7 @@ export default defineComponent({
       </FormItem>
     </Form>
     <template v-if="customFields.length > 0" class="mt-10">
-      <h2 class="text-gray-400">Theme customized Configuration</h2>
+      <h2 class="text-gray-400">Theme Customized Configuration</h2>
       <FieldForm />
     </template>
     <div class="text-right">
