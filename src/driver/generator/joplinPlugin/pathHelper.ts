@@ -26,6 +26,14 @@ export function getOutputThemeAssetsDir(outputDir: string) {
   return `${outputDir}/_assets`;
 }
 
+export async function getIcon() {
+  return `${await joplin.plugins.dataDir()}/favicon.ico`;
+}
+
+export function getOutputIcon(outputDir: string) {
+  return `${outputDir}/favicon.ico`;
+}
+
 export async function getGitRepositoryDir() {
   return `${await joplin.plugins.dataDir()}/git_repository`;
 }

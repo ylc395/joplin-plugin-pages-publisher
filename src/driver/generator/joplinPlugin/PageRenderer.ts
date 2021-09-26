@@ -23,6 +23,8 @@ import {
   getOutputThemeAssetsDir,
   getThemeAssetsDir,
   getThemeDir,
+  getIcon,
+  getOutputIcon,
 } from './pathHelper';
 
 ejs.fileLoader = fs.readFileSync;
@@ -33,7 +35,6 @@ const validateArticle = getValidator(articleValidator, 'Invalid article');
 
 type Data = Readonly<Record<string, unknown>>;
 
-// todo: copy favicon
 export class PageRenderer {
   private site?: Required<Site>;
   private markdownRenderer?: MarkdownRenderer;
@@ -253,6 +254,7 @@ export class PageRenderer {
 
     await this.copyAssets();
     await this.outputCname();
+    await this.copyIcon();
     return await getAllFiles(this.outputDir);
   }
 
@@ -274,5 +276,21 @@ export class PageRenderer {
     }
 
     await fs.copy(getThemeAssetsDir(this.themeDir), getOutputThemeAssetsDir(this.outputDir));
+  }
+
+  private async copyIcon() {
+    if (!this.outputDir) {
+      throw new Error('no output dir');
+    }
+
+    const icon = await getIcon();
+    const outputIcon = getOutputIcon(this.outputDir);
+    await fs.remove(outputIcon);
+
+    try {
+      await fs.copy(icon, outputIcon);
+    } catch {
+      return;
+    }
   }
 }

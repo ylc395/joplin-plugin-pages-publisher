@@ -37,12 +37,12 @@ container.registerInstance(pluginDataDbToken, {
 
   async saveIcon(icon: Uint8Array | null | undefined) {
     const dataDir = await joplin.dataDir();
-    const iconDir = `${dataDir}/favicon.ico`;
+    const iconPath = `${dataDir}/favicon.ico`;
 
     if (!icon) {
-      return await fs.promises.remove(iconDir);
+      return await fs.promises.remove(iconPath);
     }
 
-    return await fs.promises.writeFile(iconDir, icon);
+    return await fs.promises.writeFile(iconPath, icon);
   },
 });
