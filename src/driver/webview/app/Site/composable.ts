@@ -1,4 +1,4 @@
-import { computed, Ref, watch, inject, watchEffect, ref } from 'vue';
+import { computed, Ref, watch, inject, watchEffect, ref, toRaw } from 'vue';
 import type { validateInfos } from 'ant-design-vue/lib/form/useForm';
 import { Modal } from 'ant-design-vue';
 import {
@@ -12,6 +12,7 @@ import {
   omitBy,
   isEmpty,
   IsEqualCustomizer,
+  isTypedArray,
 } from 'lodash';
 import { token as siteToken } from 'domain/service/SiteService';
 import { token as appToken, FORBIDDEN } from 'domain/service/AppService';
@@ -41,6 +42,10 @@ export function useSiteEdit() {
   });
 
   const customEqual: IsEqualCustomizer = (_1, _2, key, _3, _4, stack) => {
+    if (isTypedArray(_1) || isTypedArray(_2)) {
+      return toRaw(_1) === toRaw(_2);
+    }
+
     if (key === 'custom' && stack?.size === 2) {
       return isEqualWith(omitBy(_1, isEmpty), omitBy(_2, isEmpty), (__1, __2) => {
         if (isUnset(__1) && isUnset(__2)) {

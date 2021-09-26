@@ -51,6 +51,7 @@ export function useDraftForm<T = Data>(
   watch(
     origin,
     () => {
+      // todo: value of type TypedArray shouldn't be copy
       defaultsDeep(draftModel.value, cloneDeepWith(origin.value, customClone));
     },
     { immediate: true, deep: true },
