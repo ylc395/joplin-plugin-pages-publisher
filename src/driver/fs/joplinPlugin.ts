@@ -1,53 +1,18 @@
 import joplin from 'api';
-import type {
-  readFileSync as IReadFileSync,
-  outputFile as IOutputFile,
-  pathExists as IPathExists,
-  copy as ICopy,
-  readFile as IReadFile,
-  writeFile as IWriteFile,
-  move as IMove,
-  remove as IRemove,
-  readdir as IReaddir,
-  stat as IStat,
-} from 'fs-extra';
+import type FsExtra from 'fs-extra';
 import { functionsIn, isObjectLike, isBuffer, toPlainObject } from 'lodash';
 import type { MockNodeFsCallResult } from './type';
 
-const fs = joplin.require('fs-extra');
+const fs = joplin.require('fs-extra') as typeof FsExtra;
 
-const {
-  readFileSync,
-  outputFile,
-  copy,
-  writeFile,
-  readFile,
-  move,
-  pathExists,
-  remove,
-  readdir,
-  stat,
-} = fs as {
-  readFileSync: typeof IReadFileSync;
-  outputFile: typeof IOutputFile;
-  copy: typeof ICopy;
-  readFile: typeof IReadFile;
-  writeFile: typeof IWriteFile;
-  move: typeof IMove;
-  pathExists: typeof IPathExists;
-  remove: typeof IRemove;
-  readdir: typeof IReaddir;
-  stat: typeof IStat;
-};
-
-export { readFileSync, outputFile, copy, writeFile, readFile, move, remove, pathExists };
+export default fs;
 
 export async function getAllFiles(dir: string, files_: string[] = []) {
-  const files = await readdir(dir);
+  const files = await fs.readdir(dir);
 
   for (const file of files) {
     const fullPath = `${dir}/${file}`;
-    const status = await stat(fullPath);
+    const status = await fs.stat(fullPath);
     if (status.isDirectory()) {
       await getAllFiles(fullPath, files_);
     } else {
@@ -58,12 +23,20 @@ export async function getAllFiles(dir: string, files_: string[] = []) {
   return files_;
 }
 
+function isInFs(key: string): key is keyof typeof FsExtra {
+  return key in fs;
+}
+
 export async function mockNodeFsCall(
   funcName: string,
   ...args: unknown[]
 ): Promise<MockNodeFsCallResult> {
+  if (!isInFs(funcName)) {
+    throw new Error(`invalid call: ${funcName}`);
+  }
+
   try {
-    const result = await fs[funcName](...args);
+    const result = await (fs[funcName] as CallableFunction)(...args);
     const methodsResult =
       isObjectLike(result) && !isBuffer(result) && !Array.isArray(result)
         ? functionsIn(result).reduce((res, methodName) => {

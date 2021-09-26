@@ -9,7 +9,7 @@ import type { GeneratingProgress, Github } from 'domain/model/Publishing';
 import type { Article } from 'domain/model/Article';
 import type { Theme } from 'domain/model/Theme';
 import { ARTICLE_PAGE_NAME, INDEX_PAGE_NAME, Page, PREDEFINED_FIELDS } from 'domain/model/Page';
-import { outputFile, readFileSync, copy, getAllFiles, remove } from 'driver/fs/joplinPlugin';
+import fs, { getAllFiles } from 'driver/fs/joplinPlugin';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { loadTheme } from 'driver/themeLoader/joplinPlugin';
 import { Db } from 'driver/db/joplinPlugin';
@@ -25,7 +25,7 @@ import {
   getThemeDir,
 } from './pathHelper';
 
-ejs.fileLoader = readFileSync;
+ejs.fileLoader = fs.readFileSync;
 
 const db = container.resolve(Db);
 const articleValidator = new Ajv().compile<Article>(ARTICLE_SCHEMA);
@@ -158,7 +158,7 @@ export class PageRenderer {
       await this.outputArticles(env);
     } else {
       const htmlString = await ejs.renderFile(templatePath, env);
-      await outputFile(`${this.outputDir}/${env.$page.url}.html`, htmlString);
+      await fs.outputFile(`${this.outputDir}/${env.$page.url}.html`, htmlString);
       this.progress.generatedPages += 1;
     }
   }
@@ -191,7 +191,7 @@ export class PageRenderer {
 
       const htmlString = await ejs.renderFile(templatePath, { ...env, $article: article });
 
-      await outputFile(
+      await fs.outputFile(
         `${this.outputDir}/${env.$page.url || ARTICLE_PAGE_NAME}/${article.url}.html`,
         addScriptLinkStyleTags(htmlString, pluginAssets, cssStrings),
       );
@@ -232,9 +232,9 @@ export class PageRenderer {
       });
     }
 
-    await outputFile(`${this.outputDir}/rss.xml`, feed.rss2());
-    await outputFile(`${this.outputDir}/atom.xml`, feed.atom1());
-    await outputFile(`${this.outputDir}/feed.json`, feed.json1());
+    await fs.outputFile(`${this.outputDir}/rss.xml`, feed.rss2());
+    await fs.outputFile(`${this.outputDir}/atom.xml`, feed.atom1());
+    await fs.outputFile(`${this.outputDir}/feed.json`, feed.json1());
   }
 
   async outputPages() {
@@ -245,7 +245,7 @@ export class PageRenderer {
     const pageNames = Object.keys(this.pages);
     this.progress.totalPages = pageNames.length + this.site.articles.length - 1;
 
-    await remove(this.outputDir);
+    await fs.remove(this.outputDir);
 
     for (const pageName of pageNames) {
       await this.outputPage(pageName);
@@ -264,7 +264,7 @@ export class PageRenderer {
     const cname = await this.getCname();
 
     if (cname) {
-      await outputFile(`${this.outputDir}/CNAME`, cname);
+      await fs.outputFile(`${this.outputDir}/CNAME`, cname);
     }
   }
 
@@ -273,6 +273,6 @@ export class PageRenderer {
       throw new Error('pageRenderer is not initialized');
     }
 
-    await copy(getThemeAssetsDir(this.themeDir), getOutputThemeAssetsDir(this.outputDir));
+    await fs.copy(getThemeAssetsDir(this.themeDir), getOutputThemeAssetsDir(this.outputDir));
   }
 }

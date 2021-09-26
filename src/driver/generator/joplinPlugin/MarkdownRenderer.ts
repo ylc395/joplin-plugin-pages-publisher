@@ -4,7 +4,7 @@ import joplin from 'api';
 import type { Article } from 'domain/model/Article';
 import type { Resource } from 'domain/model/JoplinData';
 import type { File } from 'domain/model/JoplinData';
-import { outputFile, copy } from 'driver/fs/joplinPlugin';
+import fs from 'driver/fs/joplinPlugin';
 import { fetchData, fetchAllData } from 'driver/joplinData/joplinPlugin';
 import { getMarkdownPluginAssetsDir, getOutputDir } from './pathHelper';
 import type { RenderResultPluginAsset, ResourceMap } from '../type';
@@ -166,7 +166,7 @@ export class MarkdownRenderer {
 
         try {
           const file = await fetchData<File>(['resources', id, 'file']);
-          await outputFile(`${this.outputDir}/_resources/${id}.${extension}`, file.body);
+          await fs.outputFile(`${this.outputDir}/_resources/${id}.${extension}`, file.body);
           this.fileIdPool.add(fileId);
         } catch (error) {
           console.warn(`Fail to load File ${id}: ${error}`);
@@ -187,7 +187,7 @@ export class MarkdownRenderer {
       if (this.fileIdPool.has(fileId)) {
         continue;
       }
-      await copy(
+      await fs.copy(
         `${this.pluginAssetDir}/${name}`,
         `${this.outputDir}/_markdown_plugin_assets/${name}`,
       );

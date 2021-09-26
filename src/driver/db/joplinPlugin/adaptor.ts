@@ -1,5 +1,5 @@
 import type { Adapter } from 'lowdb';
-import { readFile, writeFile } from 'driver/fs/joplinPlugin';
+import fs from 'driver/fs/joplinPlugin';
 
 export class JSONFile<T> implements Adapter<T> {
   constructor(private readonly filename: string) {}
@@ -7,7 +7,7 @@ export class JSONFile<T> implements Adapter<T> {
     let data;
 
     try {
-      data = await readFile(this.filename, 'utf-8');
+      data = await fs.readFile(this.filename, 'utf-8');
     } catch (e) {
       if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
         return null;
@@ -23,6 +23,6 @@ export class JSONFile<T> implements Adapter<T> {
   }
 
   write(data: T): Promise<void> {
-    return writeFile(this.filename, JSON.stringify(data, null, 2));
+    return fs.writeFile(this.filename, JSON.stringify(data, null, 2));
   }
 }
