@@ -37,17 +37,7 @@ export type PageValues = Record<string, unknown>;
 export const INDEX_PAGE_NAME = 'index';
 export const ARTICLE_PAGE_NAME = 'article';
 
-export const PREDEFINED_FIELDS: Record<string, Field[] | undefined> = {
-  [ARTICLE_PAGE_NAME]: [
-    {
-      name: 'dateFormat',
-      label: 'Date Format',
-      defaultValue: 'YYYY-MM-DD HH:mm',
-      placeholder: 'Default value is YYYY-MM-DD HH:mm.',
-      tip: 'See <a href="https://momentjs.com/docs/#/displaying/">moment.js document.</a>',
-    },
-  ],
-};
+export const PREDEFINED_FIELDS: Record<string, Field[] | undefined> = {};
 
 export class Page {
   readonly values: PageValues; // provided by fields, which are defined by theme and this plugin. Comes from persistence layer, can be updated by user via fields
@@ -92,7 +82,7 @@ export class Page {
     return `/${this.values.url || this.name}`;
   });
 
-  static getMarkdownFieldNames(field: Field[]) {
-    return map(filter(field, { inputType: 'markdown' }), 'name');
+  static getFieldNamesOfType(field: Field[], type: Field['inputType']) {
+    return map(filter(field, { inputType: type }), 'name');
   }
 }

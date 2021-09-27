@@ -1,7 +1,7 @@
 import { Site } from 'domain/model/Site';
 import { Article } from 'domain/model/Article';
-import _ from 'lodash';
-import moment from 'moment';
+import type _ from 'lodash';
+import type moment from 'moment';
 
 // copy from @joplin/renderer
 export interface RenderResultPluginAsset {
@@ -18,13 +18,20 @@ interface ResourceInfo {
 }
 export type ResourceMap = Record<string, ResourceInfo | undefined>;
 
-export interface RenderEnv {
+export type ArticleForPage = Article & {
+  htmlContent: string;
+  fullUrl: string;
+};
+
+export interface PageEnv {
   $page: Record<string, unknown>;
   $site: {
-    articles: Article[];
+    articles: ArticleForPage[];
     generatedAt: Required<Site>['generatedAt'];
+    rss: string;
     [index: string]: unknown;
   };
+  $article?: ArticleForPage;
   _: typeof _;
-  _moment: typeof moment;
+  moment: typeof moment;
 }

@@ -1,16 +1,35 @@
 {
   "name": "Default",
   "author": "ylc395",
-  "version": "0.0.1",
   "pages": {
-    "index": [{ "name": "menu", "label": "Menu", "inputType": "menu" }],
-    "article": [],
-    "archives": [],
+    "index": [
+      { "name": "menu", "label": "Menu", "inputType": "menu" },
+      { "name": "mainTitle", "label": "Main Title", "rules": [{ "required": true }] },
+      { "name": "subtitle", "label": "Subtitle" }
+    ],
+    "article": [
+      {
+        "name": "dateFormat",
+        "label": "Date Format",
+        "defaultValue": "YYYY-MM-DD HH:mm",
+        "placeholder": "Default value is YYYY-MM-DD HH:mm.",
+        "tip": "See <a href=\"https://momentjs.com/docs/#/displaying/\">moment.js document.</a>"
+      }
+    ],
+    "archives": [
+      {
+        "name": "dateFormat",
+        "label": "Date Format",
+        "defaultValue": "YYYY-MM-DD HH:mm",
+        "placeholder": "Default value is YYYY-MM-DD HH:mm.",
+        "tip": "See <a href=\"https://momentjs.com/docs/#/displaying/\">moment.js document.</a>"
+      }
+    ],
     "about": [
       {
         "name": "content",
         "label": "Content",
-        "inputType": "textarea",
+        "inputType": "markdown",
         "rules": [{ "required": true }]
       }
     ]

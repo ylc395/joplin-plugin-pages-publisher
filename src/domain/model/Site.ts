@@ -1,4 +1,3 @@
-import type { Article } from './Article';
 import { DEFAULT_THEME_NAME } from './Theme';
 
 export interface Site {
@@ -6,7 +5,6 @@ export interface Site {
   feedEnabled: boolean;
   feedLength: number;
   generatedAt?: number;
-  articles?: Article[]; // sorted by createdAt
   icon?: Uint8Array | null;
   custom: Record<string, Record<string, unknown> | undefined>;
 }

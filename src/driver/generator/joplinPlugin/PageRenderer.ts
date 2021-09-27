@@ -1,4 +1,4 @@
-import _, { pick, isString, mapValues, defaultsDeep, filter, sortBy } from 'lodash';
+import _, { isString, mapValues, defaultsDeep, filter, sortBy, keyBy } from 'lodash';
 import ejs from 'ejs';
 import moment from 'moment';
 import { container } from 'tsyringe';
@@ -8,7 +8,13 @@ import { Site, DEFAULT_SITE } from 'domain/model/Site';
 import type { GeneratingProgress, Github } from 'domain/model/Publishing';
 import type { Article } from 'domain/model/Article';
 import type { Theme } from 'domain/model/Theme';
-import { ARTICLE_PAGE_NAME, INDEX_PAGE_NAME, Page, PREDEFINED_FIELDS } from 'domain/model/Page';
+import {
+  ARTICLE_PAGE_NAME,
+  INDEX_PAGE_NAME,
+  Menu,
+  Page,
+  PREDEFINED_FIELDS,
+} from 'domain/model/Page';
 import fs, { getAllFiles } from 'driver/fs/joplinPlugin';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { loadTheme } from 'driver/themeLoader/joplinPlugin';
@@ -17,7 +23,7 @@ import { ARTICLE_SCHEMA } from 'driver/db/joplinPlugin/schema';
 import { getValidator } from 'driver/utils';
 
 import { addScriptLinkStyleTags } from './htmlProcess';
-import type { RenderEnv } from '../type';
+import type { PageEnv, ArticleForPage } from '../type';
 import {
   getOutputDir,
   getOutputThemeAssetsDir,
@@ -41,7 +47,9 @@ export class PageRenderer {
   private pagesValues?: Record<string, Record<string, unknown> | undefined>;
   private themeDir?: string;
   private outputDir?: string;
+  private cname?: string;
   private pages?: Theme['pages'];
+  private articles?: ArticleForPage[];
   readonly progress: GeneratingProgress = {
     totalPages: 0,
     generatedPages: 0,
@@ -53,12 +61,13 @@ export class PageRenderer {
 
     await this.getSite();
     await this.getThemeData();
+    await this.getArticles();
 
-    if (!this.site) {
+    if (!this.site || !this.articles) {
       throw new Error('pageRenderer is not initialized');
     }
 
-    this.markdownRenderer = new MarkdownRenderer(this.site.articles);
+    this.markdownRenderer = new MarkdownRenderer(this.articles);
     await this.markdownRenderer.init();
     this.themeDir = await getThemeDir(this.site.themeName);
     this.outputDir = await getOutputDir();
@@ -66,22 +75,32 @@ export class PageRenderer {
 
   private async getSite() {
     const site = await db.fetch<Site>(['site']);
-    const articles = (await db.fetch<Article[]>(['articles'])) || [];
-    articles.forEach(validateArticle);
-
-    if (!site) {
-      throw new Error('no site info in db.json');
-    }
-
-    site.articles = sortBy(filter(articles, { published: true }), ['createdAt']).reverse();
-    site.generatedAt = Date.now();
-    this.site = defaultsDeep(site, DEFAULT_SITE) as Required<Site>;
-  }
-
-  private async getCname() {
     const githubInfo = await db.fetch<Github>(['github']);
 
-    return githubInfo?.cname;
+    this.cname = githubInfo?.cname;
+    this.site = defaultsDeep({ ...site, generatedAt: Date.now() }, DEFAULT_SITE) as Required<Site>;
+  }
+
+  private async getArticles() {
+    if (!this.pagesValues || !this.pages) {
+      throw new Error('no pagesValues');
+    }
+
+    if (!this.pages[ARTICLE_PAGE_NAME]) {
+      return [];
+    }
+
+    const articlePageUrl = this.getPageUrl(ARTICLE_PAGE_NAME);
+    const articles = (await db.fetch<Article[]>(['articles'])) || [];
+
+    articles.forEach(validateArticle);
+    this.articles = sortBy(filter(articles, { published: true }), ['createdAt'])
+      .reverse()
+      .map((article) => ({
+        ...article,
+        fullUrl: `${articlePageUrl}/${article.url}`,
+        htmlContent: '',
+      }));
   }
 
   private async getThemeData() {
@@ -119,41 +138,12 @@ export class PageRenderer {
   }
 
   private async outputPage(pageName: string) {
-    if (
-      !this.site ||
-      !this.markdownRenderer ||
-      !this.pagesValues ||
-      !this.themeDir ||
-      !this.pages ||
-      !this.outputDir
-    ) {
+    if (!this.themeDir || !this.outputDir) {
       throw new Error('no site when rendering');
     }
 
-    const values = this.pagesValues[pageName];
-
-    if (!values) {
-      throw new Error(`no field values in ${pageName}`);
-    }
-
-    const { themeName } = this.site;
     const templatePath = `${this.themeDir}/templates/${pageName}.ejs`;
-    const siteData = {
-      ...pick(this.site, ['generatedAt', 'articles']),
-      ...this.site.custom[themeName],
-    };
-    const env: RenderEnv = { $page: values, $site: siteData, _, _moment: moment };
-    const markdownFieldNames = Page.getMarkdownFieldNames(this.pages[pageName] || []);
-
-    for (const key of Object.keys(env.$page)) {
-      const value = env.$page[key];
-
-      if (markdownFieldNames.includes(key) && isString(value)) {
-        env.$page[key] = (await this.markdownRenderer.render(value)).html;
-      }
-    }
-
-    env.$page.url = pageName === INDEX_PAGE_NAME ? 'index' : values.url || pageName;
+    const env = await this.createPageEnv(pageName);
 
     if (pageName === ARTICLE_PAGE_NAME) {
       await this.outputArticles(env);
@@ -164,8 +154,85 @@ export class PageRenderer {
     }
   }
 
-  private async outputArticles(env: RenderEnv) {
-    if (!this.site || !this.markdownRenderer) {
+  private getPageUrl(pageName: string) {
+    const values = this.pagesValues?.[pageName];
+
+    if (!values) {
+      throw new Error('no pagesValues');
+    }
+
+    return pageName === INDEX_PAGE_NAME ? 'index' : values.url || pageName;
+  }
+
+  private async createPageEnv(pageName: string) {
+    const { pages, pagesValues } = this;
+
+    if (!this.site || !this.markdownRenderer || !pages || !pagesValues || !this.articles) {
+      throw new Error('no site when rendering');
+    }
+    const values = pagesValues[pageName];
+
+    if (!values) {
+      throw new Error(`no field values in ${pageName}`);
+    }
+
+    const { themeName } = this.site;
+    const env: PageEnv = {
+      $page: values,
+      $site: {
+        ...this.site.custom[themeName],
+        generatedAt: this.site.generatedAt,
+        articles: this.articles,
+        rss: this.site.feedEnabled ? '/rss.xml' : '',
+      },
+      _,
+      moment,
+    };
+    const fields = pages[pageName] || [];
+    env.$page.url = this.getPageUrl(pageName);
+
+    // process markdown / menu type field
+    const markdownFieldNames = Page.getFieldNamesOfType(fields, 'markdown');
+    const menuFieldNames = Page.getFieldNamesOfType(fields, 'menu');
+
+    for (const key of Object.keys(env.$page)) {
+      const value = env.$page[key];
+
+      if (markdownFieldNames.includes(key) && isString(value)) {
+        env.$page[key] = (await this.markdownRenderer.render(value)).html;
+      }
+
+      if (menuFieldNames.includes(key)) {
+        env.$page[key] = (env.$page[key] as Menu).map(({ label, link }) => ({
+          label,
+          link: this.getUrlFromLink(link),
+        }));
+      }
+    }
+    return env;
+  }
+
+  private getUrlFromLink(link: string) {
+    const { pages, articles } = this;
+
+    if (!pages || !articles) {
+      throw new Error('no pages or articles data');
+    }
+
+    const articleMap = keyBy(articles, 'noteId');
+    if (link in articleMap) {
+      return `/${articleMap[link].fullUrl}`;
+    }
+
+    if (link in pages) {
+      return `/${this.getPageUrl(link)}`;
+    }
+
+    return link;
+  }
+
+  private async outputArticles(env: PageEnv) {
+    if (!this.site || !this.markdownRenderer || !this.articles) {
       throw new Error('no site when rendering');
     }
     if (!isString(env.$page.dateFormat)) {
@@ -179,21 +246,19 @@ export class PageRenderer {
     const templatePath = `${this.themeDir}/templates/${ARTICLE_PAGE_NAME}.ejs`;
     const recentArticles: Article[] = [];
 
-    for (const article of this.site.articles) {
+    for (const article of this.articles) {
       const { html, resourceIds, pluginAssets, cssStrings } = await this.markdownRenderer.render(
         article.content,
         env.$page.url,
       );
 
       article.htmlContent = html;
-      article.formattedCreatedAt = moment(article.createdAt).format(env.$page.dateFormat);
-      article.formattedUpdatedAt = moment(article.updatedAt).format(env.$page.dateFormat);
-      article.fullUrl = `/${env.$page.url}/${article.url}`;
 
-      const htmlString = await ejs.renderFile(templatePath, { ...env, $article: article });
+      const _env: PageEnv = { ...env, $article: article };
+      const htmlString = await ejs.renderFile(templatePath, _env);
 
       await fs.outputFile(
-        `${this.outputDir}/${env.$page.url || ARTICLE_PAGE_NAME}/${article.url}.html`,
+        `${this.outputDir}/${article.fullUrl}.html`,
         addScriptLinkStyleTags(htmlString, pluginAssets, cssStrings),
       );
       await this.markdownRenderer.outputResources(resourceIds);
@@ -234,17 +299,15 @@ export class PageRenderer {
     }
 
     await fs.outputFile(`${this.outputDir}/rss.xml`, feed.rss2());
-    await fs.outputFile(`${this.outputDir}/atom.xml`, feed.atom1());
-    await fs.outputFile(`${this.outputDir}/feed.json`, feed.json1());
   }
 
   async outputPages() {
-    if (!this.pages || !this.site || !this.outputDir) {
+    if (!this.pages || !this.site || !this.outputDir || !this.articles) {
       throw new Error('pageRenderer is not initialized');
     }
 
     const pageNames = Object.keys(this.pages);
-    this.progress.totalPages = pageNames.length + this.site.articles.length - 1;
+    this.progress.totalPages = pageNames.length + this.articles.length - 1;
 
     await fs.remove(this.outputDir);
 
@@ -263,10 +326,8 @@ export class PageRenderer {
       throw new Error('pageRenderer is not initialized');
     }
 
-    const cname = await this.getCname();
-
-    if (cname) {
-      await fs.outputFile(`${this.outputDir}/CNAME`, cname);
+    if (this.cname) {
+      await fs.outputFile(`${this.outputDir}/CNAME`, this.cname);
     }
   }
 

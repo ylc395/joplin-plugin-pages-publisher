@@ -2,32 +2,33 @@
 <html lang="zh-cn">
   <head>
     <%- include('./_blocks/head') %>
-    <title>目录 - <%- $site.siteName %></title>
+    <title>Archives - <%= $site.siteName %></title>
   </head>
   <body>
     <div class="main">
       <nav class="navigation">
-        <a href="/">cyl.moe</a>
+        <a href="/"><%= $site.siteName %></a>
       </nav>
       <div class="blogs-list-block">
-        <% let years = []; $site.articles.forEach((item) => { const year =
-        item.formattedCreatedAt.substring(0, 4); if (!years.includes(year)) { years.push(year); }
-        }); %> <% years.forEach(function(year) { %>
+        <% const yearArticles = _.groupBy($site.articles, ({createdAt}) => moment(createdAt).year());
+           const years = Object.keys(yearArticles).sort().reverse(); 
+           for (const year of years) { %>
         <div class="annual-block">
-          <time class="annual-block-headline" datetime="<%= year %>"><%= year %></time>
+          <time class="annual-block-headline"><%= year %></time>
           <ol>
-            <% $site.articles.forEach(function(article) { %> <%if
-            (article.formattedCreatedAt.indexOf(year) !== -1) { %>
+            <% for (const article of yearArticles[year]) { %>
             <li>
-              <time datetime="<%- article.formattedCreatedAt %>" class="annual-block-date">
-                <%= article.formattedCreatedAt.substring(5,10).replace('-', '/') %>
+              <time datetime="<%= article.createdAt %>" class="annual-block-date">
+                <%= moment(article.createdAt).format($page.dateFormat) %>
               </time>
-              <a class="annual-block-title" href="<%= article.fullUrl %>"> <%= article.title %> </a>
+              <a class="annual-block-title" href="/<%= article.fullUrl %>">
+                <%= article.title %>
+              </a>
             </li>
-            <% } %> <% }); %>
+            <% } %>
           </ol>
         </div>
-        <% }); %>
+        <% } %>
       </div>
     </div>
   </body>

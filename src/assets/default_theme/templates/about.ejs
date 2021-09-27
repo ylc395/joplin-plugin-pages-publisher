@@ -2,12 +2,12 @@
 <html lang="zh-cn">
   <head>
     <%- include('./_blocks/head') %>
-    <title>About me - <%- $site.siteName %></title>
+    <title>About me - <%= $site.siteName %></title>
   </head>
   <body>
     <div class="main">
       <nav class="navigation">
-        <a href="/">cyl.moe</a>
+        <a href="/"><%= $site.siteName %></a>
       </nav>
       <div class="about"><%- $page.content %></div>
     </div>

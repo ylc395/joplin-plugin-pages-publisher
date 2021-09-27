@@ -10,9 +10,7 @@ export interface Article {
   note?: Required<Note> | null;
   title: string;
   createdAt: number | Moment;
-  formattedCreatedAt?: string;
   updatedAt: number | Moment;
-  formattedUpdatedAt?: string;
   tags: Tag['title'][];
   images?: File[];
   attachments?: File[];

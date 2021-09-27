@@ -83,12 +83,12 @@ export function addScriptLinkStyleTags(
 }
 
 function getLastIndexOfAny(text: string, keywords: string[]) {
-  let pos = -1;
+  let pos: number;
   for (const keyword of keywords) {
     if ((pos = text.lastIndexOf(keyword)) > -1) {
       return pos;
     }
   }
 
-  return -1;
+  return text.length;
 }

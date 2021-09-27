@@ -85,7 +85,7 @@ export default defineComponent({
           <SelectOption v-for="{ name } of themes" :key="name">{{ name }}</SelectOption>
         </Select>
       </FormItem>
-      <FormItem label="Icon">
+      <FormItem label="Icon" extra="choose a .ico file as site icon">
         <Upload
           listType="picture-card"
           accept=".ico"

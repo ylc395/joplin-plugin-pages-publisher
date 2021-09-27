@@ -2,15 +2,24 @@
 <html lang="zh-cn" id="homepage">
   <head>
     <%- include('./_blocks/head') %>
-    <title><%- $site.siteName %></title>
+    <title><%= $site.siteName %></title>
   </head>
 
   <body>
     <div class="homepage-main">
       <div class="homepage-title-area">
-        <h1 class="homepage-title"><%- $site.siteName %></h1>
-        <h2 class="homepage-subtitle"><%- $page.slogan %></h2>
+        <h1 class="homepage-title"><%= $page.mainTitle %></h1>
+        <h2 class="homepage-subtitle"><%= $page.subtitle %></h2>
       </div>
+      <nav class="homepage-navigation">
+        <ul>
+          <% $page.menu.forEach(({link, label}) => { %>
+          <li><a href="<%= link %>"><%= label %></a></li>
+          <% }); %> <% if($site.rss) { %>
+          <li><a href="<%= $site.rss %>">RSS</a></li>
+          <% } %>
+        </ul>
+      </nav>
     </div>
   </body>
 </html>
