@@ -1,4 +1,4 @@
-import _, { isString, mapValues, defaultsDeep, filter, sortBy, keyBy } from 'lodash';
+import _, { isString, mapValues, defaultsDeep, mergeWith, filter, sortBy, keyBy } from 'lodash';
 import ejs from 'ejs';
 import moment from 'moment';
 import { container } from 'tsyringe';
@@ -125,16 +125,26 @@ export class PageRenderer {
       }, {} as Record<string, unknown>);
     });
 
-    this.pagesValues = defaultsDeep(pagesValues, defaultPagesValues);
+    // todo: we need to restrict usage of "null" in this whole app
+    const customMerge = (value: unknown, srcValue: unknown) => {
+      if (srcValue === null || srcValue === '') {
+        return value;
+      }
+    };
+    this.pagesValues = mergeWith({}, defaultPagesValues, pagesValues, customMerge);
     this.pages = themeConfig.pages;
-    defaultsDeep(this.site, {
-      custom: {
-        [themeName]: themeConfig.siteFields?.reduce((result, { name, defaultValue }) => {
-          result[name] = defaultValue ?? null;
-          return result;
-        }, {} as NonNullable<Site['custom'][string]>),
+    mergeWith(
+      this.site,
+      {
+        custom: {
+          [themeName]: themeConfig.siteFields?.reduce((result, { name, defaultValue }) => {
+            result[name] = defaultValue ?? null;
+            return result;
+          }, {} as NonNullable<Site['custom'][string]>),
+        },
       },
-    });
+      customMerge,
+    );
   }
 
   private async outputPage(pageName: string) {
@@ -234,9 +244,6 @@ export class PageRenderer {
   private async outputArticles(env: PageEnv) {
     if (!this.site || !this.markdownRenderer || !this.articles) {
       throw new Error('no site when rendering');
-    }
-    if (!isString(env.$page.dateFormat)) {
-      throw new Error('no dateFormat');
     }
 
     if (!isString(env.$page.url)) {
