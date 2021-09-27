@@ -22,8 +22,9 @@ const { onMessage, onProgress } = wrap<GitEventHandler>(self);
 
 const workerGit: WorkerGit = {
   async initRepo({ gitInfo, githubInfo }) {
-    const { userName, token, branch: branchName = 'master', email } = githubInfo;
+    const { userName, token, branch: branchName, email } = githubInfo;
     const { dir, gitdir, url, remote } = gitInfo;
+    const _branchName = branchName || 'master';
 
     await fs.promises.emptyDir(gitdir);
     await fs.promises.emptyDir(dir);
@@ -44,8 +45,8 @@ const workerGit: WorkerGit = {
 
     const branches = await listBranches({ fs, dir, gitdir });
 
-    if (!branches.includes(branchName)) {
-      await branch({ fs, dir, gitdir, ref: branchName });
+    if (!branches.includes(_branchName)) {
+      await branch({ fs, dir, gitdir, ref: _branchName });
     }
 
     await setConfig({ fs, gitdir, path: 'user.name', value: userName });
