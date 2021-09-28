@@ -11,9 +11,11 @@
   "homepage": "https://github.com/ylc395/joplin-plugin-page-publisher",
   "keywords": [
     "joplin-plugin",
-    "github",
-    "publisher",
+    "github pages",
     "site generator"
+  ],
+  "files": [
+    "publish"
   ],
   "devDependencies": {
     "@babel/core": "^7.14.6",
