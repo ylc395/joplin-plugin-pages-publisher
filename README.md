@@ -4,4 +4,4 @@ This plugin help you generate a static website from your Joplin notes, and publi
 
 # User Guide
 
-See [User Guide in wiki](https://github.com/ylc395/joplin-plugin-pages-publisher/wiki/User-Guide)
+See [User Guide in wiki](https://github.com/ylc395/joplin-plugin-pages-publisher/wiki/User-Guide)
