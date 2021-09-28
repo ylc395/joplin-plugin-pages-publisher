@@ -37,5 +37,5 @@ export const THEME_SCHEMA = {
     siteFields: { type: 'array', items: FIELD_SCHEMA },
     articleFields: { type: 'array', items: FIELD_SCHEMA },
   },
-  required: ['name', 'pages'],
+  required: ['pages'],
 } as const;

@@ -18,7 +18,10 @@ const validateTheme: (data: unknown) => asserts data is Theme = getValidator(
 );
 
 async function loadDefault(): Promise<Theme> {
-  return fs.readJson(`${await getThemeDir(DEFAULT_THEME_NAME)}/config.json`);
+  const theme = await fs.readJson(`${await getThemeDir(DEFAULT_THEME_NAME)}/config.json`);
+  theme.name = DEFAULT_THEME_NAME;
+
+  return theme;
 }
 
 export async function loadTheme(themeName: string) {
