@@ -79,7 +79,15 @@ export default defineComponent({
       v-bind="validateInfos[field.name]"
     >
       <template v-if="field.tip || field.inputType === 'markdown'" #extra>
-        <span v-html="sanitizeHtml(field.tip || 'Markdown syntax is available')"></span>
+        <span
+          v-html="
+            sanitizeHtml(
+              `${field.tip ? field.tip : ''}${
+                field.inputType === 'markdown' ? '. Markdown syntax is available' : ''
+              }`,
+            )
+          "
+        ></span>
       </template>
       <Select
         v-if="['select', 'multiple-select'].includes(field.inputType || '')"

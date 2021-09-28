@@ -2,8 +2,18 @@
   "author": "ylc395",
   "pages": {
     "index": [
-      { "name": "menu", "label": "Menu", "inputType": "menu" },
-      { "name": "mainTitle", "label": "Main Title", "rules": [{ "required": true }] },
+      {
+        "name": "menu",
+        "label": "Menu",
+        "inputType": "menu",
+        "tip": "Navigating Menu displayed in Index Page"
+      },
+      {
+        "name": "mainTitle",
+        "label": "Main Title",
+        "rules": [{ "required": true }],
+        "tip": "Main Title displayed in Index Page. Probably your site name"
+      },
       { "name": "subtitle", "label": "Subtitle" }
     ],
     "article": [
@@ -29,9 +39,17 @@
         "name": "content",
         "label": "Content",
         "inputType": "markdown",
-        "rules": [{ "required": true }]
+        "rules": [{ "required": true }],
+        "tip": "Introduce yourself in About Page"
       }
     ]
   },
-  "siteFields": [{ "name": "siteName", "label": "Site Name", "rules": [{ "required": true }] }]
+  "siteFields": [
+    {
+      "name": "siteName",
+      "label": "Site Name",
+      "rules": [{ "required": true }],
+      "tip": "Site name displayed in left-top corner of every page"
+    }
+  ]
 }
