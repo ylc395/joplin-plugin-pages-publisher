@@ -1,7 +1,7 @@
 export interface Github {
   userName: string;
-  repositoryName: string;
   email: string;
+  repositoryName?: string;
   branch?: string;
   token?: string;
   cname?: string;
@@ -9,8 +9,8 @@ export interface Github {
 
 export const DEFAULT_GITHUB: Github = {
   userName: '',
-  repositoryName: '',
   email: '',
+  repositoryName: undefined,
   branch: undefined,
   cname: undefined,
 } as const;

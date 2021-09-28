@@ -17,7 +17,6 @@ export default defineComponent({
       saveGithubInfo,
       ref({
         userName: [{ required: true }],
-        repositoryName: [{ required: true }],
         email: [{ required: true, type: 'email' }],
       }),
     );
@@ -64,8 +63,11 @@ export default defineComponent({
       <FormItem label="Email" v-bind="validateInfos.email">
         <Input v-model:value="modelRef.email" />
       </FormItem>
-      <FormItem label="Repository Name" v-bind="validateInfos.repositoryName">
-        <Input v-model:value="modelRef.repositoryName" />
+      <FormItem label="Repository Name">
+        <Input
+          v-model:value="modelRef.repositoryName"
+          :placeholder="`Default value is ${modelRef.userName}.github.io`"
+        />
       </FormItem>
       <FormItem label="Branch">
         <Input v-model:value="modelRef.branch" placeholder="Default value is master" />

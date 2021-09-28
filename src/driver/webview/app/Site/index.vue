@@ -89,7 +89,7 @@ export default defineComponent({
         <Select :value="selectedThemeName" @change="handleSelect">
           <SelectOption v-for="{ name } of themes" :key="name">{{ name }}</SelectOption>
         </Select>
-        <a @click="modalVisible = true">How to make custom theme?</a>
+        <a @click="modalVisible = true">How to create custom theme?</a>
       </FormItem>
       <FormItem label="Icon" extra="choose a .ico file as site icon">
         <Upload
@@ -129,7 +129,7 @@ export default defineComponent({
     <p>
       See
       <a
-        href="https://github.com/ylc395/joplin-plugin-page-publisher/blob/master/docs/how-to-make-a-custom-theme.md"
+        href="https://github.com/ylc395/joplin-plugin-page-publisher/blob/master/docs/how-to-create-a-custom-theme.md"
         target="_blank"
         >this doc</a
       >

@@ -86,12 +86,16 @@ export default defineComponent({
         v-model:value="model[field.name]"
         :mode="field.inputType === 'multiple-select' ? 'multiple' : ''"
         :options="field.options"
-        :placeholder="field.placeholder"
+        :placeholder="
+          field.placeholder || (field.defaultValue ? `Default value is ${field.defaultValue}` : '')
+        "
       />
       <Textarea
         v-else-if="['textarea', 'markdown'].includes(field.inputType || '')"
         v-model:value="model[field.name]"
-        :placeholder="field.placeholder"
+        :placeholder="
+          field.placeholder || (field.defaultValue ? `Default value is ${field.defaultValue}` : '')
+        "
       />
       <Switch v-else-if="field.inputType === 'switch'" v-model:value="model[field.name]" />
       <InputNumber v-else-if="field.inputType === 'number'" v-model:value="model[field.name]" />
@@ -107,7 +111,13 @@ export default defineComponent({
       />
       <DatePicker v-else-if="field.inputType === 'date'" v-model:value="model[field.name]" />
       <MenuField v-else-if="field.inputType === 'menu'" v-model:value="model[field.name]" />
-      <Input v-else v-model:value="model[field.name]" :placeholder="field.placeholder" />
+      <Input
+        v-else
+        v-model:value="model[field.name]"
+        :placeholder="
+          field.placeholder || (field.defaultValue ? `Default value is ${field.defaultValue}` : '')
+        "
+      />
     </FormItem>
   </Form>
 </template>

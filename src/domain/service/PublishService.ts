@@ -100,10 +100,19 @@ export class PublishService {
   }
 
   isGithubInfoValid = computed(() => {
-    const requiredKeys: (keyof Github)[] = ['userName', 'repositoryName', 'email', 'token'];
+    const requiredKeys: (keyof Github)[] = ['userName', 'email', 'token'];
     const keyInfos = pick(this.githubInfo.value, requiredKeys);
 
     return Object.keys(keyInfos).length === requiredKeys.length && !some(keyInfos, isEmpty);
+  });
+
+  isDefaultRepository = computed(() => {
+    if (!this.githubInfo.value) {
+      return true;
+    }
+
+    const { repositoryName, userName } = this.githubInfo.value;
+    return !repositoryName || repositoryName === `${userName}.github.io`;
   });
 
   async saveGithubInfo(githubInfo: Partial<Github>) {

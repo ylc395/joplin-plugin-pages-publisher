@@ -15,6 +15,7 @@ export default defineComponent({
       refreshPublishingProgress,
       githubInfo,
       stopPublishing,
+      isDefaultRepository,
     } =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(publishToken)!;
@@ -29,6 +30,7 @@ export default defineComponent({
       githubInfo,
       PublishResults,
       reset: () => refreshPublishingProgress(),
+      isDefaultRepository,
     };
   },
 });
@@ -68,11 +70,18 @@ export default defineComponent({
             </p>
           </div>
           <div v-else-if="githubInfo">
-            Please Check
-            <span class="text-gray-400"
-              >https://github.com/{{ githubInfo.userName }}/{{ githubInfo.repositoryName
-              }}{{ githubInfo.branch ? `/tree/${githubInfo.branch}` : '' }}</span
-            >
+            Please Check:
+            <ul class="text-gray-400 text-left list-disc">
+              <li class="mt-2">
+                https://github.com/{{ githubInfo.userName }}/{{
+                  githubInfo.repositoryName || `${githubInfo.userName}.github.io`
+                }}{{ githubInfo.branch ? `/tree/${githubInfo.branch}` : '' }}
+              </li>
+              <li v-if="githubInfo.cname">https://{{ githubInfo.cname }}</li>
+              <li v-if="isDefaultRepository || !githubInfo.cname">
+                https://{{ githubInfo.userName }}.github.io
+              </li>
+            </ul>
           </div>
         </template>
         <template #extra>

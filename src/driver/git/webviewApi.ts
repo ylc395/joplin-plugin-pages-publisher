@@ -1,7 +1,16 @@
 import { container } from 'tsyringe';
 import EventEmitter from 'eventemitter3';
 import type { GitProgressEvent } from 'isomorphic-git';
-import { isFunction, mapValues, omitBy, pickBy, isTypedArray, isObjectLike, isError } from 'lodash';
+import {
+  isFunction,
+  mapValues,
+  omitBy,
+  pickBy,
+  isTypedArray,
+  isObjectLike,
+  isError,
+  cloneDeep,
+} from 'lodash';
 import { wrap, Remote, releaseProxy, expose } from 'comlink';
 import fs from 'driver/fs/webviewApi';
 import type { FsWorkerCallRequest, FsWorkerCallResponse } from 'driver/fs/type';
@@ -20,8 +29,9 @@ declare const webviewApi: {
 class Git extends EventEmitter<GitEvents> {
   private readonly joplin = container.resolve(joplinToken);
   private static readonly remote = 'github';
-  private static getRemoteUrl(userName: string, repoName: string) {
-    return `https://github.com/${userName}/${repoName}.git`;
+  private static getRemoteUrl(userName: string, repoName?: string) {
+    const repoName_ = repoName || `${userName}.github.io`;
+    return `https://github.com/${userName}/${repoName_}.git`;
   }
   private static getGitRepositoryDir() {
     return webviewApi.postMessage<string>({ event: 'getGitRepositoryDir' });
@@ -48,12 +58,12 @@ class Git extends EventEmitter<GitEvents> {
     }
 
     const oldGithubInfo = this.githubInfo;
-    this.githubInfo = githubInfo;
+    this.githubInfo = cloneDeep(githubInfo);
 
     if (
       oldGithubInfo?.userName === githubInfo.userName &&
       oldGithubInfo?.token === githubInfo.token &&
-      oldGithubInfo?.repositoryName === githubInfo.repositoryName
+      (oldGithubInfo?.repositoryName || undefined) === (githubInfo.repositoryName || undefined)
     ) {
       return;
     }
