@@ -68,7 +68,7 @@ export default defineComponent({
             <p>
               You can <strong>start a local HTTP server</strong> to preview the generated site(<a
                 target="_blank"
-                href="https://github.com/ylc395/joplin-plugin-page-publisher/blob/master/docs/how-to-preivew-before-publishing.md"
+                href="https://github.com/ylc395/joplin-plugin-pages-publisher/wiki/How-to-preview-before-publishing"
                 >I don't know how to do it</a
               >)<template v-if="isGithubInfoValid"
                 >, or/and you can <strong>click "Publish" button</strong> to publish them to Github

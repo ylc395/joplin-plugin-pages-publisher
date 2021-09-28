@@ -129,7 +129,7 @@ export default defineComponent({
     <p>
       See
       <a
-        href="https://github.com/ylc395/joplin-plugin-page-publisher/blob/master/docs/how-to-create-a-custom-theme.md"
+        href="https://github.com/ylc395/joplin-plugin-pages-publisher/wiki/How-to-create-a-custom-theme"
         target="_blank"
         >this doc</a
       >

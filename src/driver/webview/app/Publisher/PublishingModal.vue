@@ -63,7 +63,7 @@ export default defineComponent({
               </template>
               Or if you are a Git user, you can use Git manually to continue publishing.
               <a
-                href="https://github.com/ylc395/joplin-plugin-page-publisher/blob/master/docs/how-to-use-git-manually.md"
+                href="https://github.com/ylc395/joplin-plugin-pages-publisher/wiki/How-to-use-git-manually"
                 target="_blank"
                 >See this docs for details</a
               >
