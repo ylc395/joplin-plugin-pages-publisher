@@ -294,7 +294,7 @@ export class PageRenderer {
       id: '',
       copyright: '',
       updated: moment(this.site?.generatedAt).toDate(),
-      generator: 'Joplin Page Publisher',
+      generator: 'Joplin Pages Publisher',
     });
 
     for (const article of articles) {

@@ -59,7 +59,7 @@ export class NoteService {
     }
 
     return {
-      published: false,
+      published: true,
       noteId: note.id,
       title: note.title,
       createdAt: fullNote.user_created_time,

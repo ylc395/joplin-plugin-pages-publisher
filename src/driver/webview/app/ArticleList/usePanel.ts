@@ -12,8 +12,8 @@ export function usePanel() {
   const activePanels = ref(['published', 'unpublished']);
 
   const handleSubmit = () => {
-    if (!activePanels.value.includes('unpublished')) {
-      activePanels.value = [...activePanels.value, 'unpublished'];
+    if (!activePanels.value.includes('published')) {
+      activePanels.value = [...activePanels.value, 'published'];
     }
   };
 

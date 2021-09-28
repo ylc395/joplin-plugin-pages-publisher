@@ -35,7 +35,7 @@ async function registerSettings() {
   const SECTION_NAME = 'github';
 
   await joplin.settings.registerSection(SECTION_NAME, {
-    label: 'Page Publisher',
+    label: 'Pages Publisher',
   });
 
   await joplin.settings.registerSettings({
