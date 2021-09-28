@@ -64,7 +64,12 @@ const workerGit: WorkerGit = {
       await remove({ fs, dir, gitdir, filepath: deletedFile });
     }
 
-    await commit({ fs, gitdir, message: 'test', ref: githubInfo.branch });
+    await commit({
+      fs,
+      gitdir,
+      message: 'REGULAR COMMIT BY JOPLIN PAGES PUBLISHER',
+      ref: githubInfo.branch,
+    });
     await push({
       fs,
       http,

@@ -213,10 +213,12 @@ export class PageRenderer {
       }
 
       if (menuFieldNames.includes(key)) {
-        env.$page[key] = (env.$page[key] as Menu).map(({ label, link }) => ({
-          label,
-          link: this.getUrlFromLink(link),
-        }));
+        env.$page[key] = Array.isArray(value)
+          ? (value as Menu).map(({ label, link }) => ({
+              label,
+              link: this.getUrlFromLink(link),
+            }))
+          : [];
       }
     }
     return env;
