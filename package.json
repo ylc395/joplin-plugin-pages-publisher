@@ -8,8 +8,12 @@
     "update": "npm install -g generator-joplin && yo joplin --update"
   },
   "license": "MIT",
+  "homepage": "https://github.com/ylc395/joplin-plugin-page-publisher",
   "keywords": [
-    "joplin-plugin"
+    "joplin-plugin",
+    "github",
+    "publisher",
+    "site generator"
   ],
   "devDependencies": {
     "@babel/core": "^7.14.6",
