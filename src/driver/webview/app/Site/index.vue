@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, inject, provide } from 'vue';
-import { Form, Select, Button, InputNumber, Switch, Upload } from 'ant-design-vue';
+import { Form, Select, Button, InputNumber, Switch, Upload, Modal } from 'ant-design-vue';
 import { PlusOutlined } from '@ant-design/icons-vue';
 import { token as siteToken } from 'domain/service/SiteService';
 import { useDraftForm } from '../../composable/useDraftForm';
@@ -13,6 +13,7 @@ import {
   useAppWarning,
   useTheme,
   useIcon,
+  useGuideModal,
 } from './composable';
 
 export default defineComponent({
@@ -26,6 +27,7 @@ export default defineComponent({
     InputNumber,
     Upload,
     PlusOutlined,
+    Modal,
     FieldForm,
   },
   setup() {
@@ -51,6 +53,7 @@ export default defineComponent({
     useAppWarning(isModified, isValid);
     const { handleSelect, selectedThemeName, resetAndLoadTheme } = useTheme(modelRef, resetFields);
     const { fileList, upload: uploadIcon, remove: removeIcon } = useIcon(modelRef);
+    const { modalVisible, dataDir } = useGuideModal();
 
     provide(formToken, {
       model: useCustomFieldModel(modelRef),
@@ -72,6 +75,8 @@ export default defineComponent({
       fileList,
       uploadIcon,
       removeIcon,
+      modalVisible,
+      dataDir,
     };
   },
 });
@@ -84,6 +89,7 @@ export default defineComponent({
         <Select :value="selectedThemeName" @change="handleSelect">
           <SelectOption v-for="{ name } of themes" :key="name">{{ name }}</SelectOption>
         </Select>
+        <a @click="modalVisible = true">How to make custom theme?</a>
       </FormItem>
       <FormItem label="Icon" extra="choose a .ico file as site icon">
         <Upload
@@ -116,4 +122,21 @@ export default defineComponent({
       <Button type="primary" :disabled="!canSave" @click="save">Save</Button>
     </div>
   </div>
+  <Modal v-model:visible="modalVisible" :width="400" :closable="false">
+    <p>
+      Put theme directory under <strong>{{ dataDir }}/themes</strong>
+    </p>
+    <p>
+      See
+      <a
+        href="https://github.com/ylc395/joplin-plugin-page-publisher/blob/master/docs/how-to-make-a-custom-theme.md"
+        target="_blank"
+        >this doc</a
+      >
+      for details.
+    </p>
+    <template #footer>
+      <Button @click="modalVisible = false">Confirm</Button>
+    </template>
+  </Modal>
 </template>

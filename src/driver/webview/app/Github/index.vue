@@ -72,7 +72,7 @@ export default defineComponent({
       </FormItem>
       <FormItem label="CNAME">
         <template #extra
-          >Use for custom domain site. See
+          >Use for site with a custom domain. See
           <a
             target="_blank"
             href="https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site"

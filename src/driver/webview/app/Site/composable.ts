@@ -220,3 +220,14 @@ export function useIcon(siteModelRef: Ref<Partial<Site>>) {
   };
   return { fileList, upload, remove };
 }
+
+export function useGuideModal() {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const { getDataDir } = inject(appToken)!;
+  const dataDir = ref('');
+  const modalVisible = ref(false);
+
+  getDataDir().then((dir) => (dataDir.value = dir));
+
+  return { modalVisible, dataDir };
+}

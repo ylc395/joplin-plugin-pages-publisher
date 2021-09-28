@@ -71,6 +71,9 @@ export class AppService {
     return this.joplin.quitApp();
   }
 
+  getDataDir() {
+    return this.joplin.dataDir();
+  }
   async checkDb() {
     const isBroken = !(await this.pluginDataRepository.checkDb());
 
