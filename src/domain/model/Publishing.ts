@@ -51,3 +51,5 @@ export const initialPublishProgress: PublishingProgress = {
   total: 0,
   result: null,
 } as const;
+
+export const DEFAULT_GITHUB_BRANCH = 'main';

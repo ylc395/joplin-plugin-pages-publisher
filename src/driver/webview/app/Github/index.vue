@@ -2,6 +2,7 @@
 import { defineComponent, inject, ref, computed, watch } from 'vue';
 import { Form, Input, Alert, Button } from 'ant-design-vue';
 import { token as publishToken } from 'domain/service/PublishService';
+import { DEFAULT_GITHUB_BRANCH } from 'domain/model/Publishing';
 import { token as appToken, FORBIDDEN } from 'domain/service/AppService';
 import { useDraftForm } from '../../composable/useDraftForm';
 
@@ -36,6 +37,7 @@ export default defineComponent({
       githubInfo,
       resetFields,
       isModified,
+      DEFAULT_GITHUB_BRANCH,
       warningForGenerating: computed(() => getLatestWarning(FORBIDDEN.GENERATE)),
       warningForTabSwitching: computed(() => getLatestWarning(FORBIDDEN.TAB_SWITCH)),
     };
@@ -70,7 +72,10 @@ export default defineComponent({
         />
       </FormItem>
       <FormItem label="Branch">
-        <Input v-model:value="modelRef.branch" placeholder="Default value is master" />
+        <Input
+          v-model:value="modelRef.branch"
+          :placeholder="`Default value is ${DEFAULT_GITHUB_BRANCH}`"
+        />
       </FormItem>
       <FormItem label="CNAME">
         <template #extra

@@ -1,6 +1,7 @@
 /*  eslint-env worker*/
 /// <reference lib="WebWorker" />
 import http from 'isomorphic-git/http/web';
+import { DEFAULT_GITHUB_BRANCH } from 'domain/model/Publishing';
 import { difference } from 'lodash';
 import {
   setConfig,
@@ -24,7 +25,7 @@ const workerGit: WorkerGit = {
   async initRepo({ gitInfo, githubInfo }) {
     const { userName, token, branch: branchName, email } = githubInfo;
     const { dir, gitdir, url, remote } = gitInfo;
-    const _branchName = branchName || 'master';
+    const _branchName = branchName || DEFAULT_GITHUB_BRANCH;
 
     await fs.promises.emptyDir(gitdir);
     await fs.promises.emptyDir(dir);
@@ -64,19 +65,21 @@ const workerGit: WorkerGit = {
       await remove({ fs, dir, gitdir, filepath: deletedFile });
     }
 
+    const ref = githubInfo.branch || DEFAULT_GITHUB_BRANCH;
+
     await commit({
       fs,
       gitdir,
       message: 'REGULAR COMMIT BY JOPLIN PAGES PUBLISHER',
-      ref: githubInfo.branch,
+      ref,
     });
     await push({
       fs,
       http,
       gitdir,
       dir,
-      ref: githubInfo.branch,
-      remoteRef: githubInfo.branch,
+      ref,
+      remoteRef: ref,
       remote,
       url,
       onAuth: () => ({ username: githubInfo.userName, password: githubInfo.token }),
