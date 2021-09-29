@@ -9,7 +9,10 @@ import fs from 'driver/fs/joplinPlugin';
 import { THEME_SCHEMA } from './schema';
 
 const themeValidator = new Ajv()
-  .addFormat('validPageUrl', (str) => isValidFilename(str) && !str.startsWith('_'))
+  .addFormat(
+    'validPageName',
+    (str) => isValidFilename(str) && !str.startsWith('_') && str !== 'rss',
+  )
   .compile<Theme>(THEME_SCHEMA);
 
 const validateTheme: (data: unknown) => asserts data is Theme = getValidator(

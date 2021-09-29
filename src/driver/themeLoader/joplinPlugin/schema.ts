@@ -32,7 +32,7 @@ export const THEME_SCHEMA = {
     pages: {
       type: 'object',
       additionalProperties: { type: 'array', items: FIELD_SCHEMA },
-      propertyNames: { format: 'validPageUrl' },
+      propertyNames: { format: 'validPageName' },
     },
     siteFields: { type: 'array', items: FIELD_SCHEMA },
     articleFields: { type: 'array', items: FIELD_SCHEMA },
