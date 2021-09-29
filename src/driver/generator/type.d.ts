@@ -1,6 +1,6 @@
 import { Site } from 'domain/model/Site';
 import { Article } from 'domain/model/Article';
-import type _ from 'lodash';
+import type lodash from 'lodash';
 import type moment from 'moment';
 
 // copy from @joplin/renderer
@@ -28,10 +28,13 @@ export interface PageEnv {
   $site: {
     articles: ArticleForPage[];
     generatedAt: Required<Site>['generatedAt'];
-    rss: string;
-    [index: string]: unknown;
+    [fieldName: string]: unknown;
   };
   $article?: ArticleForPage;
-  _: typeof _;
+  $link: {
+    rss: string;
+    [pageName: string]: string;
+  };
+  _: typeof lodash;
   moment: typeof moment;
 }

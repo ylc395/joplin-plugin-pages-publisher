@@ -4,9 +4,7 @@ import type { Tag, File, Note } from './JoplinData';
 export interface Article {
   readonly noteId: string;
   url: string;
-  fullUrl?: string;
   content: string;
-  htmlContent?: string;
   note?: Required<Note> | null;
   title: string;
   createdAt: number | Moment;

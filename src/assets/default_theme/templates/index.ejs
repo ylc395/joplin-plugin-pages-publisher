@@ -13,10 +13,10 @@
       </div>
       <nav class="homepage-navigation">
         <ul>
-          <% $page.menu.forEach(({link, label}) => { %>
-          <li><a href="<%= link %>"><%= label %></a></li>
-          <% }); %> <% if($site.rss) { %>
-          <li><a href="<%= $site.rss %>">RSS</a></li>
+          <li><a href="<%= $link.archives %>">Archives</a></li>
+          <li><a href="<%= $link.about %>">About</a></li>
+          <% if($link.rss) { %>
+          <li><a href="<%= $link.rss %>">RSS</a></li>
           <% } %>
         </ul>
       </nav>

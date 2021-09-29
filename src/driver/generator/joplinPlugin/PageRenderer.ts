@@ -39,12 +39,10 @@ const db = container.resolve(Db);
 const articleValidator = new Ajv().compile<Article>(ARTICLE_SCHEMA);
 const validateArticle = getValidator(articleValidator, 'Invalid article');
 
-type Data = Readonly<Record<string, unknown>>;
-
 export class PageRenderer {
   private site?: Required<Site>;
   private markdownRenderer?: MarkdownRenderer;
-  private pagesValues?: Record<string, Record<string, unknown> | undefined>;
+  private pagesValues?: Record<string, PageEnv['$page'] | undefined>;
   private themeDir?: string;
   private outputDir?: string;
   private cname?: string;
@@ -111,11 +109,13 @@ export class PageRenderer {
     const { themeName } = this.site;
     const themeConfig = await loadTheme(themeName);
 
+    this.pages = themeConfig.pages;
+
     if (!themeConfig) {
       throw new Error(`fail to load theme config: ${themeName}`);
     }
 
-    const pagesValues = (await db.fetch<Data>(['pagesValues', themeName])) || {};
+    const pagesValues = (await db.fetch<Record<string, unknown>>(['pagesValues', themeName])) || {};
     const defaultPagesValues = mapValues(themeConfig.pages, (fields, pageName) => {
       const allFields = [...(fields || []), ...(PREDEFINED_FIELDS[pageName] || [])];
       return allFields.reduce((values, field) => {
@@ -131,17 +131,15 @@ export class PageRenderer {
         return value;
       }
     };
+
     this.pagesValues = mergeWith({}, defaultPagesValues, pagesValues, customMerge);
-    this.pages = themeConfig.pages;
     mergeWith(
-      this.site,
+      this.site.custom,
       {
-        custom: {
-          [themeName]: themeConfig.siteFields?.reduce((result, { name, defaultValue }) => {
-            result[name] = defaultValue ?? null;
-            return result;
-          }, {} as NonNullable<Site['custom'][string]>),
-        },
+        [themeName]: themeConfig.siteFields?.reduce((result, { name, defaultValue }) => {
+          result[name] = defaultValue ?? null;
+          return result;
+        }, {} as NonNullable<Site['custom'][string]>),
       },
       customMerge,
     );
@@ -153,13 +151,13 @@ export class PageRenderer {
     }
 
     const templatePath = `${this.themeDir}/templates/${pageName}.ejs`;
-    const env = await this.createPageEnv(pageName);
+    const env = await this.getPageEnv(pageName);
 
     if (pageName === ARTICLE_PAGE_NAME) {
       await this.outputArticles(env);
     } else {
       const htmlString = await ejs.renderFile(templatePath, env);
-      await fs.outputFile(`${this.outputDir}/${env.$page.url}.html`, htmlString);
+      await fs.outputFile(`${this.outputDir}/${this.getPageUrl(pageName)}.html`, htmlString);
       this.progress.generatedPages += 1;
     }
   }
@@ -171,10 +169,18 @@ export class PageRenderer {
       throw new Error('no pagesValues');
     }
 
-    return pageName === INDEX_PAGE_NAME ? 'index' : values.url || pageName;
+    if (pageName === INDEX_PAGE_NAME) {
+      return 'index';
+    }
+
+    if (isString(values.url)) {
+      return values.url || pageName;
+    }
+
+    return pageName;
   }
 
-  private async createPageEnv(pageName: string) {
+  private async getPageEnv(pageName: string) {
     const { pages, pagesValues } = this;
 
     if (!this.site || !this.markdownRenderer || !pages || !pagesValues || !this.articles) {
@@ -188,18 +194,21 @@ export class PageRenderer {
 
     const { themeName } = this.site;
     const env: PageEnv = {
-      $page: values,
+      $page: { ...values },
       $site: {
         ...this.site.custom[themeName],
         generatedAt: this.site.generatedAt,
         articles: this.articles,
+      },
+      $link: {
         rss: this.site.feedEnabled ? '/rss.xml' : '',
+        ...mapValues(this.pages, (_, pageName) => `/${this.getPageUrl(pageName)}`),
       },
       _,
       moment,
     };
+
     const fields = pages[pageName] || [];
-    env.$page.url = this.getPageUrl(pageName);
 
     // process markdown / menu type field
     const markdownFieldNames = Page.getFieldNamesOfType(fields, 'markdown');
@@ -248,17 +257,13 @@ export class PageRenderer {
       throw new Error('no site when rendering');
     }
 
-    if (!isString(env.$page.url)) {
-      throw new Error('No url when generate article page.');
-    }
-
     const templatePath = `${this.themeDir}/templates/${ARTICLE_PAGE_NAME}.ejs`;
-    const recentArticles: Article[] = [];
+    const recentArticles: ArticleForPage[] = [];
 
     for (const article of this.articles) {
       const { html, resourceIds, pluginAssets, cssStrings } = await this.markdownRenderer.render(
         article.content,
-        env.$page.url,
+        this.getPageUrl(ARTICLE_PAGE_NAME),
       );
 
       article.htmlContent = html;
@@ -284,7 +289,7 @@ export class PageRenderer {
     }
   }
 
-  private async outputFeed(articles: Article[]) {
+  private async outputFeed(articles: ArticleForPage[]) {
     if (!this.outputDir) {
       throw new Error('no site when rendering');
     }
