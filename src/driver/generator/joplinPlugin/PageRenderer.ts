@@ -8,13 +8,7 @@ import { Site, DEFAULT_SITE } from 'domain/model/Site';
 import type { GeneratingProgress, Github } from 'domain/model/Publishing';
 import type { Article } from 'domain/model/Article';
 import type { Theme } from 'domain/model/Theme';
-import {
-  ARTICLE_PAGE_NAME,
-  INDEX_PAGE_NAME,
-  Menu,
-  Page,
-  PREDEFINED_FIELDS,
-} from 'domain/model/Page';
+import { ARTICLE_PAGE_NAME, Menu, Page, PREDEFINED_FIELDS } from 'domain/model/Page';
 import fs, { getAllFiles } from 'driver/fs/joplinPlugin';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { loadTheme } from 'driver/themeLoader/joplinPlugin';
@@ -167,10 +161,6 @@ export class PageRenderer {
 
     if (!values) {
       throw new Error('no pagesValues');
-    }
-
-    if (pageName === INDEX_PAGE_NAME) {
-      return 'index';
     }
 
     if (isString(values.url)) {
