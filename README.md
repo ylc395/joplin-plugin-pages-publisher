@@ -1,6 +1,6 @@
 # Joplin Pages Publisher
 
-This plugin help you generate a static website from your picked Joplin notes, and publish it as [Github Pages](https://pages.github.com/) which are accessible on Web, **with a little mouse clicks, even if you know nothing about website building & publishing / Git / Github**.
+This plugin help you generate a static website from your picked Joplin notes, and publish it as [Github Pages](https://pages.github.com/) which are accessible on Web, **with a few mouse clicks, even if you know nothing about website building & publishing / Git / Github**.
 
 Also, this plugin allow you to customize your website's theme, if you know something about HTML / CSS / JavaScript.
 

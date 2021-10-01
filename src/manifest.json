@@ -4,7 +4,7 @@
   "app_min_version": "2.0",
   "version": "1.0.0",
   "name": "Pages Publisher",
-  "description": "Generate static website from your picked Joplin notes, and publish to Github Pages, with a little mouse clicks",
+  "description": "Generate static blog website from your picked Joplin notes, and publish to Github Pages, with a few mouse clicks",
   "author": "ylc395",
   "homepage_url": "https://github.com/ylc395/joplin-plugin-pages-publisher/wiki/User-Guide",
   "repository_url": "https://github.com/ylc395/joplin-plugin-pages-publisher",
