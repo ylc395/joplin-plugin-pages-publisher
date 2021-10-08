@@ -6,7 +6,7 @@
   "name": "Pages Publisher",
   "description": "Generate static blog website from your picked Joplin notes, and publish to Github Pages, with a few mouse clicks",
   "author": "ylc395",
-  "homepage_url": "https://github.com/ylc395/joplin-plugin-pages-publisher/wiki/User-Guide",
+  "homepage_url": "https://github.com/ylc395/joplin-plugin-pages-publisher",
   "repository_url": "https://github.com/ylc395/joplin-plugin-pages-publisher",
   "keywords": ["site generator", "github pages"]
 }
