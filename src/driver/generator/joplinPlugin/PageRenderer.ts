@@ -25,6 +25,7 @@ import {
   getThemeDir,
   getIcon,
   getOutputIcon,
+  getOutputNoJekyll,
 } from './pathHelper';
 
 ejs.fileLoader = fs.readFileSync;
@@ -322,6 +323,7 @@ export class PageRenderer {
     await this.copyAssets();
     await this.outputCname();
     await this.copyIcon();
+    await this.createNoJekyll();
     return await getAllFiles(this.outputDir);
   }
 
@@ -357,5 +359,14 @@ export class PageRenderer {
     } catch {
       return;
     }
+  }
+
+  // See https://stackoverflow.com/a/39691475/12420687
+  private async createNoJekyll() {
+    if (!this.outputDir) {
+      throw new Error('no output dir');
+    }
+
+    await fs.createFile(getOutputNoJekyll(this.outputDir));
   }
 }
