@@ -34,6 +34,10 @@ export function getOutputIcon(outputDir: string) {
   return `${outputDir}/favicon.ico`;
 }
 
+export function getOutputNoJekyll(outputDir: string) {
+  return `${outputDir}/.nojekyll`;
+}
+
 export async function getGitRepositoryDir() {
   return `${await joplin.plugins.dataDir()}/git_repository`;
 }
