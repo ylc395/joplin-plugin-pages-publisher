@@ -23,7 +23,7 @@ export function getThemeAssetsDir(themeDir: string) {
 }
 
 export function getOutputThemeAssetsDir(outputDir: string) {
-  return `${outputDir}/_assets`;
+  return `${outputDir}/assets`;
 }
 
 export async function getIcon() {
