@@ -1,6 +1,7 @@
 /*  eslint-env worker*/
 /// <reference lib="WebWorker" />
 import http from 'isomorphic-git/http/web';
+import manifest from '../../manifest.json';
 import { DEFAULT_GITHUB_BRANCH } from 'domain/model/Publishing';
 import { difference } from 'lodash';
 import {
@@ -70,7 +71,7 @@ const workerGit: WorkerGit = {
     await commit({
       fs,
       gitdir,
-      message: 'REGULAR COMMIT BY JOPLIN PAGES PUBLISHER',
+      message: `REGULAR COMMIT BY JOPLIN PAGES PUBLISHER(v${manifest.version})`,
       ref,
     });
     await push({
