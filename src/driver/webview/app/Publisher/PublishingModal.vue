@@ -78,7 +78,7 @@ export default defineComponent({
                 }}{{ githubInfo.branch ? `/tree/${githubInfo.branch}` : '' }}
               </li>
               <li v-if="githubInfo.cname">https://{{ githubInfo.cname }}</li>
-              <li v-if="isDefaultRepository || !githubInfo.cname">
+              <li v-if="isDefaultRepository && !githubInfo.cname">
                 https://{{ githubInfo.userName }}.github.io
               </li>
             </ul>

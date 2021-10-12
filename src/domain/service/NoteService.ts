@@ -99,6 +99,7 @@ export class NoteService {
     }
 
     this.notesToBeAdded.value = [];
+    this._searchedNotes.value = [];
     await this.articleService.saveArticles();
   }
 

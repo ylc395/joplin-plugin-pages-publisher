@@ -118,12 +118,11 @@ export class PublishService {
   async saveGithubInfo(githubInfo: Partial<Github>) {
     const githubInfo_ = omit(githubInfo, ['token']);
 
-    await this.pluginDataRepository.saveGithubInfo(
-      omit(toRaw(Object.assign(this.githubInfo.value, githubInfo_)), ['token']),
-    );
+    Object.assign(this.githubInfo.value, githubInfo_);
+    await this.pluginDataRepository.saveGithubInfo(omit(toRaw(this.githubInfo.value), ['token']));
 
     if (!this.isGithubInfoValid.value || !this.githubInfo.value) {
-      throw new Error('invalid github info');
+      return;
     }
 
     this.git.init(toRaw(this.githubInfo.value), this.outputDir.value).catch(noop);

@@ -47,6 +47,7 @@ export default defineComponent({
       @select="addNote"
       @deselect="removeNote"
     >
+      <!-- todo: if title is very long, tag will cover and extend whole line -->
       <SelectOption v-for="note of searchedNotes" :key="note.id" :disabled="note.status !== 'none'">
         {{ note.title }}
         <Tag
