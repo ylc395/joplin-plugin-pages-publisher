@@ -1,5 +1,5 @@
 import { ref, provide, InjectionKey, inject, computed } from 'vue';
-import { mapValues, IsEqualCustomizer } from 'lodash';
+import { mapValues, IsEqualCustomizer, isTypedArray } from 'lodash';
 import moment from 'moment';
 import type { Article } from 'domain/model/Article';
 import { token as articleToken } from 'domain/service/ArticleService';
@@ -48,6 +48,13 @@ export function useEdit() {
     }
   };
 
+  const customClone = (value: unknown) => {
+    // todo: maybe we should submit a PR to ant-design-vue, to skip check/copy TypedArray
+    if (isTypedArray(value)) {
+      return null;
+    }
+  };
+
   const service = {
     isEditing,
     article,
@@ -58,6 +65,7 @@ export function useEdit() {
     syncArticleContent,
     images,
     customEqual,
+    customClone,
   };
 
   provide(token, service);

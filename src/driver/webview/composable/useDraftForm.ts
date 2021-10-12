@@ -12,6 +12,7 @@ import {
   set,
   noop,
   isFunction,
+  CloneDeepWithCustomizer,
 } from 'lodash';
 import { Ref, computed, ref, nextTick, watch } from 'vue';
 import { isUnset } from '../utils';
@@ -19,7 +20,7 @@ import { isUnset } from '../utils';
 type Data = Record<string, unknown>;
 type Rules = Record<string, unknown>;
 
-const customClone = (value: unknown) => {
+const defaultCustomClone = (value: unknown) => {
   if (isTypedArray(value)) {
     return value;
   }
@@ -30,7 +31,9 @@ export function useDraftForm<T = Data>(
   saveFunc: (model: Partial<T>) => Promise<void>,
   rules?: Ref<Rules> | ((modelRef: Partial<T>) => Rules),
   customEqual?: IsEqualCustomizer,
+  customClone?: CloneDeepWithCustomizer<unknown>,
 ) {
+  const customClone_ = customClone || defaultCustomClone;
   const customEqual_: IsEqualCustomizer = (...args) => {
     if (customEqual) {
       const result = customEqual(...args);
@@ -52,7 +55,7 @@ export function useDraftForm<T = Data>(
     () => {
       mergeWith(
         draftModel.value,
-        cloneDeepWith(origin.value, customClone),
+        cloneDeepWith(origin.value, customClone_),
         (objValue, srcValue) => {
           if (isTypedArray(srcValue) || Array.isArray(srcValue)) {
             return srcValue;
@@ -103,7 +106,7 @@ export function useDraftForm<T = Data>(
   });
 
   const resetFields = () => {
-    _resetFields(cloneDeepWith(origin.value, customClone) || undefined);
+    _resetFields(cloneDeepWith(origin.value, customClone_) || undefined);
     // hack: wo need to do validate after reset, to refresh the `validateInfos`
     // maybe a PR to ant-design-vue?
     nextTick(() => validate().catch(noop));
