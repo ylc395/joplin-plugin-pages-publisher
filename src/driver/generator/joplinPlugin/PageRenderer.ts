@@ -192,6 +192,7 @@ export class PageRenderer {
         articles: this.articles,
       },
       $link: {
+        // todo: there should not be a / in the start. Keep the same behaviour with article.fullUrl
         rss: this.site.feedEnabled ? '/rss.xml' : '',
         ...mapValues(this.pages, (_, pageName) => `/${this.getPageUrl(pageName)}`),
       },
