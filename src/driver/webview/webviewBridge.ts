@@ -1,5 +1,4 @@
 import { container } from 'tsyringe';
-import joplin from 'api';
 import { Db } from 'driver/db/joplinPlugin';
 import type { DbReadRequest, DbWriteRequest } from 'driver/db/webviewApi';
 import type { JoplinDataRequest, JoplinPluginSettingRequest } from 'driver/joplinData/webviewApi';
@@ -17,8 +16,9 @@ import { generateSite, getProgress } from 'driver/generator/joplinPlugin';
 import { getOutputDir, getGitRepositoryDir } from 'driver/generator/joplinPlugin/pathHelper';
 import { fetchData, fetchAllData } from 'driver/joplinData/joplinPlugin';
 import { mockNodeFsCall } from 'driver/fs/joplinPlugin';
+import type Joplin from 'driver/joplin/joplinPlugin';
 
-export default (panelId: string) => {
+export default (joplin: Joplin) => {
   const db = container.resolve(Db);
 
   return (
@@ -48,17 +48,17 @@ export default (panelId: string) => {
       case 'loadThemeConfigs':
         return loadThemes();
       case 'quitApp':
-        return joplin.views.panels.hide(panelId);
+        return joplin.quit();
       case 'installationDir':
-        return joplin.plugins.installationDir();
+        return joplin.getInstallationDir();
       case 'dataDir':
-        return joplin.plugins.dataDir();
+        return joplin.getDataDir();
       case 'generateSite':
         return generateSite();
       case 'getGeneratingProgress':
         return getProgress();
       case 'openNote':
-        return joplin.commands.execute('openNote', request.payload);
+        return joplin.openNote(request.payload);
       case 'getOutputDir':
         return getOutputDir();
       case 'getGitRepositoryDir':
@@ -66,7 +66,7 @@ export default (panelId: string) => {
       case 'fsCall':
         return mockNodeFsCall(request.funcName, ...request.args);
       case 'getJoplinPluginSetting':
-        return joplin.settings.value(request.key);
+        return joplin.getSettingOf(request.key);
       default:
         throw new Error(`unknown bridge request: ${request}`);
     }

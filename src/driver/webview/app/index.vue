@@ -110,6 +110,10 @@ export default defineComponent({
   vertical-align: 0.125em;
 }
 
+.ant-tabs {
+  overflow: auto;
+}
+
 :deep(.ant-tabs-nav .ant-tabs-tab) {
   margin-right: 16px;
 }

@@ -1,53 +1,13 @@
 import 'core-js/proposals/reflect-metadata';
-import joplin from 'api';
-import { container } from 'tsyringe';
-import { Db } from 'driver/db/joplinPlugin';
-import { SettingItemType } from 'api/types';
-import webviewBridge from 'driver/webview/webviewBridge';
+import joplinApi from 'api';
+import Joplin from 'driver/joplin/joplinPlugin';
 
-const OPEN_PAGES_PUBLISHER_COMMAND = 'openPagesPublisher';
-const panels = joplin.views.panels;
-const db = container.resolve(Db);
-let mainWindow: string;
+const joplin = new Joplin();
 
-joplin.plugins.register({
+joplinApi.plugins.register({
   onStart: async function () {
-    await registerSettings();
-    await joplin.commands.register({
-      name: OPEN_PAGES_PUBLISHER_COMMAND,
-      label: 'Open Pages Publisher',
-      async execute() {
-        if (!mainWindow) {
-          mainWindow = await panels.create('mainWindow');
-          panels.onMessage(mainWindow, webviewBridge(mainWindow));
-          await panels.addScript(mainWindow, './driver/webview/index.js');
-        }
-        await db.init(true);
-        await panels.show(mainWindow);
-      },
-    });
-
-    await joplin.views.menuItems.create('pages-publisher', OPEN_PAGES_PUBLISHER_COMMAND);
+    await joplin.setupSettings();
+    await joplin.setupCommand();
+    await joplin.setupMenu();
   },
 });
-
-async function registerSettings() {
-  const SECTION_NAME = 'github';
-
-  await joplin.settings.registerSection(SECTION_NAME, {
-    label: 'Pages Publisher',
-  });
-
-  await joplin.settings.registerSettings({
-    githubToken: {
-      label: 'Github Token',
-      secure: true,
-      type: SettingItemType.String,
-      public: true,
-      value: '',
-      section: SECTION_NAME,
-      description:
-        'See https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token for details',
-    },
-  });
-}
