@@ -56,11 +56,12 @@ export default defineComponent({
     provide(appToken, appService);
 
     const { generateSite } = publishService;
-    const { getLatestWarning, quitApp } = appService;
+    const { getLatestWarning, quitApp, showingQuitButton } = appService;
 
     return {
       quitApp,
       generateSite,
+      showingQuitButton,
       activeKey: useActiveTabPane(appService),
       warningForGenerating: computed(() => getLatestWarning(FORBIDDEN.GENERATE)),
       warningForTabSwitching: computed(() => getLatestWarning(FORBIDDEN.TAB_SWITCH)),
@@ -93,7 +94,7 @@ export default defineComponent({
           Generate
         </Button>
       </Tooltip>
-      <Button class="mr-4" @click="quitApp">
+      <Button v-if="showingQuitButton" class="mr-4" @click="quitApp">
         <template #icon><CloseOutlined /></template>
         Quit
       </Button>

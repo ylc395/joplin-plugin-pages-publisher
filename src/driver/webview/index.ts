@@ -16,11 +16,16 @@ import { AppService } from 'domain/service/AppService';
 const exceptionService = container.resolve(ExceptionService);
 const appService = container.resolve(AppService);
 
-appService.checkDb().then(() => {
-  const app = createApp(App);
-  app.config.errorHandler = (err: unknown) => {
-    exceptionService.reportError(err as Error);
-  };
+appService
+  .init()
+  .then(() => {
+    return appService.checkDb();
+  })
+  .then(() => {
+    const app = createApp(App);
+    app.config.errorHandler = (err: unknown) => {
+      exceptionService.reportError(err as Error);
+    };
 
-  app.mount('#joplin-plugin-content');
-});
+    app.mount(appService.getRootEl());
+  });

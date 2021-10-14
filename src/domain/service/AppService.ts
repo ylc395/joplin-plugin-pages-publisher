@@ -1,26 +1,31 @@
 import { InjectionKey, reactive } from 'vue';
 import { container, InjectionToken, singleton } from 'tsyringe';
-import { last, pull } from 'lodash';
+import { isEqual, last, pull } from 'lodash';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 
-export interface Modal {
-  type: 'error' | 'confirm' | 'warning';
-  title?: string;
-  content?: string;
-  onOk?: () => void;
-  onCancel?: () => void;
-  okText?: string;
-  okType?: 'default' | 'primary';
-  okDanger?: boolean;
-  cancelText?: string;
-  class?: string;
+export interface UI {
+  openModal: (modal: {
+    type: 'error' | 'confirm' | 'warning';
+    title?: string;
+    content?: string;
+    onOk?: () => void;
+    onCancel?: () => void;
+    okText?: string;
+    okType?: 'default' | 'primary';
+    okDanger?: boolean;
+    cancelText?: string;
+    keepFormat?: boolean;
+  }) => void;
+  resizeWindow: (width: number, height: number) => void;
+  getRootEl: () => HTMLElement;
 }
 
 export interface JoplinApp {
-  quitApp: () => never;
+  quit: () => never;
   openNote: (noteId: string) => Promise<void>;
-  installationDir: () => Promise<string>;
-  dataDir: () => Promise<string>;
+  getInstallationDir: () => Promise<string>;
+  getDataDir: () => Promise<string>;
+  getWindowSize: () => Promise<[number, number]>; // [0, 0] means do not set size
 }
 
 export enum FORBIDDEN {
@@ -28,11 +33,9 @@ export enum FORBIDDEN {
   GENERATE,
 }
 
-export const openModalToken: InjectionToken<(modal: Modal) => void> = Symbol();
+export const uiToken: InjectionToken<UI> = Symbol();
 export const joplinToken: InjectionToken<JoplinApp> = Symbol();
 export const token: InjectionKey<AppService> = Symbol();
-
-export const MODAL_CLASS_NAME = 'text-print-modal';
 
 @singleton()
 export class AppService {
@@ -43,7 +46,8 @@ export class AppService {
   private readonly joplin = container.resolve(joplinToken);
   private readonly pluginDataRepository = new PluginDataRepository();
 
-  readonly openModal = container.resolve(openModalToken);
+  readonly ui = container.resolve(uiToken);
+  showingQuitButton = true;
 
   setWarning(effect: FORBIDDEN, warning: string, add: boolean) {
     if (!warning) {
@@ -67,21 +71,38 @@ export class AppService {
     return this.joplin.openNote(id);
   }
 
+  async init() {
+    const [width, height] = await this.joplin.getWindowSize();
+
+    if (!isEqual([width, height], [0, 0])) {
+      this.ui.resizeWindow(width, height);
+      this.showingQuitButton = false;
+    }
+  }
+
+  getRootEl() {
+    return this.ui.getRootEl();
+  }
+
+  openModal(...args: Parameters<UI['openModal']>) {
+    return this.ui.openModal(...args);
+  }
+
   quitApp() {
-    return this.joplin.quitApp();
+    return this.joplin.quit();
   }
 
   getDataDir() {
-    return this.joplin.dataDir();
+    return this.joplin.getDataDir();
   }
   async checkDb() {
     const isBroken = !(await this.pluginDataRepository.checkDb());
 
     if (isBroken) {
-      const dir = await this.joplin.dataDir();
+      const dir = await this.joplin.getDataDir();
 
       return new Promise<void>((resolve, reject) => {
-        this.openModal({
+        this.ui.openModal({
           type: 'confirm',
           title: 'Data File was broken!',
           content: `This plugin's data file will be totally overwrote if you continue.\nYou can check the data file in:\n\n${dir}/db.json`,
@@ -94,7 +115,7 @@ export class AppService {
           onOk: resolve,
           okType: 'default',
           okDanger: true,
-          class: MODAL_CLASS_NAME,
+          keepFormat: true,
         });
       });
     }

@@ -1,7 +1,7 @@
 import { container } from 'tsyringe';
 import { joplinToken } from 'domain/service/AppService';
 export interface JoplinAction {
-  event: 'quitApp' | 'openNote' | 'installationDir' | 'dataDir';
+  event: 'quit' | 'openNote' | 'getInstallationDir' | 'getDataDir' | 'getWindowSize';
   payload?: any;
 }
 
@@ -10,20 +10,24 @@ declare const webviewApi: {
 };
 
 const joplin = {
-  quitApp() {
-    return webviewApi.postMessage({ event: 'quitApp' }) as never;
+  quit() {
+    return webviewApi.postMessage({ event: 'quit' }) as never;
   },
 
-  installationDir() {
-    return webviewApi.postMessage<string>({ event: 'installationDir' });
+  getInstallationDir() {
+    return webviewApi.postMessage<string>({ event: 'getInstallationDir' });
   },
 
-  dataDir() {
-    return webviewApi.postMessage<string>({ event: 'dataDir' });
+  getDataDir() {
+    return webviewApi.postMessage<string>({ event: 'getDataDir' });
   },
 
   openNote(noteId: string) {
     return webviewApi.postMessage({ event: 'openNote', payload: noteId });
+  },
+
+  getWindowSize() {
+    return webviewApi.postMessage<[number, number]>({ event: 'getWindowSize' });
   },
 } as const;
 

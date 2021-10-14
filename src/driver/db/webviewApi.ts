@@ -26,7 +26,7 @@ container.registerInstance(pluginDataDbToken, {
   },
 
   async fetchIcon() {
-    const dataDir = await joplin.dataDir();
+    const dataDir = await joplin.getDataDir();
     const iconDir = `${dataDir}/favicon.ico`;
     try {
       return (await fs.promises.readFile(iconDir)) as unknown as Uint8Array;
@@ -36,7 +36,7 @@ container.registerInstance(pluginDataDbToken, {
   },
 
   async saveIcon(icon: Uint8Array | null | undefined) {
-    const dataDir = await joplin.dataDir();
+    const dataDir = await joplin.getDataDir();
     const iconPath = `${dataDir}/favicon.ico`;
 
     if (!icon) {

@@ -5,6 +5,7 @@ import type JoplinViewsDialogs from 'api/JoplinViewsDialogs';
 import { container } from 'tsyringe';
 import { Db } from 'driver/db/joplinPlugin';
 import webviewBridge from 'driver/webview/webviewBridge';
+import { isNumber } from 'lodash';
 
 const OPEN_PAGES_PUBLISHER_COMMAND = 'openPagesPublisher';
 const db = container.resolve(Db);
@@ -14,6 +15,10 @@ enum UIType {
 }
 
 const UI_TYPE_SETTING = 'uiType';
+const UI_SIZE_SETTING = 'uiSize';
+const DEFAULT_UI_SIZE = '600*640';
+const isValidUISize = (size: unknown): size is [number, number] =>
+  Array.isArray(size) && size.length === 2 && size.every(isNumber);
 
 export default class Joplin {
   private windowHandler?: ViewHandle;
@@ -61,6 +66,14 @@ export default class Joplin {
         description:
           "Use Dialog or Panel to display this plugin's UI(need to restart Joplin to take effect).",
       },
+      [UI_SIZE_SETTING]: {
+        label: 'UI size',
+        type: SettingItemType.String,
+        public: true,
+        value: DEFAULT_UI_SIZE,
+        section: SECTION_NAME,
+        description: 'Size for UI in the dialog. width*height',
+      },
     });
   }
 
@@ -79,9 +92,27 @@ export default class Joplin {
     }
 
     if (this.isUsingDialog()) {
+      const [width, height] = await this.getWindowSize();
+      // prevent dialog modal resizes suddenly
+      await this.ui.setHtml(
+        this.windowHandler,
+        `<style>#joplin-plugin-content {width: ${width}px; height: ${height}px}</style>`,
+      );
       await this.ui.setButtons(this.windowHandler, [{ id: 'no', title: 'Quit' }]);
       this.ui.open(this.windowHandler);
     }
+  }
+
+  async getWindowSize() {
+    if (!this.isUsingDialog()) {
+      return [0, 0] as const;
+    }
+
+    const size = (await this.getSettingOf<string>(UI_SIZE_SETTING)).split('*').map(Number);
+
+    return isValidUISize(size)
+      ? size
+      : (DEFAULT_UI_SIZE.split('*').map(Number) as [number, number]);
   }
 
   private isUsingDialog(): this is { ui: JoplinViewsDialogs } {

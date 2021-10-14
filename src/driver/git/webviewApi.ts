@@ -50,7 +50,7 @@ class Git extends EventEmitter<GitEvents> {
     this.dir = dir;
 
     if (!this.installDir) {
-      this.installDir = await this.joplin.installationDir();
+      this.installDir = await this.joplin.getInstallationDir();
     }
 
     if (!this.gitdir) {

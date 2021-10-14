@@ -47,12 +47,14 @@ export default (joplin: Joplin) => {
         return loadTheme(request.themeName);
       case 'loadThemeConfigs':
         return loadThemes();
-      case 'quitApp':
+      case 'quit':
         return joplin.quit();
-      case 'installationDir':
+      case 'getInstallationDir':
         return joplin.getInstallationDir();
-      case 'dataDir':
+      case 'getDataDir':
         return joplin.getDataDir();
+      case 'getWindowSize':
+        return joplin.getWindowSize();
       case 'generateSite':
         return generateSite();
       case 'getGeneratingProgress':
