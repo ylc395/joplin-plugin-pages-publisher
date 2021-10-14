@@ -98,7 +98,7 @@ export default class Joplin {
         this.windowHandler,
         `<style>#joplin-plugin-content {width: ${width}px; height: ${height}px}</style>`,
       );
-      await this.ui.setButtons(this.windowHandler, [{ id: 'no', title: 'Quit Page Publisher' }]);
+      await this.ui.setButtons(this.windowHandler, [{ id: 'no', title: 'Quit Pages Publisher' }]);
       this.ui.open(this.windowHandler);
     }
   }
