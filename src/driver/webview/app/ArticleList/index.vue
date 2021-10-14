@@ -2,13 +2,13 @@
 import { computed, defineComponent, inject } from 'vue';
 import { filter } from 'lodash';
 import { Button, Collapse, Modal, Alert } from 'ant-design-vue';
+import { token as articleToken } from 'domain/service/ArticleService';
+import { token as pageToken } from 'domain/service/PageService';
+import { MODAL_FOR_FORM } from 'driver/webview/utils/webviewApi';
 import CardList from './CardList.vue';
 import Edit from './Edit.vue';
 import DiffView from './DiffView.vue';
 import Search from './Search.vue';
-import { token as articleToken } from 'domain/service/ArticleService';
-import { token as pageToken } from 'domain/service/PageService';
-import { token as appToken } from 'domain/service/AppService';
 import { useEdit } from './useEdit';
 import { useDiff } from './useDiff';
 import { usePanel } from './usePanel';
@@ -38,7 +38,6 @@ export default defineComponent({
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { articlePage } = inject(pageToken)!;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const { getRootEl } = inject(appToken)!;
     const { isEditing } = useEdit();
     const { handleSubmit, activePanels } = usePanel();
     const { isViewing: isViewingDiff, stopDiff: stopViewingDiff } = useDiff();
@@ -53,7 +52,7 @@ export default defineComponent({
       togglePublished,
       selectAll,
       selectedArticles,
-      getModalContainer: getRootEl,
+      MODAL_FOR_FORM,
       selectedPublishedLength: computed(
         () => filter(selectedArticles.value, { published: true }).length,
       ),
@@ -123,21 +122,13 @@ export default defineComponent({
       <CardList type="unpublished" />
     </CollapsePanel>
   </Collapse>
-  <Modal
-    :visible="isEditing"
-    :destroyOnClose="true"
-    :getContainer="getModalContainer"
-    :closable="false"
-    :maskClosable="false"
-    :footer="null"
-  >
+  <Modal :visible="isEditing" v-bind="MODAL_FOR_FORM">
     <Edit />
   </Modal>
   <Modal
     :visible="isViewingDiff"
-    :getContainer="getModalContainer"
-    :maskClosable="false"
-    :footer="null"
+    v-bind="MODAL_FOR_FORM"
+    :closable="true"
     @cancel="stopViewingDiff"
   >
     <DiffView />

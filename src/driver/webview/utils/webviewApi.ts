@@ -10,7 +10,7 @@ const styleEl = document.createElement('style');
 styleEl.innerHTML = `.${MODAL_CLASS_NAME} {word-break: break-all; white-space: pre-line; }`;
 document.head.appendChild(styleEl);
 
-export const openModal: UI['openModal'] = ({ type, okType, okDanger, keepFormat, ...options }) => {
+const openModal: UI['openModal'] = ({ type, okType, okDanger, keepFormat, ...options }) => {
   return Modal[type]({
     closable: false,
     ...(type === 'confirm' ? { icon: () => createVNode(ExclamationCircleOutlined) } : null),
@@ -20,15 +20,24 @@ export const openModal: UI['openModal'] = ({ type, okType, okDanger, keepFormat,
   });
 };
 
-export const resizeWindow: UI['resizeWindow'] = (width, height) => {
+const resizeWindow: UI['resizeWindow'] = (width, height) => {
   const rootEl = getRootEl();
 
   rootEl.style.width = `${width}px`;
   rootEl.style.height = `${height}px`;
 };
 
-export const getRootEl: UI['getRootEl'] = () => {
+const getRootEl: UI['getRootEl'] = () => {
   return document.querySelector('#joplin-plugin-content') as HTMLElement;
 };
+
+export const MODAL_FOR_FORM = {
+  destroyOnClose: true,
+  footer: null,
+  maskClosable: false,
+  closable: false,
+  getContainer: getRootEl,
+  maskStyle: { backgroundColor: 'rgba(255, 255, 255, 0.8)' },
+} as const;
 
 container.registerInstance(uiToken, { openModal, resizeWindow, getRootEl });

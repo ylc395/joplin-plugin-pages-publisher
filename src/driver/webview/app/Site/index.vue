@@ -122,7 +122,7 @@ export default defineComponent({
       <Button type="primary" :disabled="!canSave" @click="save">Save</Button>
     </div>
   </div>
-  <Modal v-model:visible="modalVisible" :width="400" :closable="false">
+  <Modal v-model:visible="modalVisible" :width="400" :closable="false" :mask="false">
     <p>
       Put theme directory under <strong>{{ dataDir }}/themes</strong>
     </p>
