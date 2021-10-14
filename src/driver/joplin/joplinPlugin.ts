@@ -20,6 +20,8 @@ const DEFAULT_UI_SIZE = '600*640';
 const isValidUISize = (size: unknown): size is [number, number] =>
   Array.isArray(size) && size.length === 2 && size.every(isNumber);
 
+const IS_NEW_USER_SETTING = 'isNewUser';
+
 export default class Joplin {
   private windowHandler?: ViewHandle;
   private uiType?: UIType;
@@ -73,6 +75,12 @@ export default class Joplin {
         value: DEFAULT_UI_SIZE,
         section: SECTION_NAME,
         description: 'Size for UI in the dialog. width*height',
+      },
+      [IS_NEW_USER_SETTING]: {
+        public: false,
+        value: true,
+        type: SettingItemType.Bool,
+        label: IS_NEW_USER_SETTING,
       },
     });
   }
@@ -162,5 +170,13 @@ export default class Joplin {
 
   openNote(noteId: string) {
     return joplinApi.commands.execute('openNote', noteId);
+  }
+
+  isNewUser() {
+    return this.getSettingOf<boolean>(IS_NEW_USER_SETTING);
+  }
+
+  setAsOldUser() {
+    return joplinApi.settings.setValue(IS_NEW_USER_SETTING, false);
   }
 }

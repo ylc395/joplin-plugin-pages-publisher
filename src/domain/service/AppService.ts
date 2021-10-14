@@ -26,6 +26,8 @@ export interface JoplinApp {
   getInstallationDir: () => Promise<string>;
   getDataDir: () => Promise<string>;
   getWindowSize: () => Promise<[number, number]>; // [0, 0] means do not set size
+  isNewUser: () => Promise<boolean>;
+  setAsOldUser: () => Promise<void>;
 }
 
 export enum FORBIDDEN {
@@ -46,8 +48,9 @@ export class AppService {
   private readonly joplin = container.resolve(joplinToken);
   private readonly pluginDataRepository = new PluginDataRepository();
 
-  readonly ui = container.resolve(uiToken);
+  private readonly ui = container.resolve(uiToken);
   showingQuitButton = true;
+  isNewUser = false;
 
   setWarning(effect: FORBIDDEN, warning: string, add: boolean) {
     if (!warning) {
@@ -73,6 +76,12 @@ export class AppService {
 
   async init() {
     const [width, height] = await this.joplin.getWindowSize();
+
+    this.isNewUser = await this.joplin.isNewUser();
+
+    if (this.isNewUser) {
+      this.joplin.setAsOldUser();
+    }
 
     if (!isEqual([width, height], [0, 0])) {
       this.ui.resizeWindow(width, height);

@@ -55,6 +55,10 @@ export default (joplin: Joplin) => {
         return joplin.getDataDir();
       case 'getWindowSize':
         return joplin.getWindowSize();
+      case 'isNewUser':
+        return joplin.isNewUser();
+      case 'setAsOldUser':
+        return joplin.setAsOldUser();
       case 'generateSite':
         return generateSite();
       case 'getGeneratingProgress':

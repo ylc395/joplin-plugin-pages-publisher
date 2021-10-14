@@ -31,7 +31,7 @@ const getRootEl: UI['getRootEl'] = () => {
   return document.querySelector('#joplin-plugin-content') as HTMLElement;
 };
 
-export const MODAL_FOR_FORM = {
+export const FOCUSING_MODAL = {
   destroyOnClose: true,
   footer: null,
   maskClosable: false,

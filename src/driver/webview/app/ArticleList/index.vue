@@ -4,7 +4,7 @@ import { filter } from 'lodash';
 import { Button, Collapse, Modal, Alert } from 'ant-design-vue';
 import { token as articleToken } from 'domain/service/ArticleService';
 import { token as pageToken } from 'domain/service/PageService';
-import { MODAL_FOR_FORM } from 'driver/webview/utils/webviewApi';
+import { FOCUSING_MODAL } from 'driver/webview/utils/webviewApi';
 import CardList from './CardList.vue';
 import Edit from './Edit.vue';
 import DiffView from './DiffView.vue';
@@ -52,7 +52,7 @@ export default defineComponent({
       togglePublished,
       selectAll,
       selectedArticles,
-      MODAL_FOR_FORM,
+      FOCUSING_MODAL,
       selectedPublishedLength: computed(
         () => filter(selectedArticles.value, { published: true }).length,
       ),
@@ -122,12 +122,12 @@ export default defineComponent({
       <CardList type="unpublished" />
     </CollapsePanel>
   </Collapse>
-  <Modal :visible="isEditing" v-bind="MODAL_FOR_FORM">
+  <Modal :visible="isEditing" v-bind="FOCUSING_MODAL">
     <Edit />
   </Modal>
   <Modal
     :visible="isViewingDiff"
-    v-bind="MODAL_FOR_FORM"
+    v-bind="FOCUSING_MODAL"
     :closable="true"
     @cancel="stopViewingDiff"
   >

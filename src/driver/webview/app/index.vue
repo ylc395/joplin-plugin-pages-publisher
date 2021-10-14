@@ -23,6 +23,7 @@ import Site from './Site/index.vue';
 import PageList from './PageList/index.vue';
 import Github from './Github/index.vue';
 import Publisher from './Publisher/index.vue';
+import Welcome from './Welcome/index.vue';
 import { selfish } from '../utils';
 import { useActiveTabPane } from './composable';
 
@@ -43,6 +44,7 @@ export default defineComponent({
     PageList,
     Github,
     Publisher,
+    Welcome,
   },
   setup() {
     const publishService = selfish(container.resolve(PublishService));
@@ -101,6 +103,7 @@ export default defineComponent({
     </template>
   </Tabs>
   <Publisher />
+  <Welcome />
 </template>
 <style scoped>
 :global(:root) {

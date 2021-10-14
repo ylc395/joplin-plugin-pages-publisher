@@ -1,7 +1,14 @@
 import { container } from 'tsyringe';
 import { joplinToken } from 'domain/service/AppService';
 export interface JoplinAction {
-  event: 'quit' | 'openNote' | 'getInstallationDir' | 'getDataDir' | 'getWindowSize';
+  event:
+    | 'quit'
+    | 'openNote'
+    | 'getInstallationDir'
+    | 'getDataDir'
+    | 'getWindowSize'
+    | 'isNewUser'
+    | 'setAsOldUser';
   payload?: any;
 }
 
@@ -28,6 +35,14 @@ const joplin = {
 
   getWindowSize() {
     return webviewApi.postMessage<[number, number]>({ event: 'getWindowSize' });
+  },
+
+  isNewUser() {
+    return webviewApi.postMessage<boolean>({ event: 'isNewUser' });
+  },
+
+  setAsOldUser() {
+    return webviewApi.postMessage<void>({ event: 'setAsOldUser' });
   },
 } as const;
 

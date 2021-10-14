@@ -4,7 +4,7 @@ import { Button, Modal } from 'ant-design-vue';
 import { SettingOutlined } from '@ant-design/icons-vue';
 import { token as pageToken } from 'domain/service/PageService';
 import { token as appToken } from 'domain/service/AppService';
-import { MODAL_FOR_FORM } from 'driver/webview/utils/webviewApi';
+import { FOCUSING_MODAL } from 'driver/webview/utils/webviewApi';
 import { useCustomize } from './useCustomize';
 import Customize from './Customize.vue';
 
@@ -21,7 +21,7 @@ export default defineComponent({
       pages,
       isCustomizing,
       customize,
-      MODAL_FOR_FORM,
+      FOCUSING_MODAL,
       getModalContainer: getRootEl,
     };
   },
@@ -47,7 +47,7 @@ export default defineComponent({
         </Button>
       </div>
     </div>
-    <Modal :visible="isCustomizing" v-bind="MODAL_FOR_FORM">
+    <Modal :visible="isCustomizing" v-bind="FOCUSING_MODAL">
       <Customize />
     </Modal>
   </div>
