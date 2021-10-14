@@ -3,6 +3,7 @@ import { defineComponent, inject } from 'vue';
 import { Button, Modal } from 'ant-design-vue';
 import { SettingOutlined } from '@ant-design/icons-vue';
 import { token as pageToken } from 'domain/service/PageService';
+import { token as appToken } from 'domain/service/AppService';
 import { useCustomize } from './useCustomize';
 import Customize from './Customize.vue';
 
@@ -11,13 +12,15 @@ export default defineComponent({
   setup() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { pages } = inject(pageToken)!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const { getRootEl } = inject(appToken)!;
     const { isCustomizing, customize } = useCustomize();
 
     return {
       pages,
       isCustomizing,
       customize,
-      getModalContainer: () => document.querySelector('#joplin-plugin-content'),
+      getModalContainer: getRootEl,
     };
   },
 });

@@ -8,6 +8,7 @@ import DiffView from './DiffView.vue';
 import Search from './Search.vue';
 import { token as articleToken } from 'domain/service/ArticleService';
 import { token as pageToken } from 'domain/service/PageService';
+import { token as appToken } from 'domain/service/AppService';
 import { useEdit } from './useEdit';
 import { useDiff } from './useDiff';
 import { usePanel } from './usePanel';
@@ -36,6 +37,8 @@ export default defineComponent({
     } = inject(articleToken)!;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { articlePage } = inject(pageToken)!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const { getRootEl } = inject(appToken)!;
     const { isEditing } = useEdit();
     const { handleSubmit, activePanels } = usePanel();
     const { isViewing: isViewingDiff, stopDiff: stopViewingDiff } = useDiff();
@@ -50,7 +53,7 @@ export default defineComponent({
       togglePublished,
       selectAll,
       selectedArticles,
-      getModalContainer: () => document.querySelector('#joplin-plugin-content'),
+      getModalContainer: getRootEl,
       selectedPublishedLength: computed(
         () => filter(selectedArticles.value, { published: true }).length,
       ),
