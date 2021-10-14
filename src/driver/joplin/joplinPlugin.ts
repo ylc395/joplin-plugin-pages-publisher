@@ -50,7 +50,7 @@ export default class Joplin {
         value: '',
         section: SECTION_NAME,
         description:
-          'See https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token for details',
+          '"public_repo" scope is required. See https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token for details',
       },
       [UI_TYPE_SETTING]: {
         label: 'UI type',
