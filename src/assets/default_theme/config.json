@@ -6,7 +6,11 @@
         "name": "menu",
         "label": "Menu",
         "inputType": "menu",
-        "tip": "Navigating Menu displayed in Index Page"
+        "tip": "Navigating Menu displayed in Index Page",
+        "defaultValue": [
+          { "label": "Archives", "link": "archives" },
+          { "label": "About", "link": "about" }
+        ]
       },
       {
         "name": "mainTitle",

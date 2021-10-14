@@ -13,8 +13,9 @@
       </div>
       <nav class="homepage-navigation">
         <ul>
-          <li><a href="<%= $link.archives %>">Archives</a></li>
-          <li><a href="<%= $link.about %>">About</a></li>
+          <% for (const menuItem of $page.menu) {%>
+          <li><a href="<%= menuItem.link %>"><%= menuItem.label %></a></li>
+          <% } %>
           <% if($link.rss) { %>
           <li><a href="<%= $link.rss %>">RSS</a></li>
           <% } %>
