@@ -55,7 +55,7 @@ export default class Joplin {
           '"public_repo" scope is required. See https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token for details',
       },
       [UI_TYPE_SETTING]: {
-        label: 'UI type',
+        label: 'UI Type',
         type: SettingItemType.Int,
         public: true,
         value: UIType.Panel,
@@ -69,7 +69,7 @@ export default class Joplin {
           "Use Dialog or Panel to display this plugin's UI(need to restart Joplin to take effect).",
       },
       [UI_SIZE_SETTING]: {
-        label: 'UI size',
+        label: 'UI Size',
         type: SettingItemType.String,
         public: true,
         value: DEFAULT_UI_SIZE,
