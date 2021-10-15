@@ -87,7 +87,7 @@ export default defineComponent({
         <template #extra>
           <Button v-if="progress.result" @click="reset">Confirm</Button>
           <Button
-            v-if="progress.result === PublishResults.FAIL"
+            v-if="[PublishResults.FAIL, PublishResults.GITHUB_INFO_ERROR].includes(progress.result)"
             type="primary"
             @click="publish(true)"
             >Retry</Button
