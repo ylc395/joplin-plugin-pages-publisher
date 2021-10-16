@@ -145,7 +145,7 @@ class Git extends EventEmitter<GitEvents> {
     });
   }
 
-  async push(files: string[], init: boolean) {
+  async push(files: string[], needToInit: boolean) {
     if (this.isPushing) {
       throw new Error('pushing!');
     }
@@ -164,11 +164,10 @@ class Git extends EventEmitter<GitEvents> {
     });
 
     try {
-      if (init) {
-        await Promise.race([this.initRepo(), terminatePromise]);
-      } else {
-        await Promise.race([this.initRepoPromise, terminatePromise]);
+      if (needToInit) {
+        this.initRepo();
       }
+      await Promise.race([this.initRepoPromise, terminatePromise]);
     } catch (error) {
       this.isPushing = false;
 

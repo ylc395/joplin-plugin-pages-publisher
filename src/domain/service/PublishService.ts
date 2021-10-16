@@ -72,6 +72,7 @@ export class PublishService {
   }
 
   private async init() {
+    this.outputDir.value = await this.generator.getOutputDir();
     this.git.on(GitEvents.PROGRESS, (e) => this.refreshPublishingProgress(e));
     this.git.on(GitEvents.MESSAGE, (message) => this.refreshPublishingProgress({ message }));
     this.git.on(GitEvents.INIT_REPO_STATUS_CHANGED, (e) => {
@@ -79,7 +80,7 @@ export class PublishService {
 
       if (this.gitRepoStatus === 'initializing') {
         this.refreshPublishingProgress({
-          phase: 'Repo initializing...',
+          phase: 'Local repository initializing...',
           message: '',
         });
       }
@@ -92,7 +93,6 @@ export class PublishService {
       token: (await this.joplinDataRepository.getGithubToken()) || '',
       ...(await this.pluginDataRepository.getGithubInfo()),
     };
-    this.outputDir.value = await this.generator.getOutputDir();
 
     if (this.isGithubInfoValid.value) {
       this.git.init(toRaw(this.githubInfo.value), this.outputDir.value).catch(noop);
