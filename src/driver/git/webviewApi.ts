@@ -8,14 +8,13 @@ import {
   pickBy,
   isTypedArray,
   isObjectLike,
-  isError,
   cloneDeep,
 } from 'lodash';
 import { wrap, Remote, releaseProxy, expose } from 'comlink';
 import fs from 'driver/fs/webviewApi';
 import type { FsWorkerCallRequest, FsWorkerCallResponse } from 'driver/fs/type';
 import { gitClientToken, GitEvents, LocalRepoStatus } from 'domain/service/PublishService';
-import { Github, PublishResults } from 'domain/model/Publishing';
+import { Github, PublishError, PublishResults } from 'domain/model/Publishing';
 import { joplinToken } from 'domain/service/AppService';
 import type { GitEventHandler, WorkerGit } from './type';
 
@@ -43,7 +42,7 @@ class Git extends EventEmitter<GitEvents> {
   private worker?: Worker;
   private workerGit?: Remote<WorkerGit>;
   private initRepoPromise?: Promise<void>;
-  private stopInitRepo?: (reason: unknown) => void;
+  private rejectInitRepoPromise?: (reason?: unknown) => void;
   private isPushing = false;
 
   async init(githubInfo: Github, dir: string) {
@@ -82,9 +81,9 @@ class Git extends EventEmitter<GitEvents> {
     }
 
     this.initRepoPromise = new Promise((resolve, reject) => {
-      const reject_ = (e: unknown) => {
-        reject(e);
+      const reject_ = (e?: unknown) => {
         this.emit(GitEvents.LocalRepoStatusChanged, LocalRepoStatus.Fail);
+        reject(new PublishError(PublishResults.Fail, e));
       };
 
       const resolve_ = () => {
@@ -92,7 +91,7 @@ class Git extends EventEmitter<GitEvents> {
         this.emit(GitEvents.LocalRepoStatusChanged, LocalRepoStatus.Ready);
       };
 
-      this.stopInitRepo = reject_;
+      this.rejectInitRepoPromise = reject_;
       this.emit(GitEvents.LocalRepoStatusChanged, LocalRepoStatus.Initializing);
       workerGit
         .initRepo({
@@ -110,20 +109,14 @@ class Git extends EventEmitter<GitEvents> {
     return this.initRepoPromise;
   }
 
-  private initWorker(triggerTerminate = false) {
+  private initWorker() {
     if (!this.installDir) {
       throw new Error('no install dir');
     }
 
     this.worker?.terminate();
-
-    if (triggerTerminate) {
-      this.emit(GitEvents.Terminated);
-    }
-
     this.workerGit?.[releaseProxy]();
-    this.stopInitRepo?.('Repo Initialization has been terminated');
-    this.stopInitRepo = void 0;
+    this.rejectInitRepoPromise?.();
 
     this.worker = new Worker(`${this.installDir}/driver/git/webWorker.js`);
     this.workerGit = wrap(this.worker);
@@ -150,50 +143,53 @@ class Git extends EventEmitter<GitEvents> {
       throw new Error('pushing!');
     }
 
-    if (!this.workerGit) {
-      throw new Error('worker init failed');
-    }
-
-    if (!this.githubInfo || !this.dir || !this.gitdir) {
-      throw new Error('git info is not prepared');
+    if (!this.initRepoPromise) {
+      throw new Error('no initRepoPromise');
     }
 
     this.isPushing = true;
-    const terminatePromise = new Promise<never>((resolve, reject) => {
-      this.once(GitEvents.Terminated, () => reject(Error(PublishResults.TERMINATED)));
-    });
 
-    try {
-      if (needToInit) {
-        this.initRepo();
-      }
-      await Promise.race([this.initRepoPromise, terminatePromise]);
-    } catch (error) {
-      this.isPushing = false;
-
-      if (isError(error) && (error.message.includes('401') || error.message.includes('404'))) {
-        throw Error(PublishResults.GITHUB_INFO_ERROR);
-      } else {
-        throw error;
-      }
+    if (needToInit) {
+      this.initRepo();
     }
 
     try {
       await Promise.race([
-        this.workerGit.publish({
-          files,
-          githubInfo: this.githubInfo,
-          gitInfo: {
-            dir: this.dir,
-            gitdir: this.gitdir,
-            url: Git.getRemoteUrl(this.githubInfo.userName, this.githubInfo.repositoryName),
-            remote: Git.remote,
-          },
+        this.initRepoPromise.then(() => {
+          if (!this.workerGit) {
+            throw new Error('worker init failed');
+          }
+
+          if (!this.githubInfo || !this.dir || !this.gitdir) {
+            throw new Error('git info is not prepared');
+          }
+
+          return this.workerGit.publish({
+            files,
+            githubInfo: this.githubInfo,
+            gitInfo: {
+              dir: this.dir,
+              gitdir: this.gitdir,
+              url: Git.getRemoteUrl(this.githubInfo.userName, this.githubInfo.repositoryName),
+              remote: Git.remote,
+            },
+          });
         }),
-        terminatePromise,
+        new Promise<never>((resolve, reject) => {
+          this.once(GitEvents.Terminated, () =>
+            reject(new PublishError(PublishResults.Terminated)),
+          );
+        }),
       ]);
+    } catch (error) {
+      if (error instanceof PublishError) {
+        throw error;
+      }
+
+      throw new PublishError(PublishResults.Fail, error);
     } finally {
       this.isPushing = false;
+      this.off(GitEvents.Terminated);
     }
   }
 
@@ -232,7 +228,8 @@ class Git extends EventEmitter<GitEvents> {
   };
 
   terminate() {
-    this.initWorker(true);
+    this.emit(GitEvents.Terminated);
+    this.initWorker();
   }
 }
 

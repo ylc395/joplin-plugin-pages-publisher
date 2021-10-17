@@ -10,10 +10,11 @@ import {
   initialGeneratingProgress,
   initialPublishProgress,
   PublishResults,
+  PublishError,
   DEFAULT_GITHUB,
 } from '../model/Publishing';
 import { AppService, FORBIDDEN } from './AppService';
-import { isEmpty, isError, noop, omit, pick, some } from 'lodash';
+import { isEmpty, noop, omit, pick, some } from 'lodash';
 
 export enum GeneratorEvents {
   PageGenerated = 'pageGenerated',
@@ -32,10 +33,11 @@ export enum LocalRepoStatus {
   Initializing,
 }
 
-const MESSAGES: Record<string, string | undefined> = {
-  [PublishResults.GITHUB_INFO_ERROR]:
-    'Something wrong with your Github information(including token). Please check if you provided the correct information.',
-  [PublishResults.TERMINATED]: 'Publishing terminated.',
+const PUBLISH_RESULT_MESSAGE: Record<PublishResults, string> = {
+  [PublishResults.Terminated]: 'Publishing terminated.',
+  [PublishResults.Fail]:
+    'This is an unexpected error, you can retry, and report it as a Github issue',
+  [PublishResults.Success]: '',
 };
 
 export interface Git extends EventEmitter<GitEvents> {
@@ -61,7 +63,7 @@ export class PublishService {
   private readonly generator = container.resolve(generatorToken);
   private readonly git = container.resolve(gitClientToken);
   private files: string[] = [];
-  private localRepoStatus: LocalRepoStatus = LocalRepoStatus.Initializing;
+  readonly localRepoStatus: Ref<LocalRepoStatus> = ref(LocalRepoStatus.Initializing);
   readonly githubInfo: Ref<Github | null> = ref(null);
   readonly isGenerating = ref(false);
   readonly isPublishing = ref(false);
@@ -97,9 +99,9 @@ export class PublishService {
   }
 
   private handleLocalRepoStatusChanged(status: LocalRepoStatus) {
-    this.localRepoStatus = status;
+    this.localRepoStatus.value = status;
 
-    if (this.localRepoStatus === LocalRepoStatus.Initializing) {
+    if (status === LocalRepoStatus.Initializing) {
       this.refreshPublishingProgress({
         phase: 'Local repository initializing...',
         message: '',
@@ -170,7 +172,7 @@ export class PublishService {
     this.git.terminate();
   }
 
-  async publish(initGit = false) {
+  async publish(isRetry = false) {
     if (this.isPublishing.value) {
       return;
     }
@@ -178,28 +180,26 @@ export class PublishService {
     if (!this.isGithubInfoValid.value) {
       throw new Error('invalid github info');
     }
-    const initGit_ = initGit || this.localRepoStatus === LocalRepoStatus.Fail;
 
-    if (initGit_) {
+    const needToInit = isRetry || this.localRepoStatus.value === LocalRepoStatus.Fail;
+
+    if (needToInit) {
       this.refreshPublishingProgress();
     }
 
     this.isPublishing.value = true;
 
     try {
-      await this.git.push(this.files, initGit_);
-      this.publishingProgress.result = PublishResults.SUCCESS;
+      await this.git.push(this.files, needToInit);
+      this.publishingProgress.result = PublishResults.Success;
     } catch (error) {
-      if (!isError(error)) {
+      if (error instanceof PublishError) {
+        const message = `${error.message || ''} ${PUBLISH_RESULT_MESSAGE[error.type]}`.trim();
+        this.publishingProgress.result = error.type;
+        this.publishingProgress.message = message;
+      } else {
         throw error;
       }
-
-      const { message } = error;
-
-      this.publishingProgress.result =
-        message in MESSAGES ? (message as PublishResults) : PublishResults.FAIL;
-
-      this.publishingProgress.message = MESSAGES[message] || message;
     } finally {
       this.isPublishing.value = false;
     }

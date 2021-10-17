@@ -1,3 +1,5 @@
+import { isError } from 'lodash';
+
 export interface Github {
   userName: string;
   email: string;
@@ -23,10 +25,15 @@ export interface GeneratingProgress {
 }
 
 export enum PublishResults {
-  SUCCESS = 'SUCCESS',
-  GITHUB_INFO_ERROR = 'GITHUB_INFO_ERROR',
-  TERMINATED = 'TERMINATED',
-  FAIL = 'FAIL',
+  Success = 'SUCCESS',
+  Terminated = 'TERMINATED',
+  Fail = 'FAIL',
+}
+
+export class PublishError extends Error {
+  constructor(readonly type: PublishResults.Terminated | PublishResults.Fail, e?: unknown) {
+    super(isError(e) ? e.message : e ? String(e) : undefined);
+  }
 }
 
 export interface PublishingProgress {

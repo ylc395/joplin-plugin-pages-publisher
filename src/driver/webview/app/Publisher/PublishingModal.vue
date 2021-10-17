@@ -46,53 +46,56 @@ export default defineComponent({
         <Button @click="stopPublishing">Stop</Button>
       </div>
     </template>
-    <Result
-      v-if="progress.result"
-      class="py-3 px-4"
-      :status="progress.result !== PublishResults.SUCCESS ? 'error' : 'success'"
-      :title="
-        progress.result !== PublishResults.SUCCESS ? 'Fail to publish' : 'Published Successfully'
-      "
-    >
-      <template #subTitle>
-        <div v-if="progress.result !== PublishResults.SUCCESS" class="text-left">
-          <p>{{ progress.message }}</p>
-          <p>
-            <template v-if="progress.result === PublishResults.FAIL"
-              >This is an unexpected error, you can retry, and report it as a Github issue.
-            </template>
-            Or if you are a Git user, you can use Git manually to continue publishing.
-            <a
-              href="https://github.com/ylc395/joplin-plugin-pages-publisher/wiki/How-to-use-git-manually"
-              target="_blank"
-              >See this docs for details</a
-            >
-          </p>
-        </div>
-        <div v-else-if="githubInfo">
-          Please Check:
-          <ul class="text-gray-400 text-left list-disc">
-            <li class="mt-2">
-              https://github.com/{{ githubInfo.userName }}/{{
-                githubInfo.repositoryName || `${githubInfo.userName}.github.io`
-              }}{{ githubInfo.branch ? `/tree/${githubInfo.branch}` : '' }}
-            </li>
-            <li v-if="githubInfo.cname">https://{{ githubInfo.cname }}</li>
-            <li v-if="isDefaultRepository && !githubInfo.cname">
-              https://{{ githubInfo.userName }}.github.io
-            </li>
-          </ul>
-        </div>
-      </template>
-      <template #extra>
-        <Button v-if="progress.result" @click="reset">Confirm</Button>
-        <Button
-          v-if="[PublishResults.FAIL, PublishResults.GITHUB_INFO_ERROR].includes(progress.result)"
-          type="primary"
-          @click="publish(true)"
-          >Retry</Button
-        >
-      </template>
-    </Result>
+    <div v-if="progress.result" class="py-3 px-4">
+      <Result
+        v-if="progress.result === PublishResults.Success"
+        status="success"
+        title="Published Successfully"
+      >
+        <template #subTitle>
+          <div v-if="githubInfo">
+            Please Check:
+            <ul class="text-gray-400 text-left list-disc">
+              <li class="mt-2">
+                https://github.com/{{ githubInfo.userName }}/{{
+                  githubInfo.repositoryName || `${githubInfo.userName}.github.io`
+                }}{{ githubInfo.branch ? `/tree/${githubInfo.branch}` : '' }}
+              </li>
+              <li v-if="githubInfo.cname">https://{{ githubInfo.cname }}</li>
+              <li v-if="isDefaultRepository && !githubInfo.cname">
+                https://{{ githubInfo.userName }}.github.io
+              </li>
+            </ul>
+          </div>
+        </template>
+        <template #extra>
+          <Button @click="reset">Confirm</Button>
+        </template>
+      </Result>
+      <Result v-else status="error" title="Fail to publish">
+        <template #subTitle>
+          <div :class="{ 'text-left': progress.result === PublishResults.Fail }">
+            <p>{{ progress.message }}</p>
+            <p v-if="progress.result === PublishResults.Fail">
+              Or if you are a Git user, you can use Git manually to continue publishing.
+              <a
+                href="https://github.com/ylc395/joplin-plugin-pages-publisher/wiki/How-to-use-git-manually"
+                target="_blank"
+                >See this docs for details</a
+              >
+            </p>
+          </div>
+        </template>
+        <template #extra>
+          <Button @click="reset">Confirm</Button>
+          <Button
+            v-if="progress.result === PublishResults.Fail"
+            type="primary"
+            @click="publish(true)"
+            >Retry</Button
+          >
+        </template>
+      </Result>
+    </div>
   </Modal>
 </template>
