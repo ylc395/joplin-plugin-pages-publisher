@@ -35,7 +35,7 @@ class Generator extends EventEmitter<GeneratorEvents> {
       event: 'getGeneratingProgress',
     });
     if (!isEqual(this.lastProgress, progress)) {
-      this.emit(GeneratorEvents.PAGE_GENERATED, progress);
+      this.emit(GeneratorEvents.PageGenerated, progress);
       this.lastProgress = progress;
     }
   }

@@ -16,14 +16,20 @@ import { AppService, FORBIDDEN } from './AppService';
 import { isEmpty, isError, noop, omit, pick, some } from 'lodash';
 
 export enum GeneratorEvents {
-  PAGE_GENERATED = 'PAGE_GENERATED',
+  PageGenerated = 'pageGenerated',
 }
 
 export enum GitEvents {
-  PROGRESS = 'PROGRESS',
-  MESSAGE = 'MESSAGE',
-  TERMINATED = 'TERMINATED',
-  INIT_REPO_STATUS_CHANGED = 'INIT_REPO_STATUS_CHANGED',
+  Progress = 'progress',
+  Message = 'message',
+  Terminated = 'terminated',
+  LocalRepoStatusChanged = 'localRepoStatusChanged',
+}
+
+export enum LocalRepoStatus {
+  Ready,
+  Fail,
+  Initializing,
 }
 
 const MESSAGES: Record<string, string | undefined> = {
@@ -55,7 +61,7 @@ export class PublishService {
   private readonly generator = container.resolve(generatorToken);
   private readonly git = container.resolve(gitClientToken);
   private files: string[] = [];
-  private gitRepoStatus: 'ready' | 'fail' | 'initializing' = 'initializing';
+  private localRepoStatus: LocalRepoStatus = LocalRepoStatus.Initializing;
   readonly githubInfo: Ref<Github | null> = ref(null);
   readonly isGenerating = ref(false);
   readonly isPublishing = ref(false);
@@ -73,12 +79,12 @@ export class PublishService {
 
   private async init() {
     this.outputDir.value = await this.generator.getOutputDir();
-    this.git.on(GitEvents.PROGRESS, (e) => this.refreshPublishingProgress(e));
-    this.git.on(GitEvents.MESSAGE, (message) => this.refreshPublishingProgress({ message }));
-    this.git.on(GitEvents.INIT_REPO_STATUS_CHANGED, (e) => {
-      this.gitRepoStatus = e;
+    this.git.on(GitEvents.Progress, (e) => this.refreshPublishingProgress(e));
+    this.git.on(GitEvents.Message, (message) => this.refreshPublishingProgress({ message }));
+    this.git.on(GitEvents.LocalRepoStatusChanged, (e) => {
+      this.localRepoStatus = e;
 
-      if (this.gitRepoStatus === 'initializing') {
+      if (this.localRepoStatus === LocalRepoStatus.Initializing) {
         this.refreshPublishingProgress({
           phase: 'Local repository initializing...',
           message: '',
@@ -86,7 +92,7 @@ export class PublishService {
       }
     });
 
-    this.generator.on(GeneratorEvents.PAGE_GENERATED, this.refreshGeneratingProgress.bind(this));
+    this.generator.on(GeneratorEvents.PageGenerated, this.refreshGeneratingProgress.bind(this));
 
     this.githubInfo.value = {
       ...DEFAULT_GITHUB,
@@ -170,7 +176,7 @@ export class PublishService {
     if (!this.isGithubInfoValid.value) {
       throw new Error('invalid github info');
     }
-    const initGit_ = initGit || this.gitRepoStatus === 'fail';
+    const initGit_ = initGit || this.localRepoStatus === LocalRepoStatus.Fail;
 
     if (initGit_) {
       this.refreshPublishingProgress();

@@ -14,7 +14,7 @@ import {
 import { wrap, Remote, releaseProxy, expose } from 'comlink';
 import fs from 'driver/fs/webviewApi';
 import type { FsWorkerCallRequest, FsWorkerCallResponse } from 'driver/fs/type';
-import { gitClientToken, GitEvents } from 'domain/service/PublishService';
+import { gitClientToken, GitEvents, LocalRepoStatus } from 'domain/service/PublishService';
 import { Github, PublishResults } from 'domain/model/Publishing';
 import { joplinToken } from 'domain/service/AppService';
 import type { GitEventHandler, WorkerGit } from './type';
@@ -84,16 +84,16 @@ class Git extends EventEmitter<GitEvents> {
     this.initRepoPromise = new Promise((resolve, reject) => {
       const reject_ = (e: unknown) => {
         reject(e);
-        this.emit(GitEvents.INIT_REPO_STATUS_CHANGED, 'fail');
+        this.emit(GitEvents.LocalRepoStatusChanged, LocalRepoStatus.Fail);
       };
 
       const resolve_ = () => {
         resolve();
-        this.emit(GitEvents.INIT_REPO_STATUS_CHANGED, 'ready');
+        this.emit(GitEvents.LocalRepoStatusChanged, LocalRepoStatus.Ready);
       };
 
       this.stopInitRepo = reject_;
-      this.emit(GitEvents.INIT_REPO_STATUS_CHANGED, 'initializing');
+      this.emit(GitEvents.LocalRepoStatusChanged, LocalRepoStatus.Initializing);
       workerGit
         .initRepo({
           githubInfo,
@@ -118,7 +118,7 @@ class Git extends EventEmitter<GitEvents> {
     this.worker?.terminate();
 
     if (triggerTerminate) {
-      this.emit(GitEvents.TERMINATED);
+      this.emit(GitEvents.Terminated);
     }
 
     this.workerGit?.[releaseProxy]();
@@ -160,7 +160,7 @@ class Git extends EventEmitter<GitEvents> {
 
     this.isPushing = true;
     const terminatePromise = new Promise<never>((resolve, reject) => {
-      this.once(GitEvents.TERMINATED, () => reject(Error(PublishResults.TERMINATED)));
+      this.once(GitEvents.Terminated, () => reject(Error(PublishResults.TERMINATED)));
     });
 
     try {
@@ -224,11 +224,11 @@ class Git extends EventEmitter<GitEvents> {
   }
 
   private handleProgress = (e: GitProgressEvent) => {
-    this.emit(GitEvents.PROGRESS, e);
+    this.emit(GitEvents.Progress, e);
   };
 
   private handleMessage = (e: string) => {
-    this.emit(GitEvents.MESSAGE, e);
+    this.emit(GitEvents.Message, e);
   };
 
   terminate() {
