@@ -79,19 +79,10 @@ export class PublishService {
 
   private async init() {
     this.outputDir.value = await this.generator.getOutputDir();
-    this.git.on(GitEvents.Progress, (e) => this.refreshPublishingProgress(e));
+
+    this.git.on(GitEvents.Progress, this.refreshPublishingProgress.bind(this));
     this.git.on(GitEvents.Message, (message) => this.refreshPublishingProgress({ message }));
-    this.git.on(GitEvents.LocalRepoStatusChanged, (e) => {
-      this.localRepoStatus = e;
-
-      if (this.localRepoStatus === LocalRepoStatus.Initializing) {
-        this.refreshPublishingProgress({
-          phase: 'Local repository initializing...',
-          message: '',
-        });
-      }
-    });
-
+    this.git.on(GitEvents.LocalRepoStatusChanged, this.handleLocalRepoStatusChanged.bind(this));
     this.generator.on(GeneratorEvents.PageGenerated, this.refreshGeneratingProgress.bind(this));
 
     this.githubInfo.value = {
@@ -102,6 +93,17 @@ export class PublishService {
 
     if (this.isGithubInfoValid.value) {
       this.git.init(toRaw(this.githubInfo.value), this.outputDir.value).catch(noop);
+    }
+  }
+
+  private handleLocalRepoStatusChanged(status: LocalRepoStatus) {
+    this.localRepoStatus = status;
+
+    if (this.localRepoStatus === LocalRepoStatus.Initializing) {
+      this.refreshPublishingProgress({
+        phase: 'Local repository initializing...',
+        message: '',
+      });
     }
   }
 
