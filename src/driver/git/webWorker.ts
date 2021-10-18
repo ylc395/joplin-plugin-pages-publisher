@@ -23,10 +23,14 @@ import type { WorkerGit, GitEventHandler } from './type';
 const { onMessage, onProgress } = wrap<GitEventHandler>(self);
 
 const workerGit: WorkerGit = {
-  async initRepo({ gitInfo, githubInfo }) {
+  async initRepo({ gitInfo, githubInfo, keepDir }) {
     const { userName, token, branch: branchName, email } = githubInfo;
     const { dir, gitdir, url, remote } = gitInfo;
     const _branchName = branchName || DEFAULT_GITHUB_BRANCH;
+
+    if (keepDir) {
+      await fs.promises.move(dir, `${dir}_backup`);
+    }
 
     await fs.promises.emptyDir(gitdir);
     await fs.promises.emptyDir(dir);
@@ -45,6 +49,10 @@ const workerGit: WorkerGit = {
       onProgress,
     });
 
+    if (keepDir) {
+      await fs.promises.move(`${dir}_backup`, dir);
+    }
+
     const branches = await listBranches({ fs, dir, gitdir });
 
     if (!branches.includes(_branchName)) {
@@ -54,6 +62,7 @@ const workerGit: WorkerGit = {
     await setConfig({ fs, gitdir, path: 'user.name', value: userName });
     await setConfig({ fs, gitdir, path: 'user.email', value: email });
   },
+
   async publish({ gitInfo: { dir, gitdir, remote, url }, githubInfo, files }) {
     await add({ fs, gitdir, dir, filepath: '.' });
 

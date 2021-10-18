@@ -89,10 +89,7 @@ export default defineComponent({
         </template>
         <template #extra>
           <Button @click="reset">Confirm</Button>
-          <Button
-            v-if="progress.result === PublishResults.Fail"
-            type="primary"
-            @click="publish(true)"
+          <Button v-if="progress.result === PublishResults.Fail" type="primary" @click="publish()"
             >Retry</Button
           >
         </template>
@@ -104,7 +101,7 @@ export default defineComponent({
     on Github?
     <div class="text-right mt-4">
       <Button class="mr-2" @click="reset">Cancel</Button>
-      <Button type="primary" @click="publish(true, true)">Confirm</Button>
+      <Button type="primary" @click="publish(true)">Confirm</Button>
     </div>
   </Modal>
 </template>

@@ -64,13 +64,22 @@ export class Github extends EventEmitter<GithubClientEvents> implements GithubCl
   }
 
   async createRepository() {
+    if (!this.githubInfo?.userName) {
+      throw new Error('no userName');
+    }
+
     try {
       await this.request('POST', '/user/repos', {
         name: this.getRepositoryName(),
         description: 'Blog Website By Joplin Pages Publisher',
       });
     } catch (error) {
-      throw new PublishError(PublishResults.Fail, error);
+      try {
+        // maybe user create it manually
+        await this.request('GET', `/repos/${this.githubInfo.userName}/${this.getRepositoryName()}`);
+      } catch {
+        throw new PublishError(PublishResults.Fail, error);
+      }
     }
   }
 

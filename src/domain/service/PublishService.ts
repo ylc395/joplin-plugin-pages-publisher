@@ -189,7 +189,7 @@ export class PublishService {
     this.git.terminate();
   }
 
-  async publish(isRetry = false, needToCreateRepo = false) {
+  async publish(needToCreateRepo = false) {
     if (this.isPublishing.value) {
       return;
     }
@@ -199,7 +199,9 @@ export class PublishService {
     }
 
     const needToInit =
-      isRetry || needToCreateRepo || this.localRepoStatus.value === LocalRepoStatus.Fail;
+      this.publishingProgress.result === PublishResults.Fail ||
+      needToCreateRepo ||
+      this.localRepoStatus.value === LocalRepoStatus.Fail;
 
     if (needToInit) {
       this.refreshPublishingProgress();

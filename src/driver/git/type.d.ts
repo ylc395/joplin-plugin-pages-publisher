@@ -14,7 +14,7 @@ export interface GitEventHandler {
 }
 
 export interface WorkerGit {
-  initRepo: (payload: { gitInfo: GitInfo; githubInfo: Github }) => Promise<void>;
+  initRepo: (payload: { gitInfo: GitInfo; githubInfo: Github; keepDir: boolean }) => Promise<void>;
 
   publish: (payload: { gitInfo: GitInfo; githubInfo: Github; files: string[] }) => Promise<void>;
 }
