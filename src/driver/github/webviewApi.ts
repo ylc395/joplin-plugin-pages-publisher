@@ -51,6 +51,7 @@ export class Github extends EventEmitter<GithubClientEvents> implements GithubCl
     const oldGithubInfo = this.githubInfo;
     this.githubInfo = cloneDeep(githubInfo);
 
+    // todo: branch updated should trigger initRepo, too
     if (
       oldGithubInfo?.userName === githubInfo.userName &&
       oldGithubInfo?.token === githubInfo.token &&
