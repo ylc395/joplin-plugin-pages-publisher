@@ -8,13 +8,20 @@ import {
   pickBy,
   isTypedArray,
   isObjectLike,
-  cloneDeep,
+  isError,
+  noop,
 } from 'lodash';
 import { wrap, Remote, releaseProxy, expose } from 'comlink';
 import fs from 'driver/fs/webviewApi';
 import type { FsWorkerCallRequest, FsWorkerCallResponse } from 'driver/fs/type';
-import { gitClientToken, GitEvents, LocalRepoStatus } from 'domain/service/PublishService';
-import { Github, PublishError, PublishResults } from 'domain/model/Publishing';
+import {
+  gitClientToken,
+  GitEvents,
+  LocalRepoStatus,
+  GithubClient,
+  GithubClientEvents,
+} from 'domain/service/PublishService';
+import { PublishError, PublishResults } from 'domain/model/Publishing';
 import { joplinToken } from 'domain/service/AppService';
 import type { GitEventHandler, WorkerGit } from './type';
 
@@ -28,44 +35,25 @@ declare const webviewApi: {
 class Git extends EventEmitter<GitEvents> {
   private readonly joplin = container.resolve(joplinToken);
   private static readonly remote = 'github';
-  private static getRemoteUrl(userName: string, repoName?: string) {
-    const repoName_ = repoName || `${userName}.github.io`;
-    return `https://github.com/${userName}/${repoName_}.git`;
-  }
   private static getGitRepositoryDir() {
     return webviewApi.postMessage<string>({ event: 'getGitRepositoryDir' });
   }
   private dir?: string;
   private gitdir?: string;
   private installDir?: string;
-  private githubInfo?: Github;
+  private github?: GithubClient;
   private worker?: Worker;
   private workerGit?: Remote<WorkerGit>;
   private initRepoPromise?: Promise<void>;
   private rejectInitRepoPromise?: (reason?: unknown) => void;
   private isPushing = false;
 
-  async init(githubInfo: Github, dir: string) {
+  async init(github: GithubClient, dir: string) {
     this.dir = dir;
-
-    if (!this.installDir) {
-      this.installDir = await this.joplin.getInstallationDir();
-    }
-
-    if (!this.gitdir) {
-      this.gitdir = await Git.getGitRepositoryDir();
-    }
-
-    const oldGithubInfo = this.githubInfo;
-    this.githubInfo = cloneDeep(githubInfo);
-
-    if (
-      oldGithubInfo?.userName === githubInfo.userName &&
-      oldGithubInfo?.token === githubInfo.token &&
-      (oldGithubInfo?.repositoryName || undefined) === (githubInfo.repositoryName || undefined)
-    ) {
-      return;
-    }
+    this.github = github;
+    this.installDir = await this.joplin.getInstallationDir();
+    this.gitdir = await Git.getGitRepositoryDir();
+    this.github.on(GithubClientEvents.InfoChanged, () => this.initRepo().catch(noop));
 
     return this.initRepo();
   }
@@ -74,15 +62,21 @@ class Git extends EventEmitter<GitEvents> {
     // always init worker when init repo
     this.initWorker();
 
-    const { gitdir, githubInfo, dir, workerGit } = this;
+    const { gitdir, dir, workerGit, github } = this;
 
-    if (!workerGit || !gitdir || !githubInfo || !dir) {
+    if (!workerGit || !gitdir || !dir || !github) {
       throw new Error('cannot init repo');
     }
 
     this.initRepoPromise = new Promise((resolve, reject) => {
       const reject_ = (e?: unknown) => {
-        this.emit(GitEvents.LocalRepoStatusChanged, LocalRepoStatus.Fail);
+        this.emit(
+          GitEvents.LocalRepoStatusChanged,
+          isError(e) && e.message.includes('404')
+            ? LocalRepoStatus.MissingRepository
+            : LocalRepoStatus.Fail,
+        );
+
         reject(new PublishError(PublishResults.Fail, e));
       };
 
@@ -95,11 +89,11 @@ class Git extends EventEmitter<GitEvents> {
       this.emit(GitEvents.LocalRepoStatusChanged, LocalRepoStatus.Initializing);
       workerGit
         .initRepo({
-          githubInfo,
+          githubInfo: github.getGithubInfo(),
           gitInfo: {
             dir,
             gitdir,
-            url: Git.getRemoteUrl(githubInfo.userName, githubInfo.repositoryName),
+            url: github.getRepositoryUrl(),
             remote: Git.remote,
           },
         })
@@ -160,17 +154,17 @@ class Git extends EventEmitter<GitEvents> {
             throw new Error('worker init failed');
           }
 
-          if (!this.githubInfo || !this.dir || !this.gitdir) {
+          if (!this.dir || !this.gitdir || !this.github) {
             throw new Error('git info is not prepared');
           }
 
           return this.workerGit.publish({
             files,
-            githubInfo: this.githubInfo,
+            githubInfo: this.github.getGithubInfo(),
             gitInfo: {
               dir: this.dir,
               gitdir: this.gitdir,
-              url: Git.getRemoteUrl(this.githubInfo.userName, this.githubInfo.repositoryName),
+              url: this.github.getRepositoryUrl(),
               remote: Git.remote,
             },
           });

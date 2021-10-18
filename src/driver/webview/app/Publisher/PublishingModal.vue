@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, inject, computed } from 'vue';
+import { defineComponent, inject } from 'vue';
 import { Modal, Progress, Result, Button } from 'ant-design-vue';
 import { token as publishToken } from 'domain/service/PublishService';
 import { PublishResults } from 'domain/model/Publishing';
@@ -16,12 +16,13 @@ export default defineComponent({
       githubInfo,
       stopPublishing,
       isDefaultRepository,
+      isRepositoryMissing,
+      repositoryName,
     } =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(publishToken)!;
 
     return {
-      visible: computed(() => isPublishing.value || !!progress.result),
       isPublishing,
       stopPublishing,
       progress,
@@ -31,21 +32,22 @@ export default defineComponent({
       PublishResults,
       reset: () => refreshPublishingProgress(),
       isDefaultRepository,
+      repositoryName,
+      isRepositoryMissing,
     };
   },
 });
 </script>
 <template>
-  <!-- todo: there is a transition bug in Modal. disable transition -->
-  <Modal :visible="visible" v-bind="modalProps" :transitionName="null">
-    <template v-if="isPublishing">
-      <div>{{ progress.phase || 'Publishing...' }}</div>
-      <Progress :percent="(progress.loaded / progress.total) * 100" :showInfo="false" />
-      <p>{{ progress.message }}</p>
-      <div class="text-right">
-        <Button @click="stopPublishing">Stop</Button>
-      </div>
-    </template>
+  <Modal :visible="isPublishing" v-bind="modalProps">
+    <div>{{ progress.phase || 'Publishing...' }}</div>
+    <Progress :percent="(progress.loaded / progress.total) * 100" :showInfo="false" />
+    <p>{{ progress.message }}</p>
+    <div class="text-right">
+      <Button @click="stopPublishing">Stop</Button>
+    </div>
+  </Modal>
+  <Modal :visible="!!progress.result && !isRepositoryMissing" v-bind="modalProps">
     <div v-if="progress.result" class="py-3 px-4">
       <Result
         v-if="progress.result === PublishResults.Success"
@@ -57,8 +59,7 @@ export default defineComponent({
             Please Check:
             <ul class="text-gray-400 text-left list-disc">
               <li class="mt-2">
-                https://github.com/{{ githubInfo.userName }}/{{
-                  githubInfo.repositoryName || `${githubInfo.userName}.github.io`
+                https://github.com/{{ githubInfo.userName }}/{{ repositoryName
                 }}{{ githubInfo.branch ? `/tree/${githubInfo.branch}` : '' }}
               </li>
               <li v-if="githubInfo.cname">https://{{ githubInfo.cname }}</li>
@@ -96,6 +97,14 @@ export default defineComponent({
           >
         </template>
       </Result>
+    </div>
+  </Modal>
+  <Modal :visible="isRepositoryMissing && !!progress.result" v-bind="modalProps">
+    Github Repository <strong>{{ repositoryName }}</strong> doesn't exist. Do you want to create it
+    on Github?
+    <div class="text-right mt-4">
+      <Button class="mr-2" @click="reset">Cancel</Button>
+      <Button type="primary" @click="publish(true, true)">Confirm</Button>
     </div>
   </Modal>
 </template>

@@ -31,6 +31,20 @@ export enum LocalRepoStatus {
   Ready,
   Fail,
   Initializing,
+  MissingRepository,
+}
+
+export enum GithubClientEvents {
+  InfoChanged = 'infoChanged',
+}
+
+export interface GithubClient extends EventEmitter<GithubClientEvents> {
+  init(github: Github): void;
+  createRepository(): Promise<void>;
+  getRepositoryUrl(): string;
+  getRepositoryName(): string;
+  getDefaultRepositoryName(): string;
+  getGithubInfo(): Readonly<Github>;
 }
 
 const PUBLISH_RESULT_MESSAGE: Record<PublishResults, string> = {
@@ -41,7 +55,7 @@ const PUBLISH_RESULT_MESSAGE: Record<PublishResults, string> = {
 };
 
 export interface Git extends EventEmitter<GitEvents> {
-  init: (githubInfo: Github, dir: string) => Promise<void>;
+  init: (github: GithubClient, dir: string) => Promise<void>;
   push: (files: string[], init: boolean) => Promise<void>;
   terminate: () => void;
 }
@@ -53,6 +67,7 @@ export interface Generator extends EventEmitter<GeneratorEvents> {
 
 export const gitClientToken: InjectionToken<Git> = Symbol();
 export const generatorToken: InjectionToken<Generator> = Symbol();
+export const githubClientToken: InjectionToken<GithubClient> = Symbol();
 export const token: InjectionKey<PublishService> = Symbol();
 
 @singleton()
@@ -62,8 +77,17 @@ export class PublishService {
   private readonly appService = container.resolve(AppService);
   private readonly generator = container.resolve(generatorToken);
   private readonly git = container.resolve(gitClientToken);
+  private readonly github = container.resolve(githubClientToken);
   private files: string[] = [];
-  readonly localRepoStatus: Ref<LocalRepoStatus> = ref(LocalRepoStatus.Initializing);
+  private readonly localRepoStatus: Ref<LocalRepoStatus> = ref(LocalRepoStatus.Initializing);
+  readonly repositoryName = ref('');
+
+  readonly isRepositoryMissing = computed(
+    () => this.localRepoStatus.value === LocalRepoStatus.MissingRepository,
+  );
+  readonly isDefaultRepository = computed(
+    () => this.repositoryName.value === this.github.getDefaultRepositoryName(),
+  );
   readonly githubInfo: Ref<Github | null> = ref(null);
   readonly isGenerating = ref(false);
   readonly isPublishing = ref(false);
@@ -81,6 +105,7 @@ export class PublishService {
 
   private async init() {
     this.outputDir.value = await this.generator.getOutputDir();
+    this.git.init(this.github, this.outputDir.value).catch(noop);
 
     this.git.on(GitEvents.Progress, this.refreshPublishingProgress.bind(this));
     this.git.on(GitEvents.Message, (message) => this.refreshPublishingProgress({ message }));
@@ -93,9 +118,15 @@ export class PublishService {
       ...(await this.pluginDataRepository.getGithubInfo()),
     };
 
-    if (this.isGithubInfoValid.value) {
-      this.git.init(toRaw(this.githubInfo.value), this.outputDir.value).catch(noop);
+    this.initGithubClient();
+  }
+  private async initGithubClient() {
+    if (!this.isGithubInfoValid.value || !this.githubInfo.value) {
+      return;
     }
+
+    this.github.init(toRaw(this.githubInfo.value));
+    this.repositoryName.value = this.github.getRepositoryName();
   }
 
   private handleLocalRepoStatusChanged(status: LocalRepoStatus) {
@@ -116,26 +147,12 @@ export class PublishService {
     return Object.keys(keyInfos).length === requiredKeys.length && !some(keyInfos, isEmpty);
   });
 
-  isDefaultRepository = computed(() => {
-    if (!this.githubInfo.value) {
-      return true;
-    }
-
-    const { repositoryName, userName } = this.githubInfo.value;
-    return !repositoryName || repositoryName === `${userName}.github.io`;
-  });
-
   async saveGithubInfo(githubInfo: Partial<Github>) {
     const githubInfo_ = omit(githubInfo, ['token']);
 
     Object.assign(this.githubInfo.value, githubInfo_);
     await this.pluginDataRepository.saveGithubInfo(omit(toRaw(this.githubInfo.value), ['token']));
-
-    if (!this.isGithubInfoValid.value || !this.githubInfo.value) {
-      return;
-    }
-
-    this.git.init(toRaw(this.githubInfo.value), this.outputDir.value).catch(noop);
+    this.initGithubClient();
   }
 
   async generateSite() {
@@ -172,7 +189,7 @@ export class PublishService {
     this.git.terminate();
   }
 
-  async publish(isRetry = false) {
+  async publish(isRetry = false, needToCreateRepo = false) {
     if (this.isPublishing.value) {
       return;
     }
@@ -181,7 +198,8 @@ export class PublishService {
       throw new Error('invalid github info');
     }
 
-    const needToInit = isRetry || this.localRepoStatus.value === LocalRepoStatus.Fail;
+    const needToInit =
+      isRetry || needToCreateRepo || this.localRepoStatus.value === LocalRepoStatus.Fail;
 
     if (needToInit) {
       this.refreshPublishingProgress();
@@ -190,6 +208,10 @@ export class PublishService {
     this.isPublishing.value = true;
 
     try {
+      if (needToCreateRepo && this.isRepositoryMissing.value) {
+        await this.github.createRepository();
+      }
+
       await this.git.push(this.files, needToInit);
       this.publishingProgress.result = PublishResults.Success;
     } catch (error) {

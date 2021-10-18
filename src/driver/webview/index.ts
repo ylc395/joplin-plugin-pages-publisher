@@ -8,6 +8,7 @@ import 'driver/generator/webviewApi';
 import 'driver/joplinData/webviewApi';
 import 'driver/joplin/webviewApi';
 import 'driver/git/webviewApi';
+import 'driver/github/webviewApi';
 import './utils/webviewApi';
 import App from './app/index.vue';
 import { ExceptionService } from 'domain/service/ExceptionService';
