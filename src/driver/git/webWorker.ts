@@ -55,7 +55,6 @@ const workerGit: WorkerGit = {
     await setConfig({ fs, gitdir, path: 'user.email', value: email });
   },
   async publish({ gitInfo: { dir, gitdir, remote, url }, githubInfo, files }) {
-    await new Promise((resolve) => setTimeout(resolve, 3000)); // a 3s delay, so user can terminate
     await add({ fs, gitdir, dir, filepath: '.' });
 
     const filesExisted = await listFiles({ fs, gitdir, dir, ref: githubInfo.branch });
