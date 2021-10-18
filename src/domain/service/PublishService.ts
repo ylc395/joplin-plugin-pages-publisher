@@ -110,6 +110,7 @@ export class PublishService {
     this.git.on(GitEvents.Progress, this.refreshPublishingProgress.bind(this));
     this.git.on(GitEvents.Message, (message) => this.refreshPublishingProgress({ message }));
     this.git.on(GitEvents.LocalRepoStatusChanged, this.handleLocalRepoStatusChanged.bind(this));
+    this.github.on(GithubClientEvents.InfoChanged, () => this.refreshPublishingProgress());
     this.generator.on(GeneratorEvents.PageGenerated, this.refreshGeneratingProgress.bind(this));
 
     this.githubInfo.value = {
@@ -147,11 +148,11 @@ export class PublishService {
     return Object.keys(keyInfos).length === requiredKeys.length && !some(keyInfos, isEmpty);
   });
 
-  async saveGithubInfo(githubInfo: Partial<Github>) {
+  saveGithubInfo(githubInfo: Partial<Github>) {
     const githubInfo_ = omit(githubInfo, ['token']);
 
     Object.assign(this.githubInfo.value, githubInfo_);
-    await this.pluginDataRepository.saveGithubInfo(omit(toRaw(this.githubInfo.value), ['token']));
+    this.pluginDataRepository.saveGithubInfo(omit(toRaw(this.githubInfo.value), ['token']));
     this.initGithubClient();
   }
 
@@ -189,6 +190,7 @@ export class PublishService {
     this.git.terminate();
   }
 
+  // must confirmed by user to create repo. so we can not use `isRepositoryMissing` instead
   async publish(needToCreateRepo = false) {
     if (this.isPublishing.value) {
       return;

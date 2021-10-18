@@ -59,8 +59,7 @@ export class Github extends EventEmitter<GithubClientEvents> implements GithubCl
       return;
     }
 
-    this.emit(GithubClientEvents.InfoChanged, githubInfo);
-    this.githubInfo = githubInfo;
+    this.emit(GithubClientEvents.InfoChanged, this.githubInfo);
   }
 
   async createRepository() {

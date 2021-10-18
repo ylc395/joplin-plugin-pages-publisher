@@ -58,7 +58,8 @@ class Git extends EventEmitter<GitEvents> {
     return this.initRepo();
   }
 
-  private initRepo(byPublishing = false) {
+  private initRepo(byPushing = false) {
+    this.emit(GitEvents.LocalRepoStatusChanged, LocalRepoStatus.Initializing);
     // always init worker when init repo
     this.initWorker();
 
@@ -86,7 +87,6 @@ class Git extends EventEmitter<GitEvents> {
       };
 
       this.rejectInitRepoPromise = reject_;
-      this.emit(GitEvents.LocalRepoStatusChanged, LocalRepoStatus.Initializing);
       workerGit
         .initRepo({
           githubInfo: github.getGithubInfo(),
@@ -96,7 +96,7 @@ class Git extends EventEmitter<GitEvents> {
             url: github.getRepositoryUrl(),
             remote: Git.remote,
           },
-          keepDir: byPublishing,
+          keepDir: byPushing,
         })
         .then(resolve_, reject_);
     });
