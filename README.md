@@ -10,6 +10,14 @@ Hope you enjoy it!
 
 Please read a short and simple [User Guide in wiki](https://github.com/ylc395/joplin-plugin-pages-publisher/wiki/User-Guide) before starting using it.
 
+# Usage Preview
+
+![](./screenshot.gif)
+
+Just as simple as the gif above!
+
+Published blog url: https://chenyulu.github.io/
+
 # Contribution
 
 Issues / Pull Requests / Discussion are welcome!
