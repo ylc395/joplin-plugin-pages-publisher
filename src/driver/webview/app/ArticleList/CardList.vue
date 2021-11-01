@@ -8,12 +8,14 @@ import {
   TagOutlined,
   EditOutlined,
   FileSyncOutlined,
+  LinkOutlined,
 } from '@ant-design/icons-vue';
 import { capitalize } from 'lodash';
+import type { Article } from 'domain/model/Article';
 import { token as articleToken } from 'domain/service/ArticleService';
 import { token as noteToken } from 'domain/service/NoteService';
 import { token as appToken } from 'domain/service/AppService';
-import type { Article } from 'domain/model/Article';
+import { token as pageToken } from 'domain/service/PageService';
 import { token as editToken } from './useEdit';
 import { token as diffToken } from './useDiff';
 
@@ -27,6 +29,7 @@ export default defineComponent({
     Button,
     EditOutlined,
     FileSyncOutlined,
+    LinkOutlined,
   },
   props: { type: { required: true, type: String as PropType<'published' | 'unpublished'> } },
   setup(props) {
@@ -38,6 +41,7 @@ export default defineComponent({
       syncArticleContent,
     } = inject(articleToken)!;
     const { syncNotes } = inject(noteToken)!;
+    const { articlePage } = inject(pageToken)!;
     const { edit } = inject(editToken)!;
     const { viewDiff } = inject(diffToken)!;
     const { openNote } = inject(appToken)!;
@@ -49,6 +53,7 @@ export default defineComponent({
 
     return {
       articles,
+      articlePage,
       toggleArticleSelected,
       moment,
       edit,
@@ -101,6 +106,9 @@ export default defineComponent({
         </Tooltip>
       </h2>
       <div class="flex flex-col flex-wrap">
+        <div v-if="articlePage" class="info">
+          <LinkOutlined class="mr-2" />{{ articlePage.url.value }}/{{ article.url }}
+        </div>
         <div class="info">
           <CalendarOutlined class="mr-2" />{{
             moment(article.createdAt).format('YYYY-MM-DD HH:mm')
