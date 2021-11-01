@@ -20,14 +20,14 @@ const openModal: UI['openModal'] = ({ type, okType, okDanger, keepFormat, ...opt
   });
 };
 
-const resizeWindow: UI['resizeWindow'] = (width, height) => {
+export const resizeWindow: UI['resizeWindow'] = (width, height) => {
   const rootEl = getRootEl();
 
   rootEl.style.width = `${width}px`;
   rootEl.style.height = `${height}px`;
 };
 
-const getRootEl: UI['getRootEl'] = () => {
+export const getRootEl = () => {
   return document.querySelector('#joplin-plugin-content') as HTMLElement;
 };
 
@@ -40,4 +40,4 @@ export const FOCUSING_MODAL = {
   maskStyle: { backgroundColor: 'rgba(255, 255, 255, 0.8)' },
 } as const;
 
-container.registerInstance(uiToken, { openModal, resizeWindow, getRootEl });
+container.registerInstance(uiToken, { openModal, resizeWindow });

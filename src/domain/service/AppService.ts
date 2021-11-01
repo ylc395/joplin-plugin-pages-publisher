@@ -17,7 +17,6 @@ export interface UI {
     keepFormat?: boolean;
   }) => void;
   resizeWindow: (width: number, height: number) => void;
-  getRootEl: () => HTMLElement;
 }
 
 export interface JoplinApp {
@@ -87,10 +86,6 @@ export class AppService {
       this.ui.resizeWindow(width, height);
       this.showingQuitButton = false;
     }
-  }
-
-  getRootEl() {
-    return this.ui.getRootEl();
   }
 
   openModal(...args: Parameters<UI['openModal']>) {

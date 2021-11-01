@@ -1,10 +1,6 @@
-import { token as appToken } from 'domain/service/AppService';
-import { inject } from 'vue';
+import { getRootEl } from 'driver/webview/utils/webviewApi';
 
 export function useModalProps() {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { getRootEl } = inject(appToken)!;
-
   return {
     mask: false,
     closable: false,

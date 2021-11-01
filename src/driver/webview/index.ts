@@ -13,6 +13,7 @@ import './utils/webviewApi';
 import App from './app/index.vue';
 import { ExceptionService } from 'domain/service/ExceptionService';
 import { AppService } from 'domain/service/AppService';
+import { getRootEl } from 'driver/webview/utils/webviewApi';
 
 const exceptionService = container.resolve(ExceptionService);
 const appService = container.resolve(AppService);
@@ -28,5 +29,5 @@ appService
       exceptionService.reportError(err as Error);
     };
 
-    app.mount(appService.getRootEl());
+    app.mount(getRootEl());
   });
