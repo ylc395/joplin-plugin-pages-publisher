@@ -1,5 +1,5 @@
 import { ref, computed, InjectionKey, reactive, toRaw } from 'vue';
-import { filter, pull, negate, uniq, findIndex, sortBy, compact, mapValues, pick } from 'lodash';
+import { filter, pull, negate, uniq, findIndex, compact, mapValues, pick } from 'lodash';
 import { singleton } from 'tsyringe';
 import moment from 'moment';
 import isValidFilename from 'valid-filename';
@@ -28,13 +28,14 @@ export class ArticleService {
   }
 
   private async init() {
-    const articles = sortBy(await this.pluginDataRepository.getArticles(), ['createdAt']).reverse();
+    const articles = (await this.pluginDataRepository.getArticles()) || undefined;
 
     if (articles) {
       await this.associateNotes(articles);
     }
 
     this.articles.push(...(articles ?? []));
+    this.sortByCreatedAt();
   }
 
   private async associateNotes(articles: Article[]) {
@@ -49,6 +50,15 @@ export class ArticleService {
       article.note = note;
       article.syncStatus = getSyncStatus(article);
     }
+  }
+
+  private sortByCreatedAt() {
+    this.articles.sort((a1, a2) => {
+      const createdAt1 = moment.isMoment(a1.createdAt) ? a1.createdAt.valueOf() : a1.createdAt;
+      const createdAt2 = moment.isMoment(a2.createdAt) ? a2.createdAt.valueOf() : a2.createdAt;
+
+      return createdAt2 - createdAt1;
+    });
   }
 
   saveArticles() {
@@ -96,6 +106,11 @@ export class ArticleService {
     }
   }
 
+  addArticles(article: Article) {
+    this.articles.push(article);
+    this.sortByCreatedAt();
+  }
+
   selectAll(status: 'published' | 'unpublished') {
     const articles =
       status === 'published' ? this.publishedArticles.value : this.unpublishedArticles.value;
@@ -120,6 +135,8 @@ export class ArticleService {
     }) as Partial<Article>;
 
     Object.assign(this.articles[index], result);
+    this.sortByCreatedAt();
+
     return this.saveArticles();
   }
 

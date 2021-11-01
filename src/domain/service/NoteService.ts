@@ -95,7 +95,7 @@ export class NoteService {
         article.url = this.articleService.getValidUrl(article.url);
       }
 
-      this.articleService.articles.push(article);
+      this.articleService.addArticles(article);
     }
 
     this.notesToBeAdded.value = [];
