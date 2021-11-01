@@ -1,5 +1,6 @@
 import { container } from 'tsyringe';
-import { joplinToken } from 'domain/service/AppService';
+import { joplinToken, JoplinGetParams } from 'domain/service/AppService';
+
 export interface JoplinAction {
   event:
     | 'quit'
@@ -12,11 +13,52 @@ export interface JoplinAction {
   payload?: any;
 }
 
+export interface JoplinDataRequest {
+  event: 'getJoplinData' | 'getJoplinDataAll';
+  args: JoplinGetParams;
+}
+
+export interface JoplinPluginSettingRequest {
+  event: 'getJoplinPluginSetting';
+  key: string;
+}
+
 declare const webviewApi: {
-  postMessage: <T = void>(payload: JoplinAction) => Promise<T>;
+  postMessage: <T = void>(
+    payload: JoplinAction | JoplinDataRequest | JoplinPluginSettingRequest,
+  ) => Promise<T>;
 };
 
 const joplin = {
+  fetchData<T>(...args: JoplinGetParams) {
+    return webviewApi
+      .postMessage<T>({
+        event: 'getJoplinData',
+        args,
+      })
+      .catch(() => null);
+  },
+
+  fetchAllData<T>(...args: JoplinGetParams) {
+    return webviewApi
+      .postMessage<T[]>({
+        event: 'getJoplinDataAll',
+        args,
+      })
+      .catch(() => [] as T[]);
+  },
+
+  async fetchPluginSetting<T>(key: string) {
+    try {
+      return await webviewApi.postMessage<T>({
+        event: 'getJoplinPluginSetting',
+        key,
+      });
+    } catch {
+      return null;
+    }
+  },
+
   quit() {
     return webviewApi.postMessage({ event: 'quit' }) as never;
   },

@@ -1,8 +1,11 @@
 import { container } from 'tsyringe';
 import { Db } from 'driver/db/joplinPlugin';
 import type { DbReadRequest, DbWriteRequest } from 'driver/db/webviewApi';
-import type { JoplinDataRequest, JoplinPluginSettingRequest } from 'driver/joplinData/webviewApi';
-import type { JoplinAction } from 'driver/joplin/webviewApi';
+import type {
+  JoplinAction,
+  JoplinDataRequest,
+  JoplinPluginSettingRequest,
+} from 'driver/joplin/webviewApi';
 import type { GitRequest } from 'driver/git/webviewApi';
 import type { FsRequest } from 'driver/fs/webviewApi';
 import type { GeneratorRequest } from 'driver/generator/webviewApi';
@@ -14,7 +17,6 @@ import type {
 import { loadTheme, loadThemes } from 'driver/themeLoader/joplinPlugin';
 import { generateSite, getProgress } from 'driver/generator/joplinPlugin';
 import { getOutputDir, getGitRepositoryDir } from 'driver/generator/joplinPlugin/pathHelper';
-import { fetchData, fetchAllData } from 'driver/joplinData/joplinPlugin';
 import { mockNodeFsCall } from 'driver/fs/joplinPlugin';
 import type Joplin from 'driver/joplin/joplinPlugin';
 
@@ -40,9 +42,9 @@ export default (joplin: Joplin) => {
       case 'dbSave':
         return db.save(...request.args);
       case 'getJoplinData':
-        return fetchData(...request.args);
+        return joplin.fetchData(...request.args);
       case 'getJoplinDataAll':
-        return fetchAllData(...request.args);
+        return joplin.fetchAllData(...request.args);
       case 'loadThemeConfig':
         return loadTheme(request.themeName);
       case 'loadThemeConfigs':

@@ -1,46 +1,36 @@
-import { container, InjectionToken } from 'tsyringe';
-import type joplin from 'api';
+import { container } from 'tsyringe';
 import type { Note, Tag, Resource, File } from '../model/JoplinData';
+import { joplinToken } from '../service/AppService';
 
-export type JoplinGetParams = Parameters<typeof joplin['data']['get']>;
-
-interface JoplinFetcher {
-  fetchData: <T>(...args: JoplinGetParams) => Promise<T | null>;
-  fetchAllData: <T>(...args: JoplinGetParams) => Promise<T[]>;
-  fetchPluginSetting: <T>(key: string) => Promise<T | null>;
-}
-
-export const token: InjectionToken<JoplinFetcher> = Symbol('joplinData');
 export class JoplinDataRepository {
-  private joplinFetcher = container.resolve(token);
+  private joplin = container.resolve(joplinToken);
   searchNotes(query: string) {
     const fields = 'id,title';
-    return this.joplinFetcher.fetchAllData<Note>(['search'], { query, fields });
+    return this.joplin.fetchAllData<Note>(['search'], { query, fields });
   }
 
   getTagsOf(noteId: string) {
-    return this.joplinFetcher.fetchAllData<Tag>(['notes', noteId, 'tags']);
+    return this.joplin.fetchAllData<Tag>(['notes', noteId, 'tags']);
   }
 
   async getFilesOf(noteId: string) {
-    const resources = await this.joplinFetcher.fetchAllData<Resource>(
-      ['notes', noteId, 'resources'],
-      { fields: 'id,mime' },
-    );
+    const resources = await this.joplin.fetchAllData<Resource>(['notes', noteId, 'resources'], {
+      fields: 'id,mime',
+    });
 
     if (resources.length === 0) {
       return [];
     }
 
     const files = await Promise.all(
-      resources.map(({ id }) => this.joplinFetcher.fetchData<File>(['resources', id, 'file'])),
+      resources.map(({ id }) => this.joplin.fetchData<File>(['resources', id, 'file'])),
     );
 
     return files;
   }
 
   async getNote(noteId: string) {
-    const note = await this.joplinFetcher.fetchData<Required<Note>>(['notes', noteId], {
+    const note = await this.joplin.fetchData<Required<Note>>(['notes', noteId], {
       fields: 'id,title,user_created_time,user_updated_time,body',
     });
 
@@ -49,7 +39,7 @@ export class JoplinDataRepository {
 
   async getGithubToken() {
     try {
-      return await this.joplinFetcher.fetchPluginSetting<string>('githubToken');
+      return await this.joplin.fetchPluginSetting<string>('githubToken');
     } catch {
       return '';
     }

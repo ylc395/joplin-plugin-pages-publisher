@@ -5,7 +5,7 @@ import type { Article } from 'domain/model/Article';
 import type { Resource } from 'domain/model/JoplinData';
 import type { File } from 'domain/model/JoplinData';
 import fs from 'driver/fs/joplinPlugin';
-import { fetchData, fetchAllData } from 'driver/joplinData/joplinPlugin';
+import { fetchData, fetchAllData } from 'driver/joplin/joplinPlugin';
 import { getMarkdownPluginAssetsDir, getOutputDir } from './pathHelper';
 import type { RenderResultPluginAsset, ResourceMap } from '../type';
 import { sanitizeMarkdownHtml } from './htmlProcess';

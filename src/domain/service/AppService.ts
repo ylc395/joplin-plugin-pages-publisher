@@ -1,3 +1,4 @@
+import type joplin from 'api';
 import { InjectionKey, reactive } from 'vue';
 import { container, InjectionToken, singleton } from 'tsyringe';
 import { isEqual, last, pull } from 'lodash';
@@ -19,7 +20,12 @@ export interface UI {
   resizeWindow: (width: number, height: number) => void;
 }
 
+export type JoplinGetParams = Parameters<typeof joplin['data']['get']>;
+
 export interface JoplinApp {
+  fetchData: <T>(...args: JoplinGetParams) => Promise<T | null>;
+  fetchAllData: <T>(...args: JoplinGetParams) => Promise<T[]>;
+  fetchPluginSetting: <T>(key: string) => Promise<T | null>;
   quit: () => never;
   openNote: (noteId: string) => Promise<void>;
   getInstallationDir: () => Promise<string>;

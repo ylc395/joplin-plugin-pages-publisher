@@ -3,15 +3,22 @@ import { SettingItemType, ViewHandle } from 'api/types';
 import type JoplinViewsPanels from 'api/JoplinViewsPanels';
 import type JoplinViewsDialogs from 'api/JoplinViewsDialogs';
 import { container } from 'tsyringe';
+import { isNumber } from 'lodash';
+
+import type { JoplinGetParams } from 'domain/service/AppService';
 import { Db } from 'driver/db/joplinPlugin';
 import webviewBridge from 'driver/webview/webviewBridge';
-import { isNumber } from 'lodash';
 
 const OPEN_PAGES_PUBLISHER_COMMAND = 'openPagesPublisher';
 const db = container.resolve(Db);
 enum UIType {
   Dialog,
   Panel,
+}
+
+interface JoplinResponse<T> {
+  items: T[];
+  has_more: boolean;
 }
 
 const UI_TYPE_SETTING = 'uiType';
@@ -22,9 +29,40 @@ const isValidUISize = (size: unknown): size is [number, number] =>
 
 const IS_NEW_USER_SETTING = 'isNewUser';
 
+export function fetchData<T>(...args: JoplinGetParams) {
+  return joplinApi.data.get(...args) as Promise<T>;
+}
+
+export async function fetchAllData<T>(...[path, query]: JoplinGetParams) {
+  let result: T[] = [];
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { items, has_more } = await fetchData<JoplinResponse<T>>(path, {
+      ...query,
+      page: page++,
+    });
+
+    result = result.concat(items);
+    hasMore = has_more;
+  }
+
+  return result;
+}
+
 export default class Joplin {
   private windowHandler?: ViewHandle;
   private uiType?: UIType;
+
+  fetchData(...args: JoplinGetParams) {
+    return fetchData(...args);
+  }
+
+  fetchAllData(...args: JoplinGetParams) {
+    return fetchAllData(...args);
+  }
+
   get ui() {
     if (this.uiType === undefined) {
       throw new Error('no ui type');

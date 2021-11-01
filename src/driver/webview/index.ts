@@ -5,7 +5,6 @@ import { container } from 'tsyringe';
 import 'driver/db/webviewApi';
 import 'driver/themeLoader/webviewApi';
 import 'driver/generator/webviewApi';
-import 'driver/joplinData/webviewApi';
 import 'driver/joplin/webviewApi';
 import 'driver/git/webviewApi';
 import 'driver/github/webviewApi';
