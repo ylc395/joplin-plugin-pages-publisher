@@ -21,15 +21,17 @@ export class MarkdownRenderer {
   private outputDir?: string;
   private pluginAssetDir?: string;
   private readonly fileIdPool = new Set();
+  private sourceUrls?: Record<string, string | undefined>;
   constructor(private readonly articles: Article[]) {}
 
   async init() {
-    await this.getJoplinMarkdownSetting();
-    await this.getAllResources();
+    await this.fetchJoplinMarkdownSetting();
+    await this.fetchAllResources();
+    await this.fetchAllNoteSourceUrl();
     this.outputDir = await getOutputDir();
     this.pluginAssetDir = await getMarkdownPluginAssetsDir();
   }
-  private async getAllResources() {
+  private async fetchAllResources() {
     const resources = await fetchAllData<Resource>(['resources'], {
       fields: 'id,mime,file_extension,encryption_applied,encryption_blob_encrypted',
     });
@@ -57,7 +59,20 @@ export class MarkdownRenderer {
     return this.resources[url.replace(':/', '')];
   }
 
-  private async getJoplinMarkdownSetting() {
+  private async fetchAllNoteSourceUrl() {
+    const noteInfos = await fetchAllData<{ id: string; source_url: string }>(['notes'], {
+      fields: 'id,source_url',
+    });
+    this.sourceUrls = noteInfos.reduce((map, { id, source_url }) => {
+      if (source_url) {
+        map[id] = source_url;
+      }
+
+      return map;
+    }, {} as Record<string, string>);
+  }
+
+  private async fetchJoplinMarkdownSetting() {
     // @see https://github.com/laurent22/joplin/blob/1bc674a1f9a1f5021142d040459ef127db71ee62/packages/lib/models/Setting.ts#L873
     const pluginNames = [
       'softbreaks',
@@ -116,12 +131,20 @@ export class MarkdownRenderer {
       pdfViewerEnabled: this.mdPluginOptions[`${PLUGIN_SETTING_PREFIX}${PDF_VIEWER_PLUGIN}`],
       itemIdToUrl: articlePageUrl
         ? (resourceId: string) => {
+            if (!this.sourceUrls) {
+              throw new Error('init failed');
+            }
+
             const resourceInfo = this.getResourceInfo(resourceId);
+
             if (!resourceInfo) {
               // is note id
               const article = find(this.articles, { noteId: resourceId });
-              return article ? `/${articlePageUrl}/${article.url}` : '';
+              return article
+                ? `/${articlePageUrl}/${article.url}`
+                : this.sourceUrls[resourceId] || '';
             }
+
             resourceIds.push(resourceId);
             return `/_resources/${resourceId}.${resourceInfo.extension}`;
           }
