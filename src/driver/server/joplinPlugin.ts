@@ -24,7 +24,7 @@ export class HttpServer {
         }
       });
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.server!.listen(port, () => resolve(port));
+      this.server!.listen(port, '127.0.0.1', () => resolve(port));
     });
   }
 
