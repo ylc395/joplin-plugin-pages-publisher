@@ -2,6 +2,7 @@
 import { computed, defineComponent, inject } from 'vue';
 import { Modal, Progress, Result, Button } from 'ant-design-vue';
 import { token as publishToken } from 'domain/service/PublishService';
+import { token as previewToken } from 'domain/service/PreviewService';
 import { activeTabToken } from '../composable';
 import { useModalProps } from './composable';
 
@@ -20,6 +21,8 @@ export default defineComponent({
       inject(publishToken)!;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const activeTab = inject(activeTabToken)!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const { startPreviewing } = inject(previewToken)!;
     const reset = () => refreshGeneratingProgress();
 
     return {
@@ -32,6 +35,10 @@ export default defineComponent({
       publish: async () => {
         await reset();
         await publish();
+      },
+      preview: async () => {
+        await reset();
+        startPreviewing();
       },
       isGithubInfoValid,
       switchToGithubTab: async () => {
@@ -66,12 +73,9 @@ export default defineComponent({
             </p>
             <p class="break-all text-black font-semibold">{{ outputDir }}</p>
             <p>
-              You can <strong>start a local HTTP server</strong> to preview the generated site(<a
-                target="_blank"
-                href="https://github.com/ylc395/joplin-plugin-pages-publisher/wiki/How-to-preview-before-publishing"
-                >I don't know how to do it</a
-              >)<template v-if="isGithubInfoValid"
-                >, or/and you can <strong>click "Publish" button</strong> to publish them to Github
+              You can click <strong>Preview</strong> button to preview the generated site<template
+                v-if="isGithubInfoValid"
+                >, or you can <strong>click "Publish" button</strong> to publish them to Github
                 directly.</template
               ><template v-else>. </template>
             </p>
@@ -83,6 +87,7 @@ export default defineComponent({
         </template>
         <template #extra>
           <Button v-if="progress.result" @click="reset">Confirm</Button>
+          <Button v-if="progress.result === 'success'" @click="preview">Preview</Button>
           <Button
             v-if="progress.result === 'success' && isGithubInfoValid"
             type="primary"

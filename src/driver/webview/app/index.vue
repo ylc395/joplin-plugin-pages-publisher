@@ -17,6 +17,7 @@ import { PageService, token as pageToken } from 'domain/service/PageService';
 import { NoteService, token as noteToken } from 'domain/service/NoteService';
 import { PublishService, token as publishToken } from 'domain/service/PublishService';
 import { AppService, token as appToken, FORBIDDEN } from 'domain/service/AppService';
+import { PreviewService, token as previewToken } from 'domain/service/PreviewService';
 
 import ArticleList from './ArticleList/index.vue';
 import Site from './Site/index.vue';
@@ -54,6 +55,7 @@ export default defineComponent({
     provide(noteToken, selfish(container.resolve(NoteService)));
     provide(siteToken, selfish(container.resolve(SiteService)));
     provide(pageToken, selfish(container.resolve(PageService)));
+    provide(previewToken, selfish(container.resolve(PreviewService)));
     provide(publishToken, publishService);
     provide(appToken, appService);
 

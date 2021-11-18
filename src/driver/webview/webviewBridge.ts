@@ -18,10 +18,13 @@ import { loadTheme, loadThemes } from 'driver/themeLoader/joplinPlugin';
 import { generateSite, getProgress } from 'driver/generator/joplinPlugin';
 import { getOutputDir, getGitRepositoryDir } from 'driver/generator/joplinPlugin/pathHelper';
 import { mockNodeFsCall } from 'driver/fs/joplinPlugin';
+import type { ServerRequest } from 'driver/server/webviewApi';
+import { HttpServer } from 'driver/server/joplinPlugin';
 import type Joplin from 'driver/joplin/joplinPlugin';
 
 export default (joplin: Joplin) => {
   const db = container.resolve(Db);
+  const httpServer = new HttpServer();
 
   return (
     request:
@@ -34,6 +37,7 @@ export default (joplin: Joplin) => {
       | FsRequest
       | GeneratorRequest
       | GitRequest
+      | ServerRequest
       | JoplinAction,
   ) => {
     switch (request.event) {
@@ -75,6 +79,10 @@ export default (joplin: Joplin) => {
         return mockNodeFsCall(request.funcName, ...request.args);
       case 'getJoplinPluginSetting':
         return joplin.getSettingOf(request.key);
+      case 'startServer':
+        return httpServer.start();
+      case 'closeServer':
+        return httpServer.close();
       default:
         throw new Error(`unknown bridge request: ${request}`);
     }

@@ -3,6 +3,7 @@ import { InjectionKey, reactive } from 'vue';
 import { container, InjectionToken, singleton } from 'tsyringe';
 import { isEqual, last, pull } from 'lodash';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
+import { PreviewService } from './PreviewService';
 
 export interface UI {
   openModal: (modal: {
@@ -52,6 +53,7 @@ export class AppService {
   });
   private readonly joplin = container.resolve(joplinToken);
   private readonly pluginDataRepository = new PluginDataRepository();
+  private readonly previewService = container.resolve(PreviewService);
 
   private readonly ui = container.resolve(uiToken);
   showingQuitButton = true;
@@ -98,7 +100,8 @@ export class AppService {
     return this.ui.openModal(...args);
   }
 
-  quitApp() {
+  async quitApp() {
+    await this.previewService.reset();
     return this.joplin.quit();
   }
 
