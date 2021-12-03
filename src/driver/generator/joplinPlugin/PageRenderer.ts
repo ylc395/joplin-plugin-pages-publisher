@@ -1,9 +1,19 @@
-import _, { isString, mapValues, defaultsDeep, mergeWith, filter, sortBy, keyBy } from 'lodash';
+import _, {
+  isString,
+  mapValues,
+  defaultsDeep,
+  mergeWith,
+  filter,
+  sortBy,
+  keyBy,
+  omit,
+} from 'lodash';
 import ejs from 'ejs';
 import moment from 'moment';
 import { container } from 'tsyringe';
 import { Feed } from 'feed';
 import Ajv from 'ajv';
+import { loadFront } from 'yaml-front-matter';
 import { Site, DEFAULT_SITE } from 'domain/model/Site';
 import type { GeneratingProgress, Github } from 'domain/model/Publishing';
 import type { Article } from 'domain/model/Article';
@@ -93,6 +103,7 @@ export class PageRenderer {
         ...article,
         fullUrl: `${articlePageUrl}/${article.url}`,
         htmlContent: '',
+        meta: omit(loadFront(article.content), ['__content']),
       }));
   }
 

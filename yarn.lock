@@ -1100,6 +1100,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/js-yaml@*":
+  version "4.0.5"
+  resolved "https://registry.npmjs.org/@types/js-yaml/-/js-yaml-4.0.5.tgz#738dd390a6ecc5442f35e7f03fa1431353f7e138"
+  integrity sha512-FhpRzf927MNQdRZP0J5DLIdTXhjLYzeUTmLAu69mnVksLH9CJY3IuSeEgbKUki7GQZm0WqDkGzyxju2EZGD2wA==
+
 "@types/json-schema@^7.0.5", "@types/json-schema@^7.0.7":
   version "7.0.8"
   resolved "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.8.tgz#edf1bf1dbf4e04413ca8e5b17b3b7d7d54b59818"
@@ -1142,6 +1147,14 @@
   resolved "https://registry.npmjs.org/@types/serve-handler/-/serve-handler-6.1.1.tgz#629dc9a62b201ab79a216e1e46e162aa4c8d1455"
   integrity sha512-bIwSmD+OV8w0t2e7EWsuQYlGoS1o5aEdVktgkXaa43Zm0qVWi21xaSRb3DQA1UXD+DJ5bRq1Rgu14ZczB+CjIQ==
   dependencies:
+    "@types/node" "*"
+
+"@types/yaml-front-matter@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.npmjs.org/@types/yaml-front-matter/-/yaml-front-matter-4.1.0.tgz#324404e069353972286bf60117f8b404b7cb0220"
+  integrity sha512-d4YGe2onl1T4VA6QhT4agdxaStOBe/ig9RAFAT1OltytvO2z9Ro69DiwHD2FUwewcjeD9PWEfUeZhw7E9hApcQ==
+  dependencies:
+    "@types/js-yaml" "*"
     "@types/node" "*"
 
 "@typescript-eslint/eslint-plugin@^4.28.0":
@@ -2252,7 +2265,7 @@ commander@7:
   resolved "https://registry.npmjs.org/commander/-/commander-7.2.0.tgz#a36cb57d0b501ce108e4d20559a150a391d97ab7"
   integrity sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==
 
-commander@^6.0.0:
+commander@^6.0.0, commander@^6.2.0:
   version "6.2.1"
   resolved "https://registry.npmjs.org/commander/-/commander-6.2.1.tgz#0792eb682dfbc325999bb2b84fddddba110ac73c"
   integrity sha512-U7VdrJFnJgo4xjrHpTzu0yrHPGImdsmD95ZlgYSEajAn2JKzDhDTPG9kBTefmObL2w/ngeZnilk+OV9CG3d7UA==
@@ -4433,7 +4446,7 @@ jake@^10.6.1:
   resolved "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
   integrity sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==
 
-js-yaml@^3.13.1:
+js-yaml@^3.13.1, js-yaml@^3.14.1:
   version "3.14.1"
   resolved "https://registry.npmjs.org/js-yaml/-/js-yaml-3.14.1.tgz#dae812fdb3825fa306609a8717383c50c36a0537"
   integrity sha512-okMH7OXXJ7YrN9Ok3/SXrnu4iX9yOk+25nqX4imS2npuvTYDmo/QEZoqwZkYaIDk3jVvBOTOIEgEhaLOynBS9g==
@@ -7019,6 +7032,14 @@ yallist@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/yallist/-/yallist-4.0.0.tgz#9bb92790d9c0effec63be73519e11a35019a3a72"
   integrity sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==
+
+yaml-front-matter@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.npmjs.org/yaml-front-matter/-/yaml-front-matter-4.1.1.tgz#66eaa9a998fc3dd723708c73aa8e06e79cac91c9"
+  integrity sha512-ULGbghCLsN8Hs8vfExlqrJIe8Hl2TUjD7/zsIGMP8U+dgRXEsDXk4yydxeZJgdGiimP1XB7zhmhOB4/HyfqOyQ==
+  dependencies:
+    commander "^6.2.0"
+    js-yaml "^3.14.1"
 
 yaml@^1.10.0, yaml@^1.10.2:
   version "1.10.2"

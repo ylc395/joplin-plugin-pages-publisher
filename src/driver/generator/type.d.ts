@@ -21,6 +21,7 @@ export type ResourceMap = Record<string, ResourceInfo | undefined>;
 export type ArticleForPage = Article & {
   htmlContent: string;
   fullUrl: string;
+  meta: Record<string, unknown>;
 };
 
 export interface PageEnv {
