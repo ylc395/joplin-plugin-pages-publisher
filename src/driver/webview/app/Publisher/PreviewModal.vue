@@ -9,12 +9,13 @@ export default defineComponent({
   components: { Modal, Result, Button },
   setup() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const { publish } = inject(publishToken)!;
+    const { publish, isGithubInfoValid } = inject(publishToken)!;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { startPreviewing, port, message, reset } = inject(previewToken)!;
 
     return {
       modalProps: useModalProps(),
+      isGithubInfoValid,
       startPreviewing,
       port,
       message,
@@ -44,7 +45,7 @@ export default defineComponent({
       </template>
       <template #extra>
         <Button @click="reset">Confirm</Button>
-        <Button v-if="port" type="primary" @click="publish">Publish</Button>
+        <Button v-if="port && isGithubInfoValid" type="primary" @click="publish">Publish</Button>
       </template>
     </Result>
   </Modal>

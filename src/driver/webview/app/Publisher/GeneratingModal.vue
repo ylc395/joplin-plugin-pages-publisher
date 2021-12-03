@@ -86,19 +86,23 @@ export default defineComponent({
           </div>
         </template>
         <template #extra>
-          <Button v-if="progress.result" @click="reset">Confirm</Button>
-          <Button v-if="progress.result === 'success'" @click="preview">Preview</Button>
-          <Button
-            v-if="progress.result === 'success' && isGithubInfoValid"
-            type="primary"
-            @click="publish"
-            >Publish</Button
-          >
-          <Button
-            v-if="progress.result === 'success' && !isGithubInfoValid"
-            @click="switchToGithubTab"
-            >Edit Github information</Button
-          >
+          <div>
+            <div
+              v-if="progress.result === 'success'"
+              class="flex justify-between mx-auto w-72 mb-3"
+            >
+              <Button class="flex-grow mr-2" type="primary" @click="preview">Preview</Button>
+              <Button v-if="isGithubInfoValid" class="flex-grow" type="primary" @click="publish"
+                >Publish</Button
+              >
+              <Button v-else class="flex-grow" type="primary" @click="switchToGithubTab"
+                >Edit Github information</Button
+              >
+            </div>
+            <Button v-if="progress.result" block class="mx-auto w-72" @click="reset"
+              >Confirm</Button
+            >
+          </div>
         </template>
       </Result>
     </div>
