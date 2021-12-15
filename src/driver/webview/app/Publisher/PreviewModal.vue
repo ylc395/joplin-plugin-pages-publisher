@@ -44,7 +44,7 @@ export default defineComponent({
         </div>
       </template>
       <template #extra>
-        <Button @click="reset">Confirm</Button>
+        <Button @click="reset">Finish</Button>
         <Button v-if="port && isGithubInfoValid" type="primary" @click="publish">Publish</Button>
       </template>
     </Result>

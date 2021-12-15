@@ -25,7 +25,10 @@ export class PreviewService {
 
   reset() {
     this.message.value = '';
-    this.port.value = undefined;
-    return this.server.close();
+
+    if (this.port.value) {
+      this.port.value = undefined;
+      return this.server.close();
+    }
   }
 }
