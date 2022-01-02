@@ -58,6 +58,12 @@
       "label": "Site Name",
       "rules": [{ "required": true }],
       "tip": "Site name displayed in left-top corner of every page"
+    },
+    {
+      "name": "lang",
+      "label": "Site Langage Code",
+      "rules": [{ "required": true }],
+      "tip": "The ISO 639-1 language code, used as the value of the `lang` attribute in the root HTML element"
     }
   ]
 }
