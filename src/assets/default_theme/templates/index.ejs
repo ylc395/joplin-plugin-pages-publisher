@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-cn" id="homepage">
+<html id="homepage">
   <head>
     <%- include('./_blocks/head') %>
     <title><%= $site.siteName %></title>
@@ -15,8 +15,7 @@
         <ul>
           <% for (const menuItem of $page.menu) {%>
           <li><a href="<%= menuItem.link %>"><%= menuItem.label %></a></li>
-          <% } %>
-          <% if($link.rss) { %>
+          <% } %> <% if($link.rss) { %>
           <li><a href="<%= $link.rss %>">RSS</a></li>
           <% } %>
         </ul>

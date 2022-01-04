@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
+<html>
   <head>
     <%- include('./_blocks/head') %>
     <title>Archives - <%= $site.siteName %></title>
@@ -10,9 +10,9 @@
         <a href="/"><%= $site.siteName %></a>
       </nav>
       <div class="blogs-list-block">
-        <% const yearArticles = _.groupBy($site.articles, ({createdAt}) => moment(createdAt).year());
-           const years = Object.keys(yearArticles).sort().reverse(); 
-           for (const year of years) { %>
+        <% const yearArticles = _.groupBy($site.articles, ({createdAt}) =>
+        moment(createdAt).year()); const years = Object.keys(yearArticles).sort().reverse(); for
+        (const year of years) { %>
         <div class="annual-block">
           <time class="annual-block-headline"><%= year %></time>
           <ol>
