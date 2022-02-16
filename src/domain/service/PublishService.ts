@@ -4,7 +4,6 @@ import type EventEmitter from 'eventemitter3';
 import { PluginDataRepository } from '../repository/PluginDataRepository';
 import { JoplinDataRepository } from '../repository/JoplinDataRepository';
 import {
-  Github,
   GeneratingProgress,
   PublishingProgress,
   initialGeneratingProgress,
@@ -13,18 +12,18 @@ import {
   PublishError,
   DEFAULT_GITHUB,
 } from '../model/Publishing';
+import {
+  GithubClientEvents,
+  githubClientToken,
+  Github,
+  GitEvents,
+  gitClientToken,
+} from '../model/GitClient';
 import { AppService, FORBIDDEN } from './AppService';
 import { isEmpty, noop, omit, pick, some } from 'lodash';
 
 export enum GeneratorEvents {
   PageGenerated = 'pageGenerated',
-}
-
-export enum GitEvents {
-  Progress = 'progress',
-  Message = 'message',
-  Terminated = 'terminated',
-  LocalRepoStatusChanged = 'localRepoStatusChanged',
 }
 
 export enum LocalRepoStatus {
@@ -34,19 +33,6 @@ export enum LocalRepoStatus {
   MissingRepository,
 }
 
-export enum GithubClientEvents {
-  InfoChanged = 'infoChanged',
-}
-
-export interface GithubClient extends EventEmitter<GithubClientEvents> {
-  init(github: Github): void;
-  createRepository(): Promise<void>;
-  getRepositoryUrl(): string;
-  getRepositoryName(): string;
-  getDefaultRepositoryName(): string;
-  getGithubInfo(): Readonly<Github>;
-}
-
 const PUBLISH_RESULT_MESSAGE: Record<PublishResults, string> = {
   [PublishResults.Terminated]: 'Publishing terminated.',
   [PublishResults.Fail]:
@@ -54,20 +40,12 @@ const PUBLISH_RESULT_MESSAGE: Record<PublishResults, string> = {
   [PublishResults.Success]: '',
 };
 
-export interface Git extends EventEmitter<GitEvents> {
-  init: (github: GithubClient, dir: string) => Promise<void>;
-  push: (files: string[], init: boolean) => Promise<void>;
-  terminate: () => void;
-}
-
 export interface Generator extends EventEmitter<GeneratorEvents> {
   generateSite: () => Promise<string[]>;
   getOutputDir: () => Promise<string>;
 }
 
-export const gitClientToken: InjectionToken<Git> = Symbol();
 export const generatorToken: InjectionToken<Generator> = Symbol();
-export const githubClientToken: InjectionToken<GithubClient> = Symbol();
 export const token: InjectionKey<PublishService> = Symbol();
 
 @singleton()

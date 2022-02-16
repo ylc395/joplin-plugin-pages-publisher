@@ -1,4 +1,4 @@
-import type { Github } from 'domain/model/Publishing';
+import type { Github } from 'domain/model/GitClient';
 import type { MessageCallback, ProgressCallback } from 'isomorphic-git';
 
 interface GitInfo {

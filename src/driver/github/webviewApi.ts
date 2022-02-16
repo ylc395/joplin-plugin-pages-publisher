@@ -1,8 +1,13 @@
 import { container } from 'tsyringe';
 import { EventEmitter } from 'eventemitter3';
 import { cloneDeep } from 'lodash';
-import { GithubClient, GithubClientEvents, githubClientToken } from 'domain/service/PublishService';
-import { Github as GithubInfo, PublishError, PublishResults } from 'domain/model/Publishing';
+import {
+  GithubClient,
+  GithubClientEvents,
+  githubClientToken,
+  Github as GithubInfo,
+} from 'domain/model/GitClient';
+import { PublishError, PublishResults } from 'domain/model/Publishing';
 
 export class Github extends EventEmitter<GithubClientEvents> implements GithubClient {
   private githubInfo?: GithubInfo;

@@ -1,13 +1,5 @@
 import { isError } from 'lodash';
-
-export interface Github {
-  userName: string;
-  email: string;
-  repositoryName?: string;
-  branch?: string;
-  token?: string;
-  cname?: string;
-}
+import type { Github } from './GitClient';
 
 export const DEFAULT_GITHUB: Github = {
   userName: '',

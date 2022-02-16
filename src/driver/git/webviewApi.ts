@@ -14,13 +14,13 @@ import {
 import { wrap, Remote, releaseProxy, expose } from 'comlink';
 import fs from 'driver/fs/webviewApi';
 import type { FsWorkerCallRequest, FsWorkerCallResponse } from 'driver/fs/type';
+import { LocalRepoStatus } from 'domain/service/PublishService';
 import {
   gitClientToken,
   GitEvents,
-  LocalRepoStatus,
   GithubClient,
   GithubClientEvents,
-} from 'domain/service/PublishService';
+} from 'domain/model/GitClient';
 import { PublishError, PublishResults } from 'domain/model/Publishing';
 import { joplinToken } from 'domain/service/AppService';
 import type { GitEventHandler, WorkerGit } from './type';
