@@ -31,11 +31,10 @@ import { addScriptLinkStyleTags } from './htmlProcess';
 import type { PageEnv, ArticleForPage } from '../type';
 import {
   getOutputDir,
-  getOutputThemeAssetsDir,
-  getThemeAssetsDir,
   getThemeDir,
   getIcon,
   getOutputIcon,
+  getOutputThemeAssetsDir,
   getOutputNoJekyll,
 } from './pathHelper';
 
@@ -51,6 +50,7 @@ export class PageRenderer {
   private pagesValues?: Record<string, PageEnv['$page'] | undefined>;
   private themeDir?: string;
   private outputDir?: string;
+  private outputAssetsDir?: string;
   private cname?: string;
   private pages?: Theme['pages'];
   private articles?: ArticleForPage[];
@@ -75,6 +75,7 @@ export class PageRenderer {
     await this.markdownRenderer.init();
     this.themeDir = await getThemeDir(this.site.themeName);
     this.outputDir = await getOutputDir();
+    this.outputAssetsDir = getOutputThemeAssetsDir(this.outputDir);
   }
 
   private async getSite() {
@@ -351,11 +352,18 @@ export class PageRenderer {
   }
 
   private async copyAssets() {
-    if (!this.site || !this.themeDir || !this.outputDir) {
+    if (!this.site || !this.themeDir || !this.outputDir || !this.outputAssetsDir) {
       throw new Error('pageRenderer is not initialized');
     }
 
-    await fs.copy(getThemeAssetsDir(this.themeDir), getOutputThemeAssetsDir(this.outputDir));
+    const { outputAssetsDir } = this;
+
+    await fs.copy(this.themeDir, this.outputDir, {
+      filter: (src, dest) =>
+        dest === this.outputDir ||
+        dest.startsWith(outputAssetsDir) ||
+        (src.endsWith('.json') && !src.endsWith('config.json')),
+    });
   }
 
   private async copyIcon() {

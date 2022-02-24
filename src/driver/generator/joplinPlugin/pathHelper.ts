@@ -18,14 +18,6 @@ export async function getMarkdownPluginAssetsDir() {
   return `${await joplin.plugins.installationDir()}/assets/markdown_plugin_assets`;
 }
 
-export function getThemeAssetsDir(themeDir: string) {
-  return `${themeDir}/_assets`;
-}
-
-export function getOutputThemeAssetsDir(outputDir: string) {
-  return `${outputDir}/_assets`;
-}
-
 export async function getIcon() {
   return `${await joplin.plugins.dataDir()}/favicon.ico`;
 }
@@ -36,6 +28,10 @@ export function getOutputIcon(outputDir: string) {
 
 export function getOutputNoJekyll(outputDir: string) {
   return `${outputDir}/.nojekyll`;
+}
+
+export function getOutputThemeAssetsDir(outputDir: string) {
+  return `${outputDir}/_assets`;
 }
 
 export async function getGitRepositoryDir() {
