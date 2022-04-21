@@ -2,17 +2,19 @@ import { container } from 'tsyringe';
 import { themeLoaderToken } from 'domain/repository/PluginDataRepository';
 import type { Theme } from 'domain/model/Theme';
 
-export interface ThemeConfigLoadRequest {
+interface ThemeConfigLoadRequest {
   event: 'loadThemeConfig';
   themeName: string;
 }
 
-export interface ThemeConfigsLoadRequest {
+interface ThemeConfigsLoadRequest {
   event: 'loadThemeConfigs';
 }
 
+export type ThemeConfigRequest = ThemeConfigLoadRequest | ThemeConfigsLoadRequest;
+
 declare const webviewApi: {
-  postMessage: <T>(payload: ThemeConfigLoadRequest | ThemeConfigsLoadRequest) => Promise<T>;
+  postMessage: <T>(payload: ThemeConfigRequest) => Promise<T>;
 };
 
 container.registerInstance(themeLoaderToken, {

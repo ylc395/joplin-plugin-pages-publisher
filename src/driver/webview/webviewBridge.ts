@@ -1,16 +1,9 @@
 import type { DbRequest } from 'driver/db/webviewApi';
-import type {
-  JoplinAction,
-  JoplinDataRequest,
-  JoplinPluginSettingRequest,
-} from 'driver/joplin/webviewApi';
+import type { JoplinRequest } from 'driver/joplin/webviewApi';
 import type { GitRequest } from 'driver/git/webviewApi';
 import type { FsRequest } from 'driver/fs/webviewApi';
 import type { GeneratorRequest } from 'driver/generator/webviewApi';
-import type {
-  ThemeConfigLoadRequest,
-  ThemeConfigsLoadRequest,
-} from 'driver/themeLoader/webviewApi';
+import type { ThemeConfigRequest } from 'driver/themeLoader/webviewApi';
 
 import { loadTheme, loadThemes } from 'driver/themeLoader/joplinPlugin';
 import { generateSite, getProgress } from 'driver/generator/joplinPlugin';
@@ -26,15 +19,12 @@ export default (joplin: Joplin) => {
   return (
     request:
       | DbRequest
-      | JoplinDataRequest
-      | JoplinPluginSettingRequest
-      | ThemeConfigLoadRequest
-      | ThemeConfigsLoadRequest
+      | JoplinRequest
+      | ThemeConfigRequest
       | FsRequest
       | GeneratorRequest
       | GitRequest
-      | ServerRequest
-      | JoplinAction,
+      | ServerRequest,
   ) => {
     switch (request.event) {
       case 'dbFetch':

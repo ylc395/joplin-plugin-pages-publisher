@@ -1,7 +1,7 @@
 import { container } from 'tsyringe';
 import { joplinToken, JoplinGetParams } from 'domain/service/AppService';
 
-export interface JoplinAction {
+interface JoplinAction {
   event:
     | 'quit'
     | 'openNote'
@@ -13,20 +13,20 @@ export interface JoplinAction {
   payload?: any;
 }
 
-export interface JoplinDataRequest {
+interface JoplinDataRequest {
   event: 'getJoplinData' | 'getJoplinDataAll';
   args: JoplinGetParams;
 }
 
-export interface JoplinPluginSettingRequest {
+interface JoplinPluginSettingRequest {
   event: 'getJoplinPluginSetting';
   key: string;
 }
 
+export type JoplinRequest = JoplinAction | JoplinDataRequest | JoplinPluginSettingRequest;
+
 declare const webviewApi: {
-  postMessage: <T = void>(
-    payload: JoplinAction | JoplinDataRequest | JoplinPluginSettingRequest,
-  ) => Promise<T>;
+  postMessage: <T = void>(payload: JoplinRequest) => Promise<T>;
 };
 
 const joplin = {
