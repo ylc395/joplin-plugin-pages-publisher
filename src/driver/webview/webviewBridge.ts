@@ -1,6 +1,4 @@
-import { container } from 'tsyringe';
-import { Db } from 'driver/db/joplinPlugin';
-import type { DbReadRequest, DbWriteRequest } from 'driver/db/webviewApi';
+import type { DbRequest } from 'driver/db/webviewApi';
 import type {
   JoplinAction,
   JoplinDataRequest,
@@ -23,13 +21,11 @@ import { HttpServer } from 'driver/server/joplinPlugin';
 import type Joplin from 'driver/joplin/joplinPlugin';
 
 export default (joplin: Joplin) => {
-  const db = container.resolve(Db);
   const httpServer = new HttpServer();
 
   return (
     request:
-      | DbReadRequest
-      | DbWriteRequest
+      | DbRequest
       | JoplinDataRequest
       | JoplinPluginSettingRequest
       | ThemeConfigLoadRequest
@@ -42,9 +38,13 @@ export default (joplin: Joplin) => {
   ) => {
     switch (request.event) {
       case 'dbFetch':
-        return db.fetch(...request.args);
+        return joplin.db.fetch(...request.args);
       case 'dbSave':
-        return db.save(...request.args);
+        return joplin.db.save(...request.args);
+      case 'fetchIcon':
+        return joplin.db.fetchIcon();
+      case 'saveIcon':
+        return joplin.db.saveIcon(request.payload.icon);
       case 'getJoplinData':
         return joplin.fetchData(...request.args);
       case 'getJoplinDataAll':

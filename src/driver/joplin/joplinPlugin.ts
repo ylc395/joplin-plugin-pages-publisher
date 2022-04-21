@@ -10,7 +10,6 @@ import { Db } from 'driver/db/joplinPlugin';
 import webviewBridge from 'driver/webview/webviewBridge';
 
 const OPEN_PAGES_PUBLISHER_COMMAND = 'openPagesPublisher';
-const db = container.resolve(Db);
 enum UIType {
   Dialog,
   Panel,
@@ -54,7 +53,7 @@ export async function fetchAllData<T>(...[path, query]: JoplinGetParams) {
 export default class Joplin {
   private windowHandler?: ViewHandle;
   private uiType?: UIType;
-
+  readonly db = container.resolve(Db);
   fetchData(...args: JoplinGetParams) {
     return fetchData(...args);
   }
@@ -131,7 +130,7 @@ export default class Joplin {
       await this.ui.addScript(this.windowHandler, './driver/webview/index.js');
     }
 
-    await db.init(true);
+    await this.db.init(true);
 
     if (this.isUsingPanel()) {
       await this.ui.show(this.windowHandler);
