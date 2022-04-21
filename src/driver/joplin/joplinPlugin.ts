@@ -2,12 +2,13 @@ import joplinApi from 'api';
 import { SettingItemType, ViewHandle } from 'api/types';
 import type JoplinViewsPanels from 'api/JoplinViewsPanels';
 import type JoplinViewsDialogs from 'api/JoplinViewsDialogs';
-import { container } from 'tsyringe';
 import { isNumber } from 'lodash';
 
 import type { JoplinGetParams } from 'domain/service/AppService';
 import { Db } from 'driver/db/joplinPlugin';
+import { HttpServer } from 'driver/server/joplinPlugin';
 import webviewBridge from 'driver/webview/webviewBridge';
+import { Generator } from 'driver/generator/joplinPlugin';
 
 const OPEN_PAGES_PUBLISHER_COMMAND = 'openPagesPublisher';
 enum UIType {
@@ -53,7 +54,10 @@ export async function fetchAllData<T>(...[path, query]: JoplinGetParams) {
 export default class Joplin {
   private windowHandler?: ViewHandle;
   private uiType?: UIType;
-  readonly db = container.resolve(Db);
+  readonly db = new Db();
+  readonly httpServer = new HttpServer();
+  readonly generator = new Generator(this.db);
+
   fetchData(...args: JoplinGetParams) {
     return fetchData(...args);
   }

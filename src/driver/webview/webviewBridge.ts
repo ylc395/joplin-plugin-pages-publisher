@@ -4,18 +4,14 @@ import type { GitRequest } from 'driver/git/webviewApi';
 import type { FsRequest } from 'driver/fs/webviewApi';
 import type { GeneratorRequest } from 'driver/generator/webviewApi';
 import type { ThemeConfigRequest } from 'driver/themeLoader/webviewApi';
+import type { ServerRequest } from 'driver/server/webviewApi';
 
 import { loadTheme, loadThemes } from 'driver/themeLoader/joplinPlugin';
-import { generateSite, getProgress } from 'driver/generator/joplinPlugin';
 import { getOutputDir, getGitRepositoryDir } from 'driver/generator/joplinPlugin/pathHelper';
 import { mockNodeFsCall } from 'driver/fs/joplinPlugin';
-import type { ServerRequest } from 'driver/server/webviewApi';
-import { HttpServer } from 'driver/server/joplinPlugin';
 import type Joplin from 'driver/joplin/joplinPlugin';
 
 export default (joplin: Joplin) => {
-  const httpServer = new HttpServer();
-
   return (
     request:
       | DbRequest
@@ -56,9 +52,9 @@ export default (joplin: Joplin) => {
       case 'setAsOldUser':
         return joplin.setAsOldUser();
       case 'generateSite':
-        return generateSite();
+        return joplin.generator.generateSite();
       case 'getGeneratingProgress':
-        return getProgress();
+        return joplin.generator.getProgress();
       case 'openNote':
         return joplin.openNote(request.payload);
       case 'getOutputDir':
@@ -70,9 +66,9 @@ export default (joplin: Joplin) => {
       case 'getJoplinPluginSetting':
         return joplin.getSettingOf(request.key);
       case 'startServer':
-        return httpServer.start();
+        return joplin.httpServer.start();
       case 'closeServer':
-        return httpServer.close();
+        return joplin.httpServer.close();
       default:
         throw new Error(`unknown bridge request: ${request}`);
     }

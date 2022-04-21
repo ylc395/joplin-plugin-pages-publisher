@@ -10,7 +10,6 @@ import _, {
 } from 'lodash';
 import ejs from 'ejs';
 import moment from 'moment';
-import { container } from 'tsyringe';
 import { Feed } from 'feed';
 import Ajv from 'ajv';
 import { loadFront } from 'yaml-front-matter';
@@ -40,7 +39,6 @@ import {
 
 ejs.fileLoader = fs.readFileSync;
 
-const db = container.resolve(Db);
 const articleValidator = new Ajv().compile<Article>(ARTICLE_SCHEMA);
 const validateArticle = getValidator(articleValidator, 'Invalid article');
 
@@ -58,6 +56,8 @@ export class PageRenderer {
     totalPages: 0,
     generatedPages: 0,
   };
+
+  constructor(private readonly db: Db) {}
 
   async init() {
     this.progress.totalPages = 0;
@@ -79,8 +79,8 @@ export class PageRenderer {
   }
 
   private async getSite() {
-    const site = await db.fetch<Site>(['site']);
-    const githubInfo = await db.fetch<Github>(['github']);
+    const site = await this.db.fetch<Site>(['site']);
+    const githubInfo = await this.db.fetch<Github>(['github']);
 
     this.cname = githubInfo?.cname;
     this.site = defaultsDeep({ ...site, generatedAt: Date.now() }, DEFAULT_SITE) as Required<Site>;
@@ -96,7 +96,7 @@ export class PageRenderer {
     }
 
     const articlePageUrl = this.getPageUrl(ARTICLE_PAGE_NAME);
-    const articles = (await db.fetch<Article[]>(['articles'])) || [];
+    const articles = (await this.db.fetch<Article[]>(['articles'])) || [];
 
     articles.forEach(validateArticle);
     this.articles = sortBy(filter(articles, { published: true }), ['createdAt'])
@@ -123,7 +123,8 @@ export class PageRenderer {
       throw new Error(`fail to load theme config: ${themeName}`);
     }
 
-    const pagesValues = (await db.fetch<Record<string, unknown>>(['pagesValues', themeName])) || {};
+    const pagesValues =
+      (await this.db.fetch<Record<string, unknown>>(['pagesValues', themeName])) || {};
     const defaultPagesValues = mapValues(themeConfig.pages, (fields, pageName) => {
       const allFields = [...(fields || []), ...(PREDEFINED_FIELDS[pageName] || [])];
       return allFields.reduce((values, field) => {

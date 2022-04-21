@@ -1,16 +1,24 @@
 import { PageRenderer } from './PageRenderer';
+import type { Db } from 'driver/db/joplinPlugin';
 
-const pageRenderer = new PageRenderer();
-export async function generateSite() {
-  try {
-    await pageRenderer.init();
-    return await pageRenderer.outputPages();
-  } catch (error) {
-    console.warn(error);
-    throw error;
+export class Generator {
+  private readonly pageRenderer: PageRenderer;
+
+  constructor(db: Db) {
+    this.pageRenderer = new PageRenderer(db);
   }
-}
 
-export function getProgress() {
-  return pageRenderer.progress;
+  async generateSite() {
+    try {
+      await this.pageRenderer.init();
+      return await this.pageRenderer.outputPages();
+    } catch (error) {
+      console.warn(error);
+      throw error;
+    }
+  }
+
+  getProgress() {
+    return this.pageRenderer.progress;
+  }
 }

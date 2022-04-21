@@ -1,11 +1,9 @@
 import { cloneDeep, get, set } from 'lodash';
 import joplin from 'api';
 import { Low } from 'lowdb/lib';
-import { singleton } from 'tsyringe';
 import fs from 'driver/fs/joplinPlugin';
 import { JSONFile } from './adaptor';
 
-@singleton()
 export class Db {
   private db: Low<Record<string, unknown>> | null = null;
   private ready = this.init();
