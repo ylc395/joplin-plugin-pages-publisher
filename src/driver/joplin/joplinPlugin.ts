@@ -1,5 +1,5 @@
 import joplinApi from 'api';
-import { SettingItemType, ViewHandle } from 'api/types';
+import { ViewHandle } from 'api/types';
 import type JoplinViewsPanels from 'api/JoplinViewsPanels';
 import type JoplinViewsDialogs from 'api/JoplinViewsDialogs';
 import { isNumber } from 'lodash';
@@ -7,27 +7,27 @@ import { isNumber } from 'lodash';
 import type { JoplinGetParams } from 'domain/service/AppService';
 import { Db } from 'driver/db/joplinPlugin';
 import { HttpServer } from 'driver/server/joplinPlugin';
-import webviewBridge from 'driver/webview/webviewBridge';
 import { Generator } from 'driver/generator/joplinPlugin';
+import webviewBridge from 'driver/webview/webviewBridge';
+import {
+  SECTION_NAME,
+  SETTINGS,
+  UIType,
+  UI_TYPE_SETTING,
+  UI_SIZE_SETTING,
+  DEFAULT_UI_SIZE,
+  IS_NEW_USER_SETTING,
+} from './settings';
 
 const OPEN_PAGES_PUBLISHER_COMMAND = 'openPagesPublisher';
-enum UIType {
-  Dialog,
-  Panel,
-}
 
 interface JoplinResponse<T> {
   items: T[];
   has_more: boolean;
 }
 
-const UI_TYPE_SETTING = 'uiType';
-const UI_SIZE_SETTING = 'uiSize';
-const DEFAULT_UI_SIZE = '600*640';
 const isValidUISize = (size: unknown): size is [number, number] =>
   Array.isArray(size) && size.length === 2 && size.every(isNumber);
-
-const IS_NEW_USER_SETTING = 'isNewUser';
 
 export function fetchData<T>(...args: JoplinGetParams) {
   return joplinApi.data.get(...args) as Promise<T>;
@@ -78,52 +78,11 @@ export default class Joplin {
   }
 
   async setupSettings() {
-    const SECTION_NAME = 'github';
-
     await joplinApi.settings.registerSection(SECTION_NAME, {
       label: 'Pages Publisher',
     });
 
-    await joplinApi.settings.registerSettings({
-      githubToken: {
-        label: 'Github Token',
-        secure: true,
-        type: SettingItemType.String,
-        public: true,
-        value: '',
-        section: SECTION_NAME,
-        description:
-          '"public_repo" scope is required. See https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token for details',
-      },
-      [UI_TYPE_SETTING]: {
-        label: 'UI Type',
-        type: SettingItemType.Int,
-        public: true,
-        value: UIType.Panel,
-        isEnum: true,
-        options: {
-          [UIType.Dialog]: 'Dialog',
-          [UIType.Panel]: 'Panel',
-        },
-        section: SECTION_NAME,
-        description:
-          "Use Dialog or Panel to display this plugin's UI(need to restart Joplin to take effect).",
-      },
-      [UI_SIZE_SETTING]: {
-        label: 'UI Size',
-        type: SettingItemType.String,
-        public: true,
-        value: DEFAULT_UI_SIZE,
-        section: SECTION_NAME,
-        description: 'Size for UI in the dialog. width*height',
-      },
-      [IS_NEW_USER_SETTING]: {
-        public: false,
-        value: true,
-        type: SettingItemType.Bool,
-        label: IS_NEW_USER_SETTING,
-      },
-    });
+    await joplinApi.settings.registerSettings(SETTINGS);
   }
 
   private async openPluginUI() {
