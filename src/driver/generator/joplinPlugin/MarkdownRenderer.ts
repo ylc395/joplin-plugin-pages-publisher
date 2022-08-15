@@ -120,10 +120,9 @@ export class MarkdownRenderer {
     const resourceIds: string[] = [];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const markupToHtml = new MarkupToHtml({ ResourceModel: this.resourceModel } as any); // something wrong with MarkupToHtml constructor
+    const markupToHtml = new MarkupToHtml({ ResourceModel: this.resourceModel, pluginOptions: this.mdPluginOptions } as any); // something wrong with MarkupToHtml constructor
 
     const { html, pluginAssets, cssStrings } = await markupToHtml.render(1, rawText, null, {
-      pluginOptions: this.mdPluginOptions,
       bodyOnly: true,
       resources: this.resources,
       audioPlayerEnabled: this.mdPluginOptions[`${PLUGIN_SETTING_PREFIX}${AUDIO_PLAYER_PLUGIN}`],
