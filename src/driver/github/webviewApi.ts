@@ -49,7 +49,7 @@ export class Github extends EventEmitter<GithubClientEvents> implements GithubCl
       throw new Error('no github info');
     }
 
-    return `${this.githubInfo.userName}.github.io`;
+    return `${this.githubInfo.userName}/${this.githubInfo.userName}.github.io`;
   }
 
   init(githubInfo: GithubInfo) {
@@ -69,10 +69,6 @@ export class Github extends EventEmitter<GithubClientEvents> implements GithubCl
   }
 
   async createRepository() {
-    if (!this.githubInfo?.userName) {
-      throw new Error('no userName');
-    }
-
     try {
       await this.request('POST', '/user/repos', {
         name: this.getRepositoryName(),
@@ -81,7 +77,7 @@ export class Github extends EventEmitter<GithubClientEvents> implements GithubCl
     } catch (error) {
       try {
         // maybe user create it manually
-        await this.request('GET', `/repos/${this.githubInfo.userName}/${this.getRepositoryName()}`);
+        await this.request('GET', `/repos/${this.getRepositoryName()}`);
       } catch {
         throw new PublishError(PublishResults.Fail, error);
       }
@@ -100,9 +96,8 @@ export class Github extends EventEmitter<GithubClientEvents> implements GithubCl
       throw new Error('no github info');
     }
 
-    const { userName } = this.githubInfo;
     const repoName = this.getRepositoryName();
-    return `https://github.com/${userName}/${repoName}.git`;
+    return `https://github.com/${repoName}.git`;
   }
 }
 
